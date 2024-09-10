@@ -31,7 +31,7 @@ git clone https://github.com/vndevteam/nestjs-boilerplate.git
 cp .env.example .env
 
 # Install dependences.
-pnpm install
+npm install
 ```
 
 ## Checklist
@@ -47,13 +47,13 @@ When you use this template, try follow the checklist to update your info properl
 
 ```bash
 # development
-$ pnpm start
+$ npm start
 
 # watch mode
-$ pnpm start:dev
+$ npm start:dev
 
 # production mode
-$ pnpm start:prod
+$ npm start:prod
 ```
 
 ## Features
