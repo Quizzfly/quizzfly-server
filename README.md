@@ -17,16 +17,10 @@
 
 ## Description
 
-NestJS boilerplate for a typical project
-
-Demo: <https://nestjs-boilerplate-n27l.onrender.com/api-docs>
-
+Quizzfly Server [NestJs]
 ## Getting started
 
 ```bash
-# Clone the repository
-git clone https://github.com/vndevteam/nestjs-boilerplate.git
-
 # Create environment variables file.
 cp .env.example .env
 
@@ -47,13 +41,16 @@ When you use this template, try follow the checklist to update your info properl
 
 ```bash
 # development
-$ npm start
+$ npm run start
 
 # watch mode
-$ npm start:dev
+$ npm run start:dev
 
 # production mode
-$ npm start:prod
+$ npm run start:prod
+
+# Generate a module(resource)
+$ nest g res modules/$name_module
 ```
 
 ## Features

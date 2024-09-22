@@ -145,13 +145,16 @@ For local development, you can use [MailDev](https://github.com/maildev/maildev)
 
 ```bash
 # Start the development server
-npm start
+npm run start
 
 # Start the development server with file watcher
-npm start:dev
+npm run start:dev
 
 # Start the development server with file watcher and debug mode
-npm start:debug
+npm run start:debug
+
+# Generate a module(resource)
+nest g res modules/$name_module
 ```
 
 ## Docker

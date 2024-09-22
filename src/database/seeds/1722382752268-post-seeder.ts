@@ -1,4 +1,4 @@
-import { PostEntity } from '@/api/post/entities/post.entity';
+import { PostEntity } from '@modules/post/entities/post.entity';
 import { DataSource } from 'typeorm';
 import { Seeder, SeederFactoryManager } from 'typeorm-extension';
 

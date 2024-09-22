@@ -1,5 +1,5 @@
-import { PostEntity } from '@/api/post/entities/post.entity';
-import { SYSTEM_USER_ID } from '@/constants/app.constant';
+import { SYSTEM_USER_ID } from '@core/constants/app.constant';
+import { PostEntity } from '@modules/post/entities/post.entity';
 import { setSeederFactory } from 'typeorm-extension';
 
 export default setSeederFactory(PostEntity, (fake) => {

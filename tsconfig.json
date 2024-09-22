@@ -23,21 +23,17 @@
     "esModuleInterop": true,
     "importHelpers": true,
     "paths": {
-      "@/api/*": ["src/api/*"],
-      "@/common/*": ["src/common/*"],
-      "@/config/*": ["src/config/*"],
-      "@/constants/*": ["src/constants/*"],
-      "@/database/*": ["src/database/*"],
-      "@/decorators/*": ["src/decorators/*"],
-      "@/exceptions/*": ["src/exceptions/*"],
-      "@/filters/*": ["src/filters/*"],
-      "@/generated/*": ["src/generated/*"],
-      "@/guards/*": ["src/guards/*"],
-      "@/interceptors/*": ["src/interceptors/*"],
-      "@/libs/*": ["src/libs/*"],
-      "@/mail/*": ["src/mail/*"],
-      "@/shared/*": ["src/shared/*"],
-      "@/utils/*": ["src/utils/*"]
+      "@/*": ["src/*"],
+      "@common/*": ["src/common/*"],
+      "@config/*": ["src/config/*"],
+      "@core/*": ["src/core/*"],
+      "@database/*": ["src/database/*"],
+      "@generated/*": ["src/generated/*"],
+      "@i18n/*": ["src/database/*"],
+      "@libs/*": ["src/libs/*"],
+      "@mail/*": ["src/mail/*"],
+      "@modules/*": ["src/modules/*"],
+      "@shared/*": ["src/shared/*"],
     }
   }
 }

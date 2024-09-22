@@ -1,3 +1,8 @@
+import { type AllConfigType } from '@config/config.type';
+import { GlobalExceptionFilter } from '@core/filters/global-exception.filter';
+import { AuthGuard } from '@core/guards/auth.guard';
+import setupSwagger from '@core/utils/setup-swagger';
+import { AuthService } from '@modules/auth/auth.service';
 import {
   ClassSerializerInterceptor,
   HttpStatus,
@@ -12,12 +17,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import compression from 'compression';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
-import { AuthService } from './api/auth/auth.service';
 import { AppModule } from './app.module';
-import { type AllConfigType } from './config/config.type';
-import { GlobalExceptionFilter } from './filters/global-exception.filter';
-import { AuthGuard } from './guards/auth.guard';
-import setupSwagger from './utils/setup-swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

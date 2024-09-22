@@ -1,5 +1,5 @@
-import { UserEntity } from '@/api/user/entities/user.entity';
-import { SYSTEM_USER_ID } from '@/constants/app.constant';
+import { SYSTEM_USER_ID } from '@core/constants/app.constant';
+import { UserEntity } from '@modules/user/entities/user.entity';
 import { setSeederFactory } from 'typeorm-extension';
 
 export default setSeederFactory(UserEntity, (fake) => {

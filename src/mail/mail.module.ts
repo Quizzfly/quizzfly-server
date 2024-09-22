@@ -1,4 +1,4 @@
-import { AllConfigType } from '@/config/config.type';
+import { AllConfigType } from '@config/config.type';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { Global, Module } from '@nestjs/common';

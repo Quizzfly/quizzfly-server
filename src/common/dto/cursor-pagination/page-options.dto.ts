@@ -1,8 +1,8 @@
-import { DEFAULT_PAGE_LIMIT } from '@/constants/app.constant';
+import { DEFAULT_PAGE_LIMIT } from '@core/constants/app.constant';
 import {
   NumberFieldOptional,
   StringFieldOptional,
-} from '@/decorators/field.decorators';
+} from '@core/decorators/field.decorators';
 
 export class PageOptionsDto {
   @StringFieldOptional()

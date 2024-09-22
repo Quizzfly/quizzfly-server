@@ -1,4 +1,4 @@
-import validateConfig from '@/utils/validate-config';
+import validateConfig from '@core/utils/validate-config';
 import { registerAs } from '@nestjs/config';
 import {
   IsBoolean,
