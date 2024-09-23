@@ -1,7 +1,7 @@
 import { Uuid } from '@common/types/common.type';
+import { ROLE } from '@core/constants/entity.enum';
 import { hashPassword as hashPass } from '@core/utils/password.util';
 import { AbstractEntity } from '@database/entities/abstract.entity';
-import { PostEntity } from '@modules/post/entities/post.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -11,7 +11,6 @@ import {
   Index,
   OneToMany,
   PrimaryGeneratedColumn,
-  Relation,
 } from 'typeorm';
 import { SessionEntity } from './session.entity';
 
@@ -25,12 +24,15 @@ export class UserEntity extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_user_id' })
   id!: Uuid;
 
-  @Column()
+  @Column({
+    length: 50,
+    nullable: true,
+  })
   @Index('UQ_user_username', {
     where: '"deleted_at" IS NULL',
     unique: true,
   })
-  username!: string;
+  username: string;
 
   @Column()
   @Index('UQ_user_email', { where: '"deleted_at" IS NULL', unique: true })
@@ -39,11 +41,14 @@ export class UserEntity extends AbstractEntity {
   @Column()
   password!: string;
 
-  @Column({ default: '' })
-  bio?: string;
+  @Column({ name: 'role', enum: ROLE, default: ROLE.USER })
+  role: ROLE;
 
-  @Column({ default: '' })
-  image?: string;
+  @Column({ name: 'is_active', type: 'boolean', default: true })
+  isActive!: boolean;
+
+  @Column({ name: 'is_confirmed', type: 'boolean', default: true })
+  isConfirmed!: boolean;
 
   @DeleteDateColumn({
     name: 'deleted_at',
@@ -54,9 +59,6 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany(() => SessionEntity, (session) => session.user)
   sessions?: SessionEntity[];
-
-  @OneToMany(() => PostEntity, (post) => post.user)
-  posts: Relation<PostEntity[]>;
 
   @BeforeInsert()
   @BeforeUpdate()

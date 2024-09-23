@@ -27,7 +27,7 @@
     "migration:down": "npm run typeorm migration:revert",
     "migration:show": "npm run typeorm migration:show",
     "migration:create": "typeorm migration:create",
-    "migration:generate": "npm typeorm migration:generate --pretty",
+    "migration:generate": "npm run typeorm migration:generate --pretty",
     "db:create": "env-cmd ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:create",
     "db:drop": "env-cmd ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:drop",
     "seed:run": "env-cmd ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run",

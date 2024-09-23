@@ -4,7 +4,6 @@ import {
   StringField,
   StringFieldOptional,
 } from '@core/decorators/field.decorators';
-import { PostResDto } from '@modules/post/dto/post.res.dto';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
@@ -20,18 +19,6 @@ export class UserResDto {
   @StringField()
   @Expose()
   email: string;
-
-  @StringFieldOptional()
-  @Expose()
-  bio?: string;
-
-  @StringField()
-  @Expose()
-  image: string;
-
-  @ClassField(() => PostResDto)
-  @Expose()
-  posts?: WrapperType<PostResDto[]>;
 
   @ClassField(() => Date)
   @Expose()

@@ -1,7 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import {
   BaseEntity,
-  Column,
   CreateDateColumn,
   DataSource,
   UpdateDateColumn,
@@ -19,14 +18,6 @@ export abstract class AbstractEntity extends BaseEntity {
   createdAt: Date;
 
   @Order(9999)
-  @Column({
-    name: 'created_by',
-    type: 'varchar',
-    nullable: false,
-  })
-  createdBy: string;
-
-  @Order(9999)
   @UpdateDateColumn({
     name: 'updated_at',
     type: 'timestamptz',
@@ -34,14 +25,6 @@ export abstract class AbstractEntity extends BaseEntity {
     nullable: false,
   })
   updatedAt: Date;
-
-  @Order(9999)
-  @Column({
-    name: 'updated_by',
-    type: 'varchar',
-    nullable: false,
-  })
-  updatedBy: string;
 
   toDto<Dto>(dtoClass: new () => Dto): Dto {
     return plainToInstance(dtoClass, this);

@@ -3,6 +3,8 @@ import { AllConfigType } from '@config/config.type';
 import { SYSTEM_USER_ID } from '@core/constants/app.constant';
 import { verifyPassword } from '@core/utils/password.util';
 import { MailService } from '@mail/mail.service';
+import { SessionEntity } from '@modules/user/entities/session.entity';
+import { UserEntity } from '@modules/user/entities/user.entity';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { ConfigService } from '@nestjs/config';
@@ -12,8 +14,6 @@ import { plainToInstance } from 'class-transformer';
 import crypto from 'crypto';
 import ms from 'ms';
 import { Repository } from 'typeorm';
-import { SessionEntity } from '../user/entities/session.entity';
-import { UserEntity } from '../user/entities/user.entity';
 import { LoginReqDto } from './dto/login.req.dto';
 import { LoginResDto } from './dto/login.res.dto';
 import { RefreshReqDto } from './dto/refresh.req.dto';
@@ -69,8 +69,6 @@ export class AuthService {
     const session = new SessionEntity({
       hash,
       userId: user.id,
-      createdBy: SYSTEM_USER_ID,
-      updatedBy: SYSTEM_USER_ID,
     });
     await session.save();
 
@@ -114,7 +112,7 @@ export class AuthService {
       .update(randomStringGenerator())
       .digest('hex');
 
-    SessionEntity.update(session.id, { hash: newHash });
+    await SessionEntity.update(session.id, { hash: newHash });
 
     return await this.createToken({
       id: user.id,

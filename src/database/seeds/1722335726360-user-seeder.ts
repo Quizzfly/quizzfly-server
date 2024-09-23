@@ -1,4 +1,4 @@
-import { SYSTEM_USER_ID } from '@core/constants/app.constant';
+import { ROLE } from '@core/constants/entity.enum';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { DataSource } from 'typeorm';
 import { Seeder, SeederFactoryManager } from 'typeorm-extension';
@@ -17,12 +17,11 @@ export class UserSeeder1722335726360 implements Seeder {
       await repository.insert(
         new UserEntity({
           username: 'admin',
-          email: 'admin@example.com',
+          email: 'admin@gmail.com',
           password: '12345678',
-          bio: "hello, i'm a backend developer",
-          image: 'https://example.com/avatar.png',
-          createdBy: SYSTEM_USER_ID,
-          updatedBy: SYSTEM_USER_ID,
+          role: ROLE.ADMIN,
+          isActive: true,
+          isConfirmed: true,
         }),
       );
     }
