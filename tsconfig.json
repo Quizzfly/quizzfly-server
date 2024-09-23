@@ -29,7 +29,7 @@
       "@core/*": ["src/core/*"],
       "@database/*": ["src/database/*"],
       "@generated/*": ["src/generated/*"],
-      "@i18n/*": ["src/database/*"],
+      "@i18n/*": ["src/i18n/*"],
       "@libs/*": ["src/libs/*"],
       "@mail/*": ["src/mail/*"],
       "@modules/*": ["src/modules/*"],

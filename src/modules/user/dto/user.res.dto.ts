@@ -1,9 +1,4 @@
-import { WrapperType } from '@common/types/types';
-import {
-  ClassField,
-  StringField,
-  StringFieldOptional,
-} from '@core/decorators/field.decorators';
+import { ClassField, StringField } from '@core/decorators/field.decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()

@@ -11,7 +11,7 @@ export class CreateUserTable1727049517058 implements MigrationInterface {
         "password" character varying NOT NULL,
         "role" character varying NOT NULL DEFAULT 'USER',
         "is_active" boolean NOT NULL DEFAULT true,
-        "is_confirmed" boolean NOT NULL DEFAULT false,
+        "is_confirmed" boolean default null,
         "deleted_at" TIMESTAMP WITH TIME ZONE,
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),

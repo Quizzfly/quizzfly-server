@@ -41,14 +41,14 @@ export class UserEntity extends AbstractEntity {
   @Column()
   password!: string;
 
-  @Column({ name: 'role', enum: ROLE, default: ROLE.USER })
-  role: ROLE;
+  @Column({ type: 'enum', name: 'role', enum: ROLE, default: ROLE.USER })
+  role?: ROLE;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
-  isActive!: boolean;
+  isActive?: boolean;
 
   @Column({ name: 'is_confirmed', type: 'boolean', default: true })
-  isConfirmed!: boolean;
+  isConfirmed?: boolean;
 
   @DeleteDateColumn({
     name: 'deleted_at',

@@ -6,6 +6,7 @@ import { TypeOrmConfigService } from '@database/typeorm-config.service';
 import mailConfig from '@mail/config/mail.config';
 import { MailModule } from '@mail/mail.module';
 import authConfig from '@modules/auth/config/auth.config';
+import { CacheModule } from '@nestjs/cache-manager';
 import { ModuleMetadata } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -75,14 +76,32 @@ function generateModulesSet() {
     useFactory: loggerFactory,
   });
 
+  const cacheModule = CacheModule.register({
+    imports: [ConfigService],
+    isGlobal: true,
+    inject: [ConfigService],
+  });
+
   const modulesSet = process.env.MODULES_SET || 'monolith';
 
   switch (modulesSet) {
     case 'monolith':
-      customModules = [dbModule, i18nModule, loggerModule, MailModule];
+      customModules = [
+        dbModule,
+        i18nModule,
+        loggerModule,
+        MailModule,
+        cacheModule,
+      ];
       break;
     case 'api':
-      customModules = [dbModule, i18nModule, loggerModule, MailModule];
+      customModules = [
+        dbModule,
+        i18nModule,
+        loggerModule,
+        MailModule,
+        cacheModule,
+      ];
       break;
     default:
       console.error(`Unsupported modules set: ${modulesSet}`);

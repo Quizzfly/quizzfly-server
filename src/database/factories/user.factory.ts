@@ -10,7 +10,8 @@ export default setSeederFactory(UserEntity, (fake) => {
   user.username = `${firstName.toLowerCase()}${lastName.toLowerCase()}`;
   user.email = fake.internet.email({ firstName, lastName });
   user.password = '12345678';
-  user.role = ROLE.ADMIN;
-
+  user.role = ROLE.USER;
+  user.isActive = true;
+  user.isConfirmed = true;
   return user;
 });

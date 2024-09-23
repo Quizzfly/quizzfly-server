@@ -1,11 +1,16 @@
 import { Branded } from '@common/types/types';
 import { AllConfigType } from '@config/config.type';
-import { SYSTEM_USER_ID } from '@core/constants/app.constant';
+import { ErrorCode } from '@core/constants/error-code.constant';
+import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
 import { MailService } from '@mail/mail.service';
 import { SessionEntity } from '@modules/user/entities/session.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -85,9 +90,23 @@ export class AuthService {
   }
 
   async register(dto: RegisterReqDto): Promise<RegisterResDto> {
-    await this.mailService.sendEmailVerification(dto.email, 'test');
+    // Check if the user already exists
+    Optional.of(
+      await this.userRepository.exists({ where: { email: dto.email } }),
+    ).throwIfExist(new ConflictException(ErrorCode.E003));
 
-    return null;
+    // Register user
+    const user = new UserEntity({
+      email: dto.email,
+      password: dto.password,
+      username: dto.email.split('@')[0],
+    });
+
+    await user.save();
+
+    return plainToInstance(RegisterResDto, {
+      userId: user.id,
+    });
   }
 
   async logout(sessionId: string): Promise<void> {
