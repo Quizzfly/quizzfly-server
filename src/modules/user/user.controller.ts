@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
