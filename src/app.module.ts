@@ -1,4 +1,4 @@
-import generateModulesSet from '@core/utils/modules-set';
+import generateModulesSet from '@/modules-set';
 import { AuthModule } from '@modules//auth/auth.module';
 import { HealthModule } from '@modules/health/health.module';
 import { HomeModule } from '@modules/home/home.module';

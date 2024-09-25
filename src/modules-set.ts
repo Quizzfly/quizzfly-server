@@ -1,6 +1,7 @@
 import appConfig from '@config/app.config';
 import { AllConfigType } from '@config/config.type';
 import { Environment } from '@core/constants/app.constant';
+import loggerFactory from '@core/utils/logger-factory';
 import databaseConfig from '@database/config/database.config';
 import { TypeOrmConfigService } from '@database/typeorm-config.service';
 import mailConfig from '@mail/config/mail.config';
@@ -19,7 +20,6 @@ import {
 import { LoggerModule } from 'nestjs-pino';
 import path from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import loggerFactory from './logger-factory';
 
 function generateModulesSet() {
   const imports: ModuleMetadata['imports'] = [
@@ -57,7 +57,7 @@ function generateModulesSet() {
           infer: true,
         }),
         loaderOptions: {
-          path: path.join(__dirname, '../../i18n/'),
+          path: path.join(__dirname, '/i18n/'),
           watch: isLocal,
         },
         typesOutputPath: path.join(

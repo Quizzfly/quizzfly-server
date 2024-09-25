@@ -26,7 +26,10 @@ export class UserSeeder1722335726360 implements Seeder {
       );
     }
 
-    const userFactory = factoryManager.get(UserEntity);
-    await userFactory.saveMany(5);
+    const countRecord = await repository.count();
+    if (countRecord === 1) {
+      const userFactory = factoryManager.get(UserEntity);
+      await userFactory.saveMany(5);
+    }
   }
 }
