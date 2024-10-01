@@ -6,15 +6,16 @@ import {
   BeforeInsert,
   BeforeUpdate,
   Column,
-  DeleteDateColumn,
   Entity,
   Index,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { SessionEntity } from './session.entity';
+import { UserInfoEntity } from './user-info.entity';
 
-@Entity('user')
+@Entity('user', { schema: 'public' })
 export class UserEntity extends AbstractEntity {
   constructor(data?: Partial<UserEntity>) {
     super();
@@ -23,16 +24,6 @@ export class UserEntity extends AbstractEntity {
 
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_user_id' })
   id!: Uuid;
-
-  @Column({
-    length: 50,
-    nullable: true,
-  })
-  @Index('UQ_user_username', {
-    where: '"deleted_at" IS NULL',
-    unique: true,
-  })
-  username: string;
 
   @Column()
   @Index('UQ_user_email', { where: '"deleted_at" IS NULL', unique: true })
@@ -44,21 +35,17 @@ export class UserEntity extends AbstractEntity {
   @Column({ type: 'enum', name: 'role', enum: ROLE, default: ROLE.USER })
   role?: ROLE;
 
-  @Column({ name: 'is_active', type: 'boolean', default: true })
+  @Column({ name: 'is_active', type: 'boolean', default: false })
   isActive?: boolean;
 
-  @Column({ name: 'is_confirmed', type: 'boolean', default: true })
+  @Column({ name: 'is_confirmed', type: 'boolean', default: false })
   isConfirmed?: boolean;
-
-  @DeleteDateColumn({
-    name: 'deleted_at',
-    type: 'timestamptz',
-    default: null,
-  })
-  deletedAt: Date;
 
   @OneToMany(() => SessionEntity, (session) => session.user)
   sessions?: SessionEntity[];
+
+  @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
+  userInfo?: UserInfoEntity;
 
   @BeforeInsert()
   @BeforeUpdate()

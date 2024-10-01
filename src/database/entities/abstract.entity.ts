@@ -3,6 +3,7 @@ import {
   BaseEntity,
   CreateDateColumn,
   DataSource,
+  DeleteDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { getOrder, Order } from '../decorators/order.decorator';
@@ -25,6 +26,15 @@ export abstract class AbstractEntity extends BaseEntity {
     nullable: false,
   })
   updatedAt: Date;
+
+  @Order(9999)
+  @DeleteDateColumn({
+    name: 'deleted_at',
+    type: 'timestamptz',
+    default: () => null,
+    nullable: true,
+  })
+  deletedAt: Date;
 
   toDto<Dto>(dtoClass: new () => Dto): Dto {
     return plainToInstance(dtoClass, this);

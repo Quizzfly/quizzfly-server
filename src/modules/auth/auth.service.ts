@@ -99,7 +99,6 @@ export class AuthService {
     const user = new UserEntity({
       email: dto.email,
       password: dto.password,
-      username: dto.email.split('@')[0],
     });
 
     await user.save();
@@ -150,10 +149,6 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException();
     }
-
-    // For force logout feature
-    // Call in-memory DB to check if the session exists in the blacklist.
-    // If it exists, throw UnauthorizedException.
   }
 
   private verifyRefreshToken(token: string): JwtRefreshPayloadType {

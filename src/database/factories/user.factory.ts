@@ -7,7 +7,6 @@ export default setSeederFactory(UserEntity, (fake) => {
 
   const firstName = fake.person.firstName();
   const lastName = fake.person.lastName();
-  user.username = `${firstName.toLowerCase()}${lastName.toLowerCase()}`;
   user.email = fake.internet.email({ firstName, lastName });
   user.password = '12345678';
   user.role = ROLE.USER;

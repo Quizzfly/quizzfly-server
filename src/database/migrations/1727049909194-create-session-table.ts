@@ -10,9 +10,11 @@ export class CreateSessionTable1727049909194 implements MigrationInterface {
         "user_id" uuid NOT NULL,
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+        "deleted_at" TIMESTAMP WITH TIME ZONE DEFAULT null,
         CONSTRAINT "PK_session_id" PRIMARY KEY ("id")
       )
     `);
+
     await queryRunner.query(`
       ALTER TABLE "session"
       ADD CONSTRAINT "FK_session_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -23,6 +25,7 @@ export class CreateSessionTable1727049909194 implements MigrationInterface {
     await queryRunner.query(`
       ALTER TABLE "session" DROP CONSTRAINT "FK_session_user"
     `);
+
     await queryRunner.query(`
       DROP TABLE "session"
     `);

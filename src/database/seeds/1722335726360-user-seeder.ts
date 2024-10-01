@@ -12,11 +12,10 @@ export class UserSeeder1722335726360 implements Seeder {
   ): Promise<any> {
     const repository = dataSource.getRepository(UserEntity);
 
-    const adminUser = await repository.findOneBy({ username: 'admin' });
+    const adminUser = await repository.findOneBy({ email: 'admin@gmail.com' });
     if (!adminUser) {
       await repository.insert(
         new UserEntity({
-          username: 'admin',
           email: 'admin@gmail.com',
           password: '12345678',
           role: ROLE.ADMIN,
