@@ -1,8 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateSessionTable1721550180313 implements MigrationInterface {
-  name = 'CreateSessionTable1721550180313';
-
+export class CreateSessionTable1727049909194 implements MigrationInterface {
+  name = 'CreateSessionTable1727049909194';
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE "session" (
@@ -10,12 +9,12 @@ export class CreateSessionTable1721550180313 implements MigrationInterface {
         "hash" character varying(255) NOT NULL,
         "user_id" uuid NOT NULL,
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-        "created_by" character varying NOT NULL,
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-        "updated_by" character varying NOT NULL,
+        "deleted_at" TIMESTAMP WITH TIME ZONE DEFAULT null,
         CONSTRAINT "PK_session_id" PRIMARY KEY ("id")
       )
     `);
+
     await queryRunner.query(`
       ALTER TABLE "session"
       ADD CONSTRAINT "FK_session_user" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -26,6 +25,7 @@ export class CreateSessionTable1721550180313 implements MigrationInterface {
     await queryRunner.query(`
       ALTER TABLE "session" DROP CONSTRAINT "FK_session_user"
     `);
+
     await queryRunner.query(`
       DROP TABLE "session"
     `);

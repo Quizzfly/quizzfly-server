@@ -1,10 +1,4 @@
-import { WrapperType } from '@common/types/types';
-import {
-  ClassField,
-  StringField,
-  StringFieldOptional,
-} from '@core/decorators/field.decorators';
-import { PostResDto } from '@modules/post/dto/post.res.dto';
+import { ClassField, StringField } from '@core/decorators/field.decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
@@ -20,18 +14,6 @@ export class UserResDto {
   @StringField()
   @Expose()
   email: string;
-
-  @StringFieldOptional()
-  @Expose()
-  bio?: string;
-
-  @StringField()
-  @Expose()
-  image: string;
-
-  @ClassField(() => PostResDto)
-  @Expose()
-  posts?: WrapperType<PostResDto[]>;
 
   @ClassField(() => Date)
   @Expose()

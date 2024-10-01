@@ -20,9 +20,18 @@ function setupSwagger(app: INestApplication) {
     )
     .addServer('https://example.com', 'Staging')
     .build();
-  const document = SwaggerModule.createDocument(app, config);
+
+  const document = SwaggerModule.createDocument(app, config, {
+    deepScanRoutes: true,
+  });
+
   SwaggerModule.setup('api-docs', app, document, {
     customSiteTitle: appName,
+    swaggerOptions: {
+      explore: true,
+      deepLinking: true,
+      persistAuthorization: true,
+    },
   });
 }
 

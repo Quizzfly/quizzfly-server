@@ -1,5 +1,4 @@
-import { CursorPaginatedDto } from '@common/dto/cursor-pagination/paginated.dto';
-import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
@@ -36,8 +35,8 @@ export class UserController {
     summary: 'Get current user',
   })
   @Get('me')
-  async getCurrentUser(@CurrentUser('id') userId: Uuid): Promise<UserResDto> {
-    return await this.userService.findOne(userId);
+  async getCurrentUser(@CurrentUser('id') userId: Uuid) {
+    return 'get current user';
   }
 
   @Post()
@@ -46,8 +45,8 @@ export class UserController {
     summary: 'Create user',
     statusCode: HttpStatus.CREATED,
   })
-  async create(@Body() createUserDto: CreateUserReqDto): Promise<UserResDto> {
-    return await this.userService.create(createUserDto);
+  async createUser(@Body() createUserDto: CreateUserReqDto) {
+    return 'create a user';
   }
 
   @Get()
@@ -56,10 +55,8 @@ export class UserController {
     summary: 'List users',
     isPaginated: true,
   })
-  async findAll(
-    @Query() reqDto: ListUserReqDto,
-  ): Promise<OffsetPaginatedDto<UserResDto>> {
-    return await this.userService.findAll(reqDto);
+  async findAllUsers(@Query() reqDto: ListUserReqDto) {
+    return 'get all user';
   }
 
   @Get('/load-more')
@@ -69,27 +66,25 @@ export class UserController {
     isPaginated: true,
     paginationType: 'cursor',
   })
-  async loadMoreUsers(
-    @Query() reqDto: LoadMoreUsersReqDto,
-  ): Promise<CursorPaginatedDto<UserResDto>> {
-    return await this.userService.loadMoreUsers(reqDto);
+  async loadMoreUsers(@Query() reqDto: LoadMoreUsersReqDto) {
+    return 'load more users';
   }
 
   @Get(':id')
   @ApiAuth({ type: UserResDto, summary: 'Find user by id' })
   @ApiParam({ name: 'id', type: 'String' })
-  async findOne(@Param('id', ParseUUIDPipe) id: Uuid): Promise<UserResDto> {
-    return await this.userService.findOne(id);
+  async findUser(@Param('id', ParseUUIDPipe) id: Uuid) {
+    return 'find one user';
   }
 
   @Patch(':id')
   @ApiAuth({ type: UserResDto, summary: 'Update user' })
   @ApiParam({ name: 'id', type: 'String' })
-  update(
+  updateUser(
     @Param('id', ParseUUIDPipe) id: Uuid,
     @Body() reqDto: UpdateUserReqDto,
   ) {
-    return this.userService.update(id, reqDto);
+    return 'update user';
   }
 
   @Delete(':id')
@@ -98,8 +93,8 @@ export class UserController {
     errorResponses: [400, 401, 403, 404, 500],
   })
   @ApiParam({ name: 'id', type: 'String' })
-  remove(@Param('id', ParseUUIDPipe) id: Uuid) {
-    return this.userService.remove(id);
+  removeUser(@Param('id', ParseUUIDPipe) id: Uuid) {
+    return 'remove user';
   }
 
   @ApiAuth()

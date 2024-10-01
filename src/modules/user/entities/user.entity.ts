@@ -1,21 +1,21 @@
 import { Uuid } from '@common/types/common.type';
+import { ROLE } from '@core/constants/entity.enum';
 import { hashPassword as hashPass } from '@core/utils/password.util';
 import { AbstractEntity } from '@database/entities/abstract.entity';
-import { PostEntity } from '@modules/post/entities/post.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
   Column,
-  DeleteDateColumn,
   Entity,
   Index,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
-  Relation,
 } from 'typeorm';
 import { SessionEntity } from './session.entity';
+import { UserInfoEntity } from './user-info.entity';
 
-@Entity('user')
+@Entity('user', { schema: 'public' })
 export class UserEntity extends AbstractEntity {
   constructor(data?: Partial<UserEntity>) {
     super();
@@ -26,37 +26,26 @@ export class UserEntity extends AbstractEntity {
   id!: Uuid;
 
   @Column()
-  @Index('UQ_user_username', {
-    where: '"deleted_at" IS NULL',
-    unique: true,
-  })
-  username!: string;
-
-  @Column()
   @Index('UQ_user_email', { where: '"deleted_at" IS NULL', unique: true })
   email!: string;
 
   @Column()
   password!: string;
 
-  @Column({ default: '' })
-  bio?: string;
+  @Column({ type: 'enum', name: 'role', enum: ROLE, default: ROLE.USER })
+  role?: ROLE;
 
-  @Column({ default: '' })
-  image?: string;
+  @Column({ name: 'is_active', type: 'boolean', default: false })
+  isActive?: boolean;
 
-  @DeleteDateColumn({
-    name: 'deleted_at',
-    type: 'timestamptz',
-    default: null,
-  })
-  deletedAt: Date;
+  @Column({ name: 'is_confirmed', type: 'boolean', default: false })
+  isConfirmed?: boolean;
 
   @OneToMany(() => SessionEntity, (session) => session.user)
   sessions?: SessionEntity[];
 
-  @OneToMany(() => PostEntity, (post) => post.user)
-  posts: Relation<PostEntity[]>;
+  @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
+  userInfo?: UserInfoEntity;
 
   @BeforeInsert()
   @BeforeUpdate()

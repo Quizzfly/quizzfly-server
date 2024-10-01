@@ -22,13 +22,16 @@ export class AuthController {
     type: LoginResDto,
     summary: 'Sign in',
   })
-  @Post('email/login')
+  @Post('login')
   async signIn(@Body() userLogin: LoginReqDto): Promise<LoginResDto> {
     return await this.authService.signIn(userLogin);
   }
 
-  @ApiPublic()
-  @Post('email/register')
+  @ApiPublic({
+    type: RegisterResDto,
+    summary: 'Register',
+  })
+  @Post('register')
   async register(@Body() dto: RegisterReqDto): Promise<RegisterResDto> {
     return await this.authService.register(dto);
   }

@@ -1,9 +1,9 @@
 import { plainToInstance } from 'class-transformer';
 import {
   BaseEntity,
-  Column,
   CreateDateColumn,
   DataSource,
+  DeleteDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { getOrder, Order } from '../decorators/order.decorator';
@@ -19,14 +19,6 @@ export abstract class AbstractEntity extends BaseEntity {
   createdAt: Date;
 
   @Order(9999)
-  @Column({
-    name: 'created_by',
-    type: 'varchar',
-    nullable: false,
-  })
-  createdBy: string;
-
-  @Order(9999)
   @UpdateDateColumn({
     name: 'updated_at',
     type: 'timestamptz',
@@ -36,12 +28,13 @@ export abstract class AbstractEntity extends BaseEntity {
   updatedAt: Date;
 
   @Order(9999)
-  @Column({
-    name: 'updated_by',
-    type: 'varchar',
-    nullable: false,
+  @DeleteDateColumn({
+    name: 'deleted_at',
+    type: 'timestamptz',
+    default: () => null,
+    nullable: true,
   })
-  updatedBy: string;
+  deletedAt: Date;
 
   toDto<Dto>(dtoClass: new () => Dto): Dto {
     return plainToInstance(dtoClass, this);

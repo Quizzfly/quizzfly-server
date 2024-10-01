@@ -12,7 +12,7 @@ FROM base As development
 WORKDIR /app
 RUN chown -R node:node /app
 
-COPY --chown=node:node package*.json npm-lock.yaml ./
+COPY --chown=node:node package*.json ./
 
 # Install all dependencies (including devDependencies)
 RUN npm install
@@ -30,14 +30,14 @@ USER node
 FROM base AS builder
 WORKDIR /app
 
-COPY --chown=node:node package*.json npm-lock.yaml ./
+COPY --chown=node:node package*.json ./
 COPY --chown=node:node --from=development /app/node_modules ./node_modules
 COPY --chown=node:node --from=development /app/src ./src
 COPY --chown=node:node --from=development /app/tsconfig.json ./tsconfig.json
 COPY --chown=node:node --from=development /app/tsconfig.build.json ./tsconfig.build.json
 COPY --chown=node:node --from=development /app/nest-cli.json ./nest-cli.json
 
-RUN npm build
+RUN npm run build
 
 # Removes unnecessary packages adn re-install only production dependencies
 ENV NODE_ENV production

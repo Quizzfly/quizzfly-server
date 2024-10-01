@@ -1,9 +1,16 @@
 import { Branded } from '@common/types/types';
 import { AllConfigType } from '@config/config.type';
-import { SYSTEM_USER_ID } from '@core/constants/app.constant';
+import { ErrorCode } from '@core/constants/error-code.constant';
+import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
 import { MailService } from '@mail/mail.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { SessionEntity } from '@modules/user/entities/session.entity';
+import { UserEntity } from '@modules/user/entities/user.entity';
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -12,8 +19,6 @@ import { plainToInstance } from 'class-transformer';
 import crypto from 'crypto';
 import ms from 'ms';
 import { Repository } from 'typeorm';
-import { SessionEntity } from '../user/entities/session.entity';
-import { UserEntity } from '../user/entities/user.entity';
 import { LoginReqDto } from './dto/login.req.dto';
 import { LoginResDto } from './dto/login.res.dto';
 import { RefreshReqDto } from './dto/refresh.req.dto';
@@ -69,8 +74,6 @@ export class AuthService {
     const session = new SessionEntity({
       hash,
       userId: user.id,
-      createdBy: SYSTEM_USER_ID,
-      updatedBy: SYSTEM_USER_ID,
     });
     await session.save();
 
@@ -87,9 +90,22 @@ export class AuthService {
   }
 
   async register(dto: RegisterReqDto): Promise<RegisterResDto> {
-    await this.mailService.sendEmailVerification(dto.email, 'test');
+    // Check if the user already exists
+    Optional.of(
+      await this.userRepository.exists({ where: { email: dto.email } }),
+    ).throwIfExist(new ConflictException(ErrorCode.E003));
 
-    return null;
+    // Register user
+    const user = new UserEntity({
+      email: dto.email,
+      password: dto.password,
+    });
+
+    await user.save();
+
+    return plainToInstance(RegisterResDto, {
+      userId: user.id,
+    });
   }
 
   async logout(sessionId: string): Promise<void> {
@@ -114,7 +130,7 @@ export class AuthService {
       .update(randomStringGenerator())
       .digest('hex');
 
-    SessionEntity.update(session.id, { hash: newHash });
+    await SessionEntity.update(session.id, { hash: newHash });
 
     return await this.createToken({
       id: user.id,
@@ -133,10 +149,6 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException();
     }
-
-    // For force logout feature
-    // Call in-memory DB to check if the session exists in the blacklist.
-    // If it exists, throw UnauthorizedException.
   }
 
   private verifyRefreshToken(token: string): JwtRefreshPayloadType {
