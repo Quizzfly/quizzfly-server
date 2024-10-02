@@ -1,9 +1,11 @@
-import { Branded } from '@common/types/types';
 import { AllConfigType } from '@config/config.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
 import { MailService } from '@mail/mail.service';
+import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
+import { JwtRefreshPayloadType } from '@modules/auth/types/jwt-refresh-payload.type';
+import { Token } from '@modules/auth/types/token.type';
 import { SessionEntity } from '@modules/user/entities/session.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
@@ -19,23 +21,12 @@ import { plainToInstance } from 'class-transformer';
 import crypto from 'crypto';
 import ms from 'ms';
 import { Repository } from 'typeorm';
-import { LoginReqDto } from './dto/login.req.dto';
-import { LoginResDto } from './dto/login.res.dto';
-import { RefreshReqDto } from './dto/refresh.req.dto';
-import { RefreshResDto } from './dto/refresh.res.dto';
-import { RegisterReqDto } from './dto/register.req.dto';
-import { RegisterResDto } from './dto/register.res.dto';
-import { JwtPayloadType } from './types/jwt-payload.type';
-import { JwtRefreshPayloadType } from './types/jwt-refresh-payload.type';
-
-type Token = Branded<
-  {
-    accessToken: string;
-    refreshToken: string;
-    tokenExpires: number;
-  },
-  'token'
->;
+import { LoginReqDto } from './dto/request/login.req.dto';
+import { RefreshReqDto } from './dto/request/refresh.req.dto';
+import { RegisterReqDto } from './dto/request/register.req.dto';
+import { LoginResDto } from './dto/response/login.res.dto';
+import { RefreshResDto } from './dto/response/refresh.res.dto';
+import { RegisterResDto } from './dto/response/register.res.dto';
 
 @Injectable()
 export class AuthService {
@@ -93,7 +84,7 @@ export class AuthService {
     // Check if the user already exists
     Optional.of(
       await this.userRepository.exists({ where: { email: dto.email } }),
-    ).throwIfExist(new ConflictException(ErrorCode.E003));
+    ).throwIfExist(new ConflictException(ErrorCode.E001));
 
     // Register user
     const user = new UserEntity({
