@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     env_file:
-      - .env.docker
+      - .env
     ports:
       - "3000:3000"
     networks:
@@ -20,7 +20,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
-      - .env.docker
+      - .env
     environment:
       POSTGRES_DB: quizzfly
       POSTGRES_USER: postgres
