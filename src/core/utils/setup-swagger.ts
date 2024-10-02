@@ -9,7 +9,7 @@ function setupSwagger(app: INestApplication) {
 
   const config = new DocumentBuilder()
     .setTitle(appName)
-    .setDescription('A boilerplate project')
+    .setDescription('Quizzfly Api')
     .setVersion('1.0')
     .setContact('Company Name', 'https://example.com', 'contact@company.com')
     .addBearerAuth()
@@ -18,7 +18,7 @@ function setupSwagger(app: INestApplication) {
       configService.getOrThrow('app.url', { infer: true }),
       'Development',
     )
-    .addServer('https://example.com', 'Staging')
+    .addServer('https://api.quizzfly.site', 'Production')
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {

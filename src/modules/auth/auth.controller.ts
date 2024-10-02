@@ -3,12 +3,12 @@ import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginReqDto } from './dto/login.req.dto';
-import { LoginResDto } from './dto/login.res.dto';
-import { RefreshReqDto } from './dto/refresh.req.dto';
-import { RefreshResDto } from './dto/refresh.res.dto';
-import { RegisterReqDto } from './dto/register.req.dto';
-import { RegisterResDto } from './dto/register.res.dto';
+import { LoginReqDto } from './dto/request/login.req.dto';
+import { RefreshReqDto } from './dto/request/refresh.req.dto';
+import { RegisterReqDto } from './dto/request/register.req.dto';
+import { LoginResDto } from './dto/response/login.res.dto';
+import { RefreshResDto } from './dto/response/refresh.res.dto';
+import { RegisterResDto } from './dto/response/register.res.dto';
 
 @ApiTags('auth')
 @Controller({
