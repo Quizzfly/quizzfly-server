@@ -1,13 +1,13 @@
 import { Uuid } from '@common/types/common.type';
-import { ErrorCode } from '@core/constants/error-code.constant';
-import { ValidationException } from '@core/exceptions/validation.exception';
-import { Optional } from '@core/utils/optional';
-import { CreateUserReqDto } from '@modules/user/dto/request/create-user.req.dto';
+import { CreateUserDto } from '@modules/user/dto/request/create-user.req.dto';
+import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
+import { UserResDto } from '@modules/user/dto/response/user.res.dto';
 import { UserInfoEntity } from '@modules/user/entities/user-info.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { UserInfoRepository } from '@modules/user/repositories/user-info.repository';
 import { UserRepository } from '@modules/user/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UserService {
@@ -18,14 +18,8 @@ export class UserService {
     private readonly userInfoRepository: UserInfoRepository,
   ) {}
 
-  async create(dto: CreateUserReqDto): Promise<UserEntity> {
+  async create(dto: CreateUserDto): Promise<UserEntity> {
     const { email, password } = dto;
-    Optional.of(
-      await this.userRepository.findOne({
-        where: { email },
-      }),
-    ).throwIfPresent(new ValidationException(ErrorCode.E001));
-
     const newUser = new UserEntity({
       email,
       password,
@@ -45,7 +39,17 @@ export class UserService {
 
   async findById(id: Uuid) {
     const user = await this.userRepository.findOneByOrFail({ id });
-    return user;
+    return plainToInstance(UserResDto, user);
+  }
+
+  async getUserInfo(userId: Uuid) {
+    const userInfo = await this.userRepository.getUserInfo(userId);
+    return userInfo.toDto(UserResDto);
+  }
+
+  async updateUserInfo(userId: Uuid, dto: UpdateUserInfoDto) {
+    await this.userInfoRepository.updateUserInfo(userId, dto);
+    return this.getUserInfo(userId);
   }
 
   async findOneByCondition(condition: any) {
