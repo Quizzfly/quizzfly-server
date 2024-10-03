@@ -2,6 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { ROLE } from '@core/constants/entity.enum';
 import { hashPassword as hashPass } from '@core/utils/password.util';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { SessionEntity } from '@modules/session/entities/session.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -12,7 +13,6 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { SessionEntity } from './session.entity';
 import { UserInfoEntity } from './user-info.entity';
 
 @Entity('user', { schema: 'public' })

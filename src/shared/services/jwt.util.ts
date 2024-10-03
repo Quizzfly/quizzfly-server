@@ -1,26 +1,31 @@
 import { AllConfigType } from '@config/config.type';
+import { ErrorCode } from '@core/constants/error-code.constant';
 import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
 import { JwtRefreshPayloadType } from '@modules/auth/types/jwt-refresh-payload.type';
 import { Token } from '@modules/auth/types/token.type';
-import { UnauthorizedException } from '@nestjs/common';
+import { Global, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import ms from 'ms';
 
+@Global()
 export class JwtUtil {
   constructor(
     private readonly configService: ConfigService<AllConfigType>,
     private readonly jwtService: JwtService,
   ) {}
 
-  verifyAccessToken(token: string): JwtPayloadType {
+  async verifyAccessToken(token: string): Promise<JwtPayloadType> {
     try {
-      return this.jwtService.verify(token, {
+      const payload = this.jwtService.verify(token, {
         secret: this.configService.getOrThrow('auth.secret', { infer: true }),
       });
+      return payload;
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(ErrorCode.A004);
     }
+
+    // Force logout if the session is in the blacklist
   }
 
   verifyRefreshToken(token: string): JwtRefreshPayloadType {
@@ -31,7 +36,7 @@ export class JwtUtil {
         }),
       });
     } catch {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(ErrorCode.A006);
     }
   }
 

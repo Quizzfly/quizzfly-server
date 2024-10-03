@@ -3,7 +3,6 @@ import { GlobalExceptionFilter } from '@core/filters/global-exception.filter';
 import { AuthGuard } from '@core/guards/auth.guard';
 import { CamelToSnakeInterceptor } from '@core/interceptors/camel-to-snake.interceptor';
 import setupSwagger from '@core/utils/setup-swagger';
-import { AuthService } from '@modules/auth/auth.service';
 import {
   ClassSerializerInterceptor,
   HttpStatus,
@@ -15,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
+import { JwtUtil } from '@shared/services/jwt.util';
 import compression from 'compression';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
@@ -66,7 +66,7 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
-  app.useGlobalGuards(new AuthGuard(reflector, app.get(AuthService)));
+  app.useGlobalGuards(new AuthGuard(reflector, app.get(JwtUtil)));
   app.useGlobalFilters(new GlobalExceptionFilter(configService));
   app.useGlobalPipes(
     new ValidationPipe({

@@ -1,4 +1,10 @@
 import { UserEntity } from '@modules/user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { Injectable } from '@nestjs/common';
+import { DataSource, Repository } from 'typeorm';
 
-export class UserRepository extends Repository<UserEntity> {}
+@Injectable()
+export class UserRepository extends Repository<UserEntity> {
+  constructor(private readonly dataSource: DataSource) {
+    super(UserEntity, dataSource.createEntityManager());
+  }
+}

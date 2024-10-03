@@ -2,8 +2,8 @@ import { Uuid } from '@/common/types/common.type';
 import { Test, TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { CreateUserReqDto } from './dto/create-user.req.dto';
-import { UserResDto } from './dto/user.res.dto';
+import { CreateUserReqDto } from './dto/request/create-user.req.dto';
+import { UserResDto } from './dto/response/user.res.dto';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 

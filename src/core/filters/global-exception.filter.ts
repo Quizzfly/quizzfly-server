@@ -36,7 +36,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     this.i18n = request.i18nContext;
     this.debug = this.configService.getOrThrow('app.debug', { infer: true });
 
-    console.log(this.i18n);
     let error: ErrorDto;
 
     if (exception instanceof UnprocessableEntityException) {
