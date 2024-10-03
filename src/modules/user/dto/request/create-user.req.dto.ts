@@ -4,7 +4,7 @@ import {
   StringFieldOptional,
 } from '@core/decorators/field.decorators';
 
-export class CreateUserReqDto {
+export class CreateUserDto {
   @StringFieldOptional()
   readonly name?: string;
 

@@ -58,7 +58,7 @@ export class AuthController {
 
   @ApiPublic({
     type: RegisterResDto,
-    summary: 'Register',
+    summary: 'Register for user',
   })
   @Post('register')
   async register(@Body() dto: RegisterReqDto): Promise<RegisterResDto> {
@@ -66,7 +66,7 @@ export class AuthController {
   }
 
   @ApiAuth({
-    summary: 'Logout',
+    summary: 'Logout for user',
     errorResponses: [400, 401, 403, 500],
   })
   @Post('logout')
@@ -76,7 +76,7 @@ export class AuthController {
 
   @ApiPublic({
     type: RefreshResDto,
-    summary: 'Refresh token',
+    summary: 'Refresh token for user',
   })
   @Post('refresh')
   async refresh(@Body() dto: RefreshReqDto): Promise<RefreshResDto> {

@@ -1,5 +1,6 @@
 import { IS_AUTH_OPTIONAL, IS_PUBLIC } from '@core/constants/app.constant';
 import { ErrorCode } from '@core/constants/error-code.constant';
+import { JwtUtil } from '@core/utils/jwt.util';
 import {
   CanActivate,
   ExecutionContext,
@@ -7,7 +8,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtUtil } from '@shared/services/jwt.util';
 import { Request } from 'express';
 
 @Injectable()
