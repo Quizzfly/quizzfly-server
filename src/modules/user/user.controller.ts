@@ -2,6 +2,7 @@
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
+import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
 import {
   Body,
   Controller,
@@ -15,7 +16,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import { CreateUserReqDto } from './dto/request/create-user.req.dto';
+import { CreateUserDto } from './dto/request/create-user.req.dto';
 import { ListUserReqDto } from './dto/request/list-user.req.dto';
 import { LoadMoreUsersReqDto } from './dto/request/load-more-users.req.dto';
 import { UpdateUserReqDto } from './dto/request/update-user.req.dto';
@@ -36,7 +37,7 @@ export class UserController {
   })
   @Get('me')
   async getCurrentUser(@CurrentUser('id') userId: Uuid) {
-    return 'get current user';
+    return this.userService.getUserInfo(userId);
   }
 
   @Post()
@@ -45,8 +46,17 @@ export class UserController {
     summary: 'Create user',
     statusCode: HttpStatus.CREATED,
   })
-  async createUser(@Body() createUserDto: CreateUserReqDto) {
+  async createUser(@Body() createUserDto: CreateUserDto) {
     return 'create a user';
+  }
+
+  @Patch('profile/me')
+  @ApiAuth({ type: UserResDto, summary: 'Update my profile' })
+  updateMyInfo(
+    @CurrentUser('id') userId: Uuid,
+    @Body() dto: UpdateUserInfoDto,
+  ) {
+    return this.userService.updateUserInfo(userId, dto);
   }
 
   @Get()

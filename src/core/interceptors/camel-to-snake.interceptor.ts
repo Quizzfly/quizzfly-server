@@ -10,22 +10,26 @@ import { map } from 'rxjs/operators';
 @Injectable()
 export class CamelToSnakeInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    return next.handle().pipe(map((data) => this.convertToSnakeCase(data)));
+    return next.handle().pipe(map((data) => this.convertCamelToSnake(data)));
   }
 
-  private convertToSnakeCase(obj: any): any {
-    if (Array.isArray(obj)) {
-      return obj.map((item) => this.convertToSnakeCase(item));
-    } else if (obj !== null && typeof obj === 'object') {
-      return Object.keys(obj).reduce((acc, key) => {
-        const snakeKey = key.replace(
-          /[A-Z]/g,
-          (letter) => `_${letter.toLowerCase()}`,
-        );
-        acc[snakeKey] = this.convertToSnakeCase(obj[key]);
-        return acc;
-      }, {} as any);
+  private convertCamelToSnake(data: any): any {
+    if (Array.isArray(data)) {
+      return data.map((item) => this.convertCamelToSnake(item));
+    } else if (data instanceof Date) {
+      return data;
+    } else if (data !== null && typeof data === 'object') {
+      const newObj = {};
+      Object.keys(data).forEach((key) => {
+        const snakeKey = this.camelToSnake(key);
+        newObj[snakeKey] = this.convertCamelToSnake(data[key]);
+      });
+      return newObj;
     }
-    return obj;
+    return data;
+  }
+
+  private camelToSnake(key: string): string {
+    return key.replace(/([A-Z])/g, '_$1').toLowerCase();
   }
 }

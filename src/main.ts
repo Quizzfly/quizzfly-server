@@ -2,6 +2,7 @@ import { type AllConfigType } from '@config/config.type';
 import { GlobalExceptionFilter } from '@core/filters/global-exception.filter';
 import { AuthGuard } from '@core/guards/auth.guard';
 import { CamelToSnakeInterceptor } from '@core/interceptors/camel-to-snake.interceptor';
+import { JwtUtil } from '@core/utils/jwt.util';
 import setupSwagger from '@core/utils/setup-swagger';
 import {
   ClassSerializerInterceptor,
@@ -14,7 +15,6 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
-import { JwtUtil } from '@shared/services/jwt.util';
 import compression from 'compression';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';

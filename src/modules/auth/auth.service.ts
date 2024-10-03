@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { ValidationException } from '@core/exceptions/validation.exception';
+import { JwtUtil } from '@core/utils/jwt.util';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
 import { MailService } from '@mail/mail.service';
@@ -9,7 +10,6 @@ import { SessionService } from '@modules/session/session.service';
 import { UserService } from '@modules/user/user.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
-import { JwtUtil } from '@shared/services/jwt.util';
 import { plainToInstance } from 'class-transformer';
 import crypto from 'crypto';
 import { LoginReqDto } from './dto/request/login.req.dto';
