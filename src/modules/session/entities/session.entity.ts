@@ -1,5 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { UserEntity } from '@modules/user/entities/user.entity';
 import {
   Column,
   Entity,
@@ -7,7 +8,6 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
 
 @Entity('session')
 export class SessionEntity extends AbstractEntity {
@@ -32,7 +32,7 @@ export class SessionEntity extends AbstractEntity {
     name: 'user_id',
     type: 'uuid',
   })
-  userId: Uuid;
+  userId!: Uuid;
 
   @JoinColumn({
     name: 'user_id',

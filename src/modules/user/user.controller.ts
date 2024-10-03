@@ -15,11 +15,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import { CreateUserReqDto } from './dto/create-user.req.dto';
-import { ListUserReqDto } from './dto/list-user.req.dto';
-import { LoadMoreUsersReqDto } from './dto/load-more-users.req.dto';
-import { UpdateUserReqDto } from './dto/update-user.req.dto';
-import { UserResDto } from './dto/user.res.dto';
+import { CreateUserReqDto } from './dto/request/create-user.req.dto';
+import { ListUserReqDto } from './dto/request/list-user.req.dto';
+import { LoadMoreUsersReqDto } from './dto/request/load-more-users.req.dto';
+import { UpdateUserReqDto } from './dto/request/update-user.req.dto';
+import { UserResDto } from './dto/response/user.res.dto';
 import { UserService } from './user.service';
 
 @ApiTags('users')

@@ -1,13 +1,16 @@
+import { UserInfoEntity } from '@modules/user/entities/user-info.entity';
+import { UserEntity } from '@modules/user/entities/user.entity';
+import { UserInfoRepository } from '@modules/user/repositories/user-info.repository';
+import { UserRepository } from '@modules/user/repositories/user.repository';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from './entities/user.entity';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity, UserInfoEntity])],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, UserRepository, UserInfoRepository],
   exports: [UserService],
 })
 export class UserModule {}
