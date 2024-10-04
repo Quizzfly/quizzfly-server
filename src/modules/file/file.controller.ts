@@ -1,4 +1,5 @@
 import { ApiPublic } from '@core/decorators/http.decorators';
+import { FileInfoResDto } from '@modules/file/dto/file-info.res.dto';
 import { FileService } from '@modules/file/file.service';
 import {
   Controller,
@@ -17,7 +18,10 @@ import { ApiTags } from '@nestjs/swagger';
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @ApiPublic()
+  @ApiPublic({
+    type: FileInfoResDto,
+    summary: 'Upload file',
+  })
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
