@@ -1,5 +1,6 @@
+import { ErrorCode } from '@core/constants/error-code.constant';
 import { FileInfoResDto } from '@modules/file/dto/file-info.res.dto';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import bufferToStream from 'buffer-to-stream';
 import {
@@ -19,25 +20,6 @@ export class FileService {
     });
   }
 
-  uploadImages(files: Array<Express.Multer.File>): Promise<Array<string>> {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const urls: Array<string> = [];
-
-        for (const file of files) {
-          const upload = await this.uploadImageToCloudinary(file);
-          if ('secure_url' in upload) {
-            urls.push(upload.secure_url);
-          }
-        }
-
-        resolve(urls);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
   async uploadImageToCloudinary(
     file: Express.Multer.File,
   ): Promise<UploadApiResponse | UploadApiErrorResponse> {
@@ -52,8 +34,28 @@ export class FileService {
   }
 
   async handleFileUpload(file: Express.Multer.File): Promise<FileInfoResDto> {
+    if (!file) {
+      throw new BadRequestException(ErrorCode.V003);
+    }
     const cloudinaryResponse = await this.uploadImageToCloudinary(file);
     return this.toFileInfoResponse(cloudinaryResponse as UploadApiResponse);
+  }
+
+  async handleMultipleFiles(
+    files: Array<Express.Multer.File>,
+  ): Promise<Array<FileInfoResDto>> {
+    const listFileInfoResponse: Array<FileInfoResDto> = [];
+    if (!files || files.length === 0) {
+      throw new BadRequestException(ErrorCode.V003);
+    }
+    for (const file of files) {
+      const cloudinaryResponse = await this.uploadImageToCloudinary(file);
+      listFileInfoResponse.push(
+        await this.toFileInfoResponse(cloudinaryResponse as UploadApiResponse),
+      );
+    }
+
+    return listFileInfoResponse;
   }
 
   async toFileInfoResponse(cloudinaryResponse: UploadApiResponse) {
