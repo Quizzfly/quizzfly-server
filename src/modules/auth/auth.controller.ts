@@ -12,7 +12,7 @@ import { RegisterResDto } from './dto/response/register.res.dto';
 
 @ApiTags('auth')
 @Controller({
-  path: 'auth',
+  path: '',
   version: '1',
 })
 export class AuthController {
@@ -22,7 +22,7 @@ export class AuthController {
     type: LoginResDto,
     summary: 'Sign in for admin',
   })
-  @Post('login/admin')
+  @Post('admin/auth/login')
   async signInAdmin(@Body() userLogin: LoginReqDto): Promise<LoginResDto> {
     return this.authService.signInAdmin(userLogin);
   }
@@ -31,7 +31,7 @@ export class AuthController {
     summary: 'Logout for admin',
     errorResponses: [400, 401, 403, 500],
   })
-  @Post('logout/admin')
+  @Post('admin/auth/logout')
   async logoutAdmin(
     @CurrentUser('id') id: string,
     @CurrentUser('sessionId') sessionId: string,
@@ -43,7 +43,7 @@ export class AuthController {
     type: RefreshResDto,
     summary: 'Refresh token for admin',
   })
-  @Post('refresh/admin')
+  @Post('admin/auth/refresh')
   async refreshAdmin(@Body() dto: RefreshReqDto): Promise<RefreshResDto> {
     return this.authService.refreshTokenAdmin(dto);
   }
@@ -52,7 +52,7 @@ export class AuthController {
     type: LoginResDto,
     summary: 'Sign in for user',
   })
-  @Post('login')
+  @Post('auth/login')
   async signIn(@Body() userLogin: LoginReqDto): Promise<LoginResDto> {
     return this.authService.signIn(userLogin);
   }
@@ -61,7 +61,7 @@ export class AuthController {
     type: RegisterResDto,
     summary: 'Register for user',
   })
-  @Post('register')
+  @Post('auth/register')
   async register(@Body() dto: RegisterReqDto): Promise<RegisterResDto> {
     return this.authService.register(dto);
   }
@@ -70,7 +70,7 @@ export class AuthController {
     summary: 'Logout for user',
     errorResponses: [400, 401, 403, 500],
   })
-  @Post('logout')
+  @Post('auth/logout')
   async logout(@CurrentUser('sessionId') sessionId: string): Promise<void> {
     await this.authService.logout(sessionId);
   }
@@ -79,37 +79,37 @@ export class AuthController {
     type: RefreshResDto,
     summary: 'Refresh token for user',
   })
-  @Post('refresh')
+  @Post('auth/refresh')
   async refresh(@Body() dto: RefreshReqDto): Promise<RefreshResDto> {
     return this.authService.refreshToken(dto);
   }
 
   @ApiPublic()
-  @Post('forgot-password')
+  @Post('auth/forgot-password')
   async forgotPassword() {
     return 'forgot-password';
   }
 
   @ApiPublic()
-  @Post('verify/forgot-password')
+  @Post('auth/verify/forgot-password')
   async verifyForgotPassword() {
     return 'verify-forgot-password';
   }
 
   @ApiPublic()
-  @Post('reset-password')
+  @Post('auth/reset-password')
   async resetPassword() {
     return 'reset-password';
   }
 
   @ApiPublic()
-  @Post('verify/email')
+  @Post('auth/verify/email')
   async verifyEmail() {
     return 'verify-email';
   }
 
   @ApiPublic()
-  @Post('verify/email/resend')
+  @Post('auth/verify/email/resend')
   async resendVerifyEmail() {
     return 'resend-verify-email';
   }
