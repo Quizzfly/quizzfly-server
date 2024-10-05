@@ -1,6 +1,7 @@
 import { I18nTranslations } from '@/generated/i18n.generated';
 import { ErrorDetailDto } from '@common/dto/error-detail.dto';
 import { ErrorDto } from '@common/dto/error.dto';
+import { ResponseDataApi } from '@common/dto/general/response-data-api.dto';
 import { AllConfigType } from '@config/config.type';
 import { constraintErrors } from '@core/constants/constraint-errors';
 import { ErrorCode } from '@core/constants/error-code.constant';
@@ -59,7 +60,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       this.logger.debug(error);
     }
 
-    response.status(error.statusCode).json(error);
+    response.status(error.statusCode).json(ResponseDataApi.failure(error));
   }
 
   /**

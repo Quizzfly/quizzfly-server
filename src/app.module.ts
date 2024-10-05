@@ -1,4 +1,5 @@
 import { AuthModule } from '@modules//auth/auth.module';
+import { FileModule } from '@modules/file/file.module';
 import { HealthModule } from '@modules/health/health.module';
 import { HomeModule } from '@modules/home/home.module';
 import { SessionModule } from '@modules/session/session.module';
@@ -18,6 +19,7 @@ const modulesGenerate = generateModulesSet();
     UserModule,
     SessionModule,
     SharedModule,
+    FileModule,
   ],
 })
 export class AppModule {}

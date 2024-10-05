@@ -7,6 +7,7 @@ import { TypeOrmConfigService } from '@database/typeorm-config.service';
 import mailConfig from '@mail/config/mail.config';
 import { MailModule } from '@mail/mail.module';
 import authConfig from '@modules/auth/config/auth.config';
+import fileConfig from '@modules/file/config/file.config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ModuleMetadata } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -25,7 +26,7 @@ function generateModulesSet() {
   const imports: ModuleMetadata['imports'] = [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, authConfig, mailConfig],
+      load: [appConfig, databaseConfig, authConfig, mailConfig, fileConfig],
       envFilePath: ['.env'],
     }),
   ];
