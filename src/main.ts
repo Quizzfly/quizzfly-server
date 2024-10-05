@@ -23,6 +23,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
+    cors: true,
   });
 
   app.useLogger(app.get(Logger));
@@ -44,7 +45,7 @@ async function bootstrap() {
   app.enableCors({
     origin: corsOrigin,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept',
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true,
   });
   console.info('CORS Origin:', corsOrigin);
@@ -56,7 +57,7 @@ async function bootstrap() {
     configService.getOrThrow('app.apiPrefix', { infer: true }),
     {
       exclude: [
-        // { method: RequestMethod.GET, path: '/' },
+        { method: RequestMethod.GET, path: '/' },
         { method: RequestMethod.GET, path: 'health' },
       ],
     },
