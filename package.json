@@ -75,7 +75,8 @@
     "tslib": "^2.6.3",
     "typeorm": "0.3.20",
     "typeorm-extension": "^3.6.1",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "env-cmd": "^10.1.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.4.0",
@@ -97,7 +98,6 @@
     "@types/passport-local": "^1.0.38",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^10.0.0",
-    "env-cmd": "^10.1.0",
     "eslint": "^9.9.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
