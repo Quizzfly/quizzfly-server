@@ -1,4 +1,5 @@
 import { Uuid } from '@common/types/common.type';
+import { ROLE } from '@core/constants/entity.enum';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { ValidationException } from '@core/exceptions/validation.exception';
 import { JwtUtil } from '@core/utils/jwt.util';
@@ -8,7 +9,11 @@ import { MailService } from '@mail/mail.service';
 import { SessionEntity } from '@modules/session/entities/session.entity';
 import { SessionService } from '@modules/session/session.service';
 import { UserService } from '@modules/user/user.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { plainToInstance } from 'class-transformer';
 import crypto from 'crypto';
@@ -75,6 +80,9 @@ export class AuthService {
   }
 
   async logout(sessionId: Uuid | string): Promise<void> {
+    Optional.of(
+      await this.sessionService.findById(sessionId as Uuid),
+    ).throwIfNotPresent(new UnauthorizedException(ErrorCode.A002));
     await this.sessionService.deleteById(sessionId);
   }
 
@@ -103,5 +111,32 @@ export class AuthService {
       hash: newHash,
       role: user.role,
     });
+  }
+
+  async signInAdmin(dto: LoginReqDto): Promise<LoginResDto> {
+    const user = await this.userService.findOneByCondition({
+      email: dto.email,
+    });
+
+    if (user.role !== ROLE.ADMIN) {
+      throw new ForbiddenException();
+    }
+    return this.signIn(dto);
+  }
+
+  async logoutAdmin(
+    id: Uuid | string,
+    sessionId: Uuid | string,
+  ): Promise<void> {
+    const user = await this.userService.findById(id as Uuid);
+
+    if (user.role !== ROLE.ADMIN) {
+      throw new ForbiddenException();
+    }
+    await this.logout(sessionId);
+  }
+
+  async refreshTokenAdmin(dto: RefreshReqDto): Promise<RefreshResDto> {
+    return this.refreshToken(dto);
   }
 }

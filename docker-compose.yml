@@ -1,18 +1,4 @@
 services:
-  quizzfly-api:
-    image: quizzfly-api
-    container_name: quizzfly-api
-    restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    ports:
-      - "3000:3000"
-    networks:
-      - quizzfly-network
-
   db:
     image: postgres:16
     container_name: quizzfly-postgres
@@ -38,6 +24,22 @@ services:
     ports:
       - ${MAIL_CLIENT_PORT}:1080
       - ${MAIL_PORT}:1025
+    networks:
+      - quizzfly-network
+
+  quizzfly-api:
+    image: quizzfly-api
+    container_name: quizzfly-api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
     networks:
       - quizzfly-network
 

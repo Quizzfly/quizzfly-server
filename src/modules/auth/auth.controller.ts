@@ -22,29 +22,30 @@ export class AuthController {
     type: LoginResDto,
     summary: 'Sign in for admin',
   })
-  @Post('admin/login')
+  @Post('login/admin')
   async signInAdmin(@Body() userLogin: LoginReqDto): Promise<LoginResDto> {
-    return this.authService.signIn(userLogin);
+    return this.authService.signInAdmin(userLogin);
   }
 
   @ApiAuth({
     summary: 'Logout for admin',
     errorResponses: [400, 401, 403, 500],
   })
-  @Post('admin/logout')
+  @Post('logout/admin')
   async logoutAdmin(
+    @CurrentUser('id') id: string,
     @CurrentUser('sessionId') sessionId: string,
   ): Promise<void> {
-    await this.authService.logout(sessionId);
+    await this.authService.logoutAdmin(id, sessionId);
   }
 
   @ApiPublic({
     type: RefreshResDto,
     summary: 'Refresh token for admin',
   })
-  @Post('admin/refresh')
+  @Post('refresh/admin')
   async refreshAdmin(@Body() dto: RefreshReqDto): Promise<RefreshResDto> {
-    return this.authService.refreshToken(dto);
+    return this.authService.refreshTokenAdmin(dto);
   }
 
   @ApiPublic({

@@ -16,7 +16,7 @@ export class SessionService {
   ) {}
 
   async findById(id: Uuid) {
-    return this.sessionRepository.findOneOrFail({ where: { id } });
+    return this.sessionRepository.findOne({ where: { id } });
   }
 
   async create(createSessionDto: CreateSessionDto) {
