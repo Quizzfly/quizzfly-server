@@ -1,6 +1,5 @@
 import { ResponseDataApi } from '@common/dto/general/response-data-api.dto';
 import { ApiPublic } from '@core/decorators/http.decorators';
-import { FileInfoResDto } from '@modules/file/dto/file-info.res.dto';
 import { FileService } from '@modules/file/file.service';
 import {
   Controller,
@@ -10,7 +9,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('File APIs')
 @Controller({
@@ -21,10 +20,22 @@ export class FileController {
   constructor(private readonly fileService: FileService) {}
 
   @ApiPublic({
-    type: FileInfoResDto,
+    type: ResponseDataApi,
     summary: 'Upload file',
   })
   @Post('')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
     return ResponseDataApi.successWithoutMeta(
@@ -33,8 +44,23 @@ export class FileController {
   }
 
   @ApiPublic({
-    type: Array<FileInfoResDto>,
+    type: ResponseDataApi,
     summary: 'Upload multiple file',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary',
+          },
+        },
+      },
+    },
   })
   @Post('multiple')
   @UseInterceptors(FilesInterceptor('files'))
