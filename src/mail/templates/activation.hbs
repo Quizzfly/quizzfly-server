@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Welcome to Our System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .email-container {
+      max-width: 600px;
+      background-color: #fff;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+    }
+
+    .email-header {
+      background-color: #4CAF50;
+      padding: 10px;
+      text-align: center;
+      color: white;
+    }
+
+    .email-body {
+      padding: 20px;
+    }
+
+    .email-footer {
+      margin-top: 20px;
+      text-align: center;
+      color: #777;
+      font-size: 12px;
+    }
+
+    .btn {
+      display: inline-block;
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .direct-link {
+      margin-top: 10px;
+      color: #777;
+      font-size: 14px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    a.direct-link {
+      color: #3498db;
+      text-decoration: none;
+    }
+
+    a.direct-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="email-container">
+  <div class="email-header">
+    <h1>Welcome to Our System</h1>
+  </div>
+  <div class="email-body">
+    <p>Hello {{name}},</p>
+    <p>Thank you for registering with us! We're excited to have you on board.</p>
+    <p>To complete your registration, please click the link below to verify your email address:</p>
+    <p>
+      <a href="{{verificationLink}}" class="btn">Verify Email</a>
+    </p>
+    <p class="direct-link">If the button above doesn’t work, you can copy and paste the following link into your
+      browser:</p>
+    <a class="direct-link" href="{{verificationLink}}">{{verificationLink}}</a>
+    <p>If you didn’t register, please ignore this email.</p>
+  </div>
+  <div class="email-footer">
+    <p>&copy; 2024 - Quizzfly. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>

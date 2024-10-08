@@ -35,7 +35,11 @@ export class AuthService {
 
   async signIn(dto: LoginReqDto): Promise<LoginResDto> {
     const { email, password } = dto;
-    const user = await this.userService.findOneByCondition({ email });
+    const user = await this.userService.findOneByCondition({
+      email,
+      isActive: true,
+      isConfirmed: true,
+    });
 
     const isPasswordValid =
       user && (await verifyPassword(password, user.password));
@@ -65,14 +69,20 @@ export class AuthService {
   }
 
   async register(dto: RegisterReqDto): Promise<RegisterResDto> {
+    const { email, password, name } = dto;
     Optional.of(
-      await this.userService.findOneByCondition({ email: dto.email }),
+      await this.userService.findOneByCondition({ email }),
     ).throwIfPresent(new ValidationException(ErrorCode.E003));
 
     const user = await this.userService.create({
-      email: dto.email,
-      password: dto.password,
+      email,
+      password,
+      name,
     });
+
+    const token = await this.jwtUtil.createVerificationToken({ id: user.id });
+
+    await this.mailService.sendEmailVerification(email, token);
 
     return plainToInstance(RegisterResDto, {
       userId: user.id,

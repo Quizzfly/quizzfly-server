@@ -19,17 +19,19 @@ export class UserService {
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserEntity> {
-    const { email, password } = dto;
+    const { email, password, name } = dto;
     const newUser = new UserEntity({
       email,
       password,
+      isConfirmed: false,
+      isActive: false,
     });
     const savedUser = await this.userRepository.save(newUser);
 
     const newUserInfo = new UserInfoEntity({
-      username: dto.email.split('@')[0],
+      username: email.split('@')[0],
       userId: savedUser.id,
-      name: dto.name,
+      name,
     });
 
     await this.userInfoRepository.save(newUserInfo);
@@ -52,7 +54,9 @@ export class UserService {
     return this.getUserInfo(userId);
   }
 
-  async findOneByCondition(condition: any) {
+  async findOneByCondition(
+    condition: Pick<UserEntity, 'email' | 'isConfirmed' | 'isActive'>,
+  ) {
     return this.userRepository.findOne({ where: condition });
   }
 

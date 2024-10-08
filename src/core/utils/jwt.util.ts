@@ -24,8 +24,6 @@ export class JwtUtil {
     } catch {
       throw new UnauthorizedException(ErrorCode.A004);
     }
-
-    // Force logout if the session is in the blacklist
   }
 
   verifyRefreshToken(token: string): JwtRefreshPayloadType {
@@ -83,5 +81,21 @@ export class JwtUtil {
       refreshToken,
       tokenExpires,
     } as Token;
+  }
+
+  async createVerificationToken(data: { id: string }): Promise<string> {
+    return this.jwtService.signAsync(
+      {
+        id: data.id,
+      },
+      {
+        secret: this.configService.getOrThrow('auth.confirmEmailSecret', {
+          infer: true,
+        }),
+        expiresIn: this.configService.getOrThrow('auth.confirmEmailExpires', {
+          infer: true,
+        }),
+      },
+    );
   }
 }
