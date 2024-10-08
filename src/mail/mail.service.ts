@@ -1,22 +1,28 @@
+import { AllConfigType } from '@config/config.type';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  constructor(private readonly mailerService: MailerService) {}
+
+  constructor(
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService<AllConfigType>,
+  ) {}
 
   async sendEmailVerification(email: string, token: string) {
-    const url = `example.com/auth/verify-email?token=${token}`;
+    const url = `${this.configService.getOrThrow('app.clientUrl', { infer: true })}/auth/verify-email?token=${token}`;
 
     await this.mailerService
       .sendMail({
         to: email,
         subject: 'Email Verification',
-        template: 'email-verification',
+        template: 'activation',
         context: {
-          email: email,
-          url,
+          name: email.split('@')[0],
+          verificationLink: url,
         },
       })
       .catch((err) => {
