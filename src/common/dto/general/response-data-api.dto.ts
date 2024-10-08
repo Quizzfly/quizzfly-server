@@ -9,7 +9,7 @@ export class ResponseDataApi {
   data: object;
 
   @ApiProperty()
-  error: object;
+  error?: object;
 
   @ApiProperty()
   meta: object;

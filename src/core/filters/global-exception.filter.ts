@@ -1,4 +1,3 @@
-import { I18nTranslations } from '@/generated/i18n.generated';
 import { ErrorDetailDto } from '@common/dto/error-detail.dto';
 import { ErrorDto } from '@common/dto/error.dto';
 import { ResponseDataApi } from '@common/dto/general/response-data-api.dto';
@@ -6,6 +5,7 @@ import { AllConfigType } from '@config/config.type';
 import { constraintErrors } from '@core/constants/constraint-errors';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { ValidationException } from '@core/exceptions/validation.exception';
+import { I18nTranslations } from '@generated/i18n.generated';
 import {
   type ArgumentsHost,
   Catch,
