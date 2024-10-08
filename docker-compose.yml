@@ -30,7 +30,6 @@ services:
   quizzfly-api:
     image: quizzfly-api
     container_name: quizzfly-api
-    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
