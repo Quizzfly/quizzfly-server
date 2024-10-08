@@ -10,7 +10,7 @@ import { LoginResDto } from './dto/response/login.res.dto';
 import { RefreshResDto } from './dto/response/refresh.res.dto';
 import { RegisterResDto } from './dto/response/register.res.dto';
 
-@ApiTags('auth')
+@ApiTags('Auth APIs')
 @Controller({
   path: '',
   version: '1',
@@ -82,35 +82,5 @@ export class AuthController {
   @Post('auth/refresh')
   async refresh(@Body() dto: RefreshReqDto): Promise<RefreshResDto> {
     return this.authService.refreshToken(dto);
-  }
-
-  @ApiPublic()
-  @Post('auth/forgot-password')
-  async forgotPassword() {
-    return 'forgot-password';
-  }
-
-  @ApiPublic()
-  @Post('auth/verify/forgot-password')
-  async verifyForgotPassword() {
-    return 'verify-forgot-password';
-  }
-
-  @ApiPublic()
-  @Post('auth/reset-password')
-  async resetPassword() {
-    return 'reset-password';
-  }
-
-  @ApiPublic()
-  @Post('auth/verify/email')
-  async verifyEmail() {
-    return 'verify-email';
-  }
-
-  @ApiPublic()
-  @Post('auth/verify/email/resend')
-  async resendVerifyEmail() {
-    return 'resend-verify-email';
   }
 }
