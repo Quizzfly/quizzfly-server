@@ -6,7 +6,7 @@ import { UserInfoEntity } from '@modules/user/entities/user-info.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { UserInfoRepository } from '@modules/user/repositories/user-info.repository';
 import { UserRepository } from '@modules/user/repositories/user.repository';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
@@ -42,6 +42,17 @@ export class UserService {
   async findById(id: Uuid) {
     const user = await this.userRepository.findOneByOrFail({ id });
     return plainToInstance(UserResDto, user);
+  }
+
+  async findByUserId(id: Uuid) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['userInfo'],
+    });
+    if (!user) {
+      throw new NotFoundException(`User was not found`);
+    }
+    return user;
   }
 
   async getUserInfo(userId: Uuid) {

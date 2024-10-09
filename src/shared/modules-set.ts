@@ -21,6 +21,7 @@ import {
 import { LoggerModule } from 'nestjs-pino';
 import path from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { addTransactionalDataSource } from 'typeorm-transactional';
 
 function generateModulesSet() {
   const imports: ModuleMetadata['imports'] = [
@@ -39,7 +40,7 @@ function generateModulesSet() {
         throw new Error('Invalid options passed');
       }
 
-      return new DataSource(options).initialize();
+      return addTransactionalDataSource(new DataSource(options));
     },
   });
 
