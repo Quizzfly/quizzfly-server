@@ -3,8 +3,10 @@ import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly.response';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
-import { Controller, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
+import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.request';
+import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.response';
 
 @ApiTags('Quizzfly APIs')
 @Controller({
@@ -21,5 +23,27 @@ export class QuizzflyController {
   })
   async createDraftQuizzfly(@CurrentUser('id') userId: Uuid) {
     return this.quizzflyService.createDraftQuizzfly(userId);
+  }
+
+  @Put(':quizzflyId/settings')
+  @ApiAuth({
+    type: InfoDetailQuizzflyResDto,
+    summary: 'Setting quizzfly',
+  })
+  @ApiParam({
+    name: 'quizzflyId',
+    description: 'The UUID of the Quizzfly',
+    type: 'string',
+  })
+  async settingQuizzfly(@Param('quizzflyId') quizzflyId: Uuid, @CurrentUser('id') userId: Uuid, @Body() dto: SettingQuizzflyReqDto) {
+    return this.quizzflyService.settingQuizzfly(userId, quizzflyId, dto);
+  }
+
+  @Get()
+  @ApiAuth({
+    summary: 'Get my quizzfly'
+  })
+  async getMyQuizzfly(@CurrentUser('id') userId: Uuid) {
+    return this.quizzflyService.getMyQuizzfly(userId);
   }
 }
