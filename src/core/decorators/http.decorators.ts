@@ -1,9 +1,9 @@
 import { ErrorDto } from '@common/dto/error.dto';
 import {
+  applyDecorators,
   HttpCode,
   HttpStatus,
   type Type,
-  applyDecorators,
 } from '@nestjs/common';
 import {
   ApiBasicAuth,
@@ -29,6 +29,7 @@ interface IApiOptions<T extends Type<any>> {
   errorResponses?: ApiResponseType[];
   statusCode?: HttpStatus;
   isPaginated?: boolean;
+  isArray?: boolean;
   paginationType?: PaginationType;
 }
 
@@ -52,6 +53,7 @@ export const ApiPublic = (options: IApiPublicOptions = {}): MethodDecorator => {
     type: options.type,
     description: options?.description ?? 'OK',
     paginationType: options.paginationType || 'offset',
+    isArray: options.isArray ?? undefined,
   };
 
   const errorResponses = (options.errorResponses || defaultErrorResponses)?.map(
@@ -87,6 +89,7 @@ export const ApiAuth = (options: IApiAuthOptions = {}): MethodDecorator => {
     type: options.type,
     description: options?.description ?? 'OK',
     paginationType: options.paginationType || 'offset',
+    isArray: options.isArray ?? undefined,
   };
   const auths = options.auths || ['jwt'];
 
