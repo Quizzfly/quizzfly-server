@@ -1,4 +1,6 @@
 import { Uuid } from '@common/types/common.type';
+import { ErrorCode } from '@core/constants/error-code.constant';
+import { Optional } from '@core/utils/optional';
 import { CreateUserDto } from '@modules/user/dto/request/create-user.req.dto';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
 import { UserResDto } from '@modules/user/dto/response/user.res.dto';
@@ -45,14 +47,14 @@ export class UserService {
   }
 
   async findByUserId(id: Uuid) {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: ['userInfo'],
-    });
-    if (!user) {
-      throw new NotFoundException(`User was not found`);
-    }
-    return user;
+    return Optional.of(
+      await this.userRepository.findOne({
+        where: { id },
+        relations: ['userInfo'],
+      }),
+    )
+      .throwIfNotPresent(new NotFoundException(ErrorCode.E002))
+      .get();
   }
 
   async getUserInfo(userId: Uuid) {

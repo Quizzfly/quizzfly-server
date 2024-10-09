@@ -1,4 +1,4 @@
-import { StringFieldOptional } from '@core/decorators/field.decorators';
+import { BooleanFieldOptional, StringFieldOptional } from '@core/decorators/field.decorators';
 import { Expose } from 'class-transformer';
 
 export class SettingQuizzflyReqDto {
@@ -8,9 +8,9 @@ export class SettingQuizzflyReqDto {
   @StringFieldOptional()
   description?: string;
 
-  @Expose({ name: 'is_public' })
+  @BooleanFieldOptional()
   isPublic?: boolean;
 
-  @StringFieldOptional({ name: 'cover_image' })
+  @StringFieldOptional()
   coverImage?: string;
 }

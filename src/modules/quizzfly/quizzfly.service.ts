@@ -1,4 +1,6 @@
 import { Uuid } from '@common/types/common.type';
+import { ErrorCode } from '@core/constants/error-code.constant';
+import { Optional } from '@core/utils/optional';
 import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.request';
 import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.response';
 import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly.response';
@@ -42,7 +44,7 @@ export class QuizzflyService {
     const quizzfly = await this.findById(quizzflyId);
 
     if (quizzfly.userId !== userId) {
-      throw new ForbiddenException('Forbidden Error');
+      throw new ForbiddenException(ErrorCode.A009);
     }
 
     quizzfly.title = dto.title;
@@ -51,23 +53,25 @@ export class QuizzflyService {
     quizzfly.coverImage = dto.coverImage;
     await this.quizzflyRepository.save(quizzfly);
 
-    return InfoDetailQuizzflyResDto.toInfoDetailQuizzflyResponse(quizzfly);
+    return quizzfly.toDto(InfoDetailQuizzflyResDto);
   }
 
   async getMyQuizzfly(userId: Uuid) {
     const quizzflys = await this.quizzflyRepository.getMyQuizzfly(userId);
     const user = await this.userService.findByUserId(userId);
 
-    return quizzflys.map(quizzfly => InfoQuizzflyResDto.toInfoQuizzflyResponse(quizzfly, user));
+    return quizzflys.map((quizzfly) =>
+      InfoQuizzflyResDto.toInfoQuizzflyResponse(quizzfly, user),
+    );
   }
 
   async findById(quizzflyId: Uuid) {
-    const quizzfly = await this.quizzflyRepository.findOne({
-      where: { id: quizzflyId },
-    });
-    if (!quizzfly) {
-      throw new NotFoundException('Quizzfly not found');
-    }
-    return quizzfly;
+    return Optional.of(
+      await this.quizzflyRepository.findOne({
+        where: { id: quizzflyId },
+      }),
+    )
+      .throwIfNotPresent(new NotFoundException(ErrorCode.E004))
+      .get();
   }
 }

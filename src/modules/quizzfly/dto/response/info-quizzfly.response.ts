@@ -1,5 +1,5 @@
 import { Uuid } from '@common/types/common.type';
-import { StringField } from '@core/decorators/field.decorators';
+import { BooleanField, StringField } from '@core/decorators/field.decorators';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
@@ -13,6 +13,9 @@ export class InfoQuizzflyResDto {
 
   @StringField()
   coverImage: string;
+
+  @BooleanField()
+  isPublic: boolean;
 
   @StringField()
   @Expose()
@@ -38,6 +41,7 @@ export class InfoQuizzflyResDto {
     dto.coverImage = quizzflyEntity.coverImage;
     dto.quizzflyStatus = quizzflyEntity.quizzflyStatus;
     dto.createdAt = quizzflyEntity.createdAt;
+    dto.isPublic = quizzflyEntity.isPublic;
 
     dto.userId = userEntity.id;
     dto.username = userEntity.userInfo.username;
