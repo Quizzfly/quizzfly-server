@@ -1,4 +1,6 @@
 import { Uuid } from '@common/types/common.type';
+import { ErrorCode } from '@core/constants/error-code.constant';
+import { Optional } from '@core/utils/optional';
 import { CreateUserDto } from '@modules/user/dto/request/create-user.req.dto';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
 import { UserResDto } from '@modules/user/dto/response/user.res.dto';
@@ -6,7 +8,7 @@ import { UserInfoEntity } from '@modules/user/entities/user-info.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { UserInfoRepository } from '@modules/user/repositories/user-info.repository';
 import { UserRepository } from '@modules/user/repositories/user.repository';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
@@ -42,6 +44,17 @@ export class UserService {
   async findById(id: Uuid) {
     const user = await this.userRepository.findOneByOrFail({ id });
     return plainToInstance(UserResDto, user);
+  }
+
+  async findByUserId(id: Uuid) {
+    return Optional.of(
+      await this.userRepository.findOne({
+        where: { id },
+        relations: ['userInfo'],
+      }),
+    )
+      .throwIfNotPresent(new NotFoundException(ErrorCode.E002))
+      .get();
   }
 
   async getUserInfo(userId: Uuid) {

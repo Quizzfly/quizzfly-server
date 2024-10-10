@@ -1,6 +1,7 @@
 import { AuthModule } from '@modules//auth/auth.module';
 import { FileModule } from '@modules/file/file.module';
 import { HealthModule } from '@modules/health/health.module';
+import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
 import { SessionModule } from '@modules/session/session.module';
 import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
@@ -18,6 +19,7 @@ const modulesGenerate = generateModulesSet();
     SessionModule,
     SharedModule,
     FileModule,
+    QuizzflyModule,
   ],
 })
 export class AppModule {}
