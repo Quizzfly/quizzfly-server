@@ -13,7 +13,7 @@ export class MailService {
   ) {}
 
   async sendEmailVerification(email: string, token: string) {
-    const url = `${this.configService.getOrThrow('app.clientUrl', { infer: true })}/auth/verify-email?token=${token}`;
+    const url = `${this.configService.getOrThrow('app.clientUrl', { infer: true })}/register/confirm?token=${token}`;
 
     await this.mailerService
       .sendMail({
@@ -32,7 +32,7 @@ export class MailService {
   }
 
   async forgotPassword(email: string, token: string) {
-    const url = `${this.configService.getOrThrow('app.clientUrl', { infer: true })}/auth/reset-password?token=${token}`;
+    const url = `${this.configService.getOrThrow('app.clientUrl', { infer: true })}/password/reset?token=${token}`;
 
     await this.mailerService
       .sendMail({

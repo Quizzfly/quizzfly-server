@@ -44,7 +44,7 @@ export class AuthService {
     const { email, password } = dto;
     const user = await this.userService.findOneByCondition({ email });
     if (!user) {
-      throw new NotFoundException(ErrorCode.A009);
+      throw new NotFoundException(ErrorCode.A012);
     }
 
     if (forAdmin && user.role !== ROLE.ADMIN) {
@@ -151,7 +151,7 @@ export class AuthService {
       });
 
       if (!user) {
-        throw new BadRequestException(ErrorCode.A009);
+        throw new BadRequestException(ErrorCode.A012);
       }
     } else if (type === TOKEN_TYPE.FORGOT_PASSWORD) {
       payload = this.jwtUtil.verifyForgotPasswordToken(token);
@@ -163,7 +163,7 @@ export class AuthService {
       email: dto.email,
     });
     if (!user) {
-      throw new NotFoundException(ErrorCode.A009);
+      throw new NotFoundException(ErrorCode.A012);
     }
 
     if (user.isActive) {

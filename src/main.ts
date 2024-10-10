@@ -19,9 +19,12 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import compression from 'compression';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  initializeTransactionalContext();
+
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     cors: true,

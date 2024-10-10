@@ -26,8 +26,8 @@ export class ResponseInterceptor implements NestInterceptor {
 
     return {
       status: SUCCESS,
-      data: res.data ? res.data : res,
-      meta: res.meta ? res.meta : undefined,
+      data: res?.data ? res?.data : res,
+      meta: res?.meta ? res?.meta : undefined,
     };
   }
 }
