@@ -54,6 +54,11 @@ export class UserService {
     return this.getUserInfo(userId);
   }
 
+  async updateUser(userId: Uuid, dto: any) {
+    await this.userRepository.update({ id: userId }, dto);
+    return this.userRepository.findOne({ where: { id: userId } });
+  }
+
   async findOneByCondition(
     condition: Pick<UserEntity, 'email' | 'isConfirmed' | 'isActive'>,
   ) {

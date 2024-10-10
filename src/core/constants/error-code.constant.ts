@@ -21,4 +21,7 @@ export enum ErrorCode {
   A006 = 'auth.error.refresh_token_invalid',
   A007 = 'auth.error.account_locked',
   A008 = 'auth.error.account_disabled',
+  A009 = 'auth.error.account_not_registered',
+  A010 = 'auth.error.account_not_activated',
+  A011 = 'auth.error.account_already_activated',
 }
