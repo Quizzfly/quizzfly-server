@@ -15,7 +15,7 @@ export class JwtUtil {
     private readonly jwtService: JwtService,
   ) {}
 
-  async verifyAccessToken(token: string): Promise<JwtPayloadType> {
+  verifyAccessToken(token: string): JwtPayloadType {
     try {
       const payload = this.jwtService.verify(token, {
         secret: this.configService.getOrThrow('auth.secret', { infer: true }),
@@ -97,5 +97,45 @@ export class JwtUtil {
         }),
       },
     );
+  }
+
+  async createForgotPasswordToken(data: { id: string }): Promise<string> {
+    return this.jwtService.signAsync(
+      {
+        id: data.id,
+      },
+      {
+        secret: this.configService.getOrThrow('auth.forgotSecret', {
+          infer: true,
+        }),
+        expiresIn: this.configService.getOrThrow('auth.forgotExpires', {
+          infer: true,
+        }),
+      },
+    );
+  }
+
+  verifyActivateAccountToken(token: string) {
+    try {
+      return this.jwtService.verify(token, {
+        secret: this.configService.getOrThrow('auth.confirmEmailSecret', {
+          infer: true,
+        }),
+      });
+    } catch {
+      throw new UnauthorizedException(ErrorCode.A006);
+    }
+  }
+
+  verifyForgotPasswordToken(token: string) {
+    try {
+      return this.jwtService.verify(token, {
+        secret: this.configService.getOrThrow('auth.forgotSecret', {
+          infer: true,
+        }),
+      });
+    } catch {
+      throw new UnauthorizedException(ErrorCode.A006);
+    }
   }
 }

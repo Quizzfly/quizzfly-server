@@ -13,7 +13,7 @@ export class MailService {
   ) {}
 
   async sendEmailVerification(email: string, token: string) {
-    const url = `${this.configService.getOrThrow('app.clientUrl', { infer: true })}/auth/verify-email?token=${token}`;
+    const url = `${this.configService.getOrThrow('app.clientUrl', { infer: true })}/register/confirm?token=${token}`;
 
     await this.mailerService
       .sendMail({
@@ -27,6 +27,25 @@ export class MailService {
       })
       .catch((err) => {
         this.logger.error('Error sending email verification');
+        this.logger.error(err);
+      });
+  }
+
+  async forgotPassword(email: string, token: string) {
+    const url = `${this.configService.getOrThrow('app.clientUrl', { infer: true })}/password/reset?token=${token}`;
+
+    await this.mailerService
+      .sendMail({
+        to: email,
+        subject: 'Reset your password',
+        template: 'activation',
+        context: {
+          name: email.split('@')[0],
+          verificationLink: url,
+        },
+      })
+      .catch((err) => {
+        this.logger.error('Error sending email reset password');
         this.logger.error(err);
       });
   }

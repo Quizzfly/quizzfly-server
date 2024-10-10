@@ -4,9 +4,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import bufferToStream from 'buffer-to-stream';
 import {
-  v2 as cloudinary,
   UploadApiErrorResponse,
   UploadApiResponse,
+  v2 as cloudinary,
   v2,
 } from 'cloudinary';
 

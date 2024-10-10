@@ -1,5 +1,7 @@
-import { BooleanFieldOptional, StringFieldOptional } from '@core/decorators/field.decorators';
-import { Expose } from 'class-transformer';
+import {
+  BooleanFieldOptional,
+  StringFieldOptional,
+} from '@core/decorators/field.decorators';
 
 export class SettingQuizzflyReqDto {
   @StringFieldOptional()

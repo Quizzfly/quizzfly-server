@@ -46,6 +46,8 @@ export class QuizzflyController {
   @Get()
   @ApiAuth({
     summary: 'Get my quizzfly',
+    type: InfoQuizzflyResDto,
+    isArray: true,
   })
   async getMyQuizzfly(@CurrentUser('id') userId: Uuid) {
     return this.quizzflyService.getMyQuizzfly(userId);

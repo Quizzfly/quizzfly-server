@@ -1,9 +1,11 @@
 import { ErrorDto } from '@common/dto/error.dto';
+import { ROLE } from '@core/constants/entity.enum';
+import { Roles } from '@core/decorators/role.decorator';
 import {
+  applyDecorators,
   HttpCode,
   HttpStatus,
   type Type,
-  applyDecorators,
 } from '@nestjs/common';
 import {
   ApiBasicAuth,
@@ -29,6 +31,7 @@ interface IApiOptions<T extends Type<any>> {
   errorResponses?: ApiResponseType[];
   statusCode?: HttpStatus;
   isPaginated?: boolean;
+  isArray?: boolean;
   paginationType?: PaginationType;
 }
 
@@ -36,6 +39,7 @@ type IApiPublicOptions = IApiOptions<Type<any>>;
 
 interface IApiAuthOptions extends IApiOptions<Type<any>> {
   auths?: ApiAuthType[];
+  roles?: ROLE[];
 }
 
 export const ApiPublic = (options: IApiPublicOptions = {}): MethodDecorator => {
@@ -52,6 +56,7 @@ export const ApiPublic = (options: IApiPublicOptions = {}): MethodDecorator => {
     type: options.type,
     description: options?.description ?? 'OK',
     paginationType: options.paginationType || 'offset',
+    isArray: options.isArray ?? undefined,
   };
 
   const errorResponses = (options.errorResponses || defaultErrorResponses)?.map(
@@ -87,8 +92,10 @@ export const ApiAuth = (options: IApiAuthOptions = {}): MethodDecorator => {
     type: options.type,
     description: options?.description ?? 'OK',
     paginationType: options.paginationType || 'offset',
+    isArray: options.isArray ?? undefined,
   };
   const auths = options.auths || ['jwt'];
+  const roles: ROLE[] = options?.roles || [ROLE.USER];
 
   const errorResponses = (options.errorResponses || defaultErrorResponses)?.map(
     (statusCode) =>
@@ -113,6 +120,7 @@ export const ApiAuth = (options: IApiAuthOptions = {}): MethodDecorator => {
   return applyDecorators(
     ApiOperation({ summary: options?.summary }),
     HttpCode(options.statusCode || defaultStatusCode),
+    Roles(...roles),
     isPaginated
       ? ApiPaginatedResponse(ok)
       : options.statusCode === 201

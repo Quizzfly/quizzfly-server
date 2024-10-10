@@ -21,6 +21,7 @@ services:
     build:
       context: .
       dockerfile: maildev.Dockerfile
+      restart: always
     ports:
       - ${MAIL_CLIENT_PORT}:1080
       - ${MAIL_PORT}:1025

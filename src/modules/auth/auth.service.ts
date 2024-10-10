@@ -1,17 +1,21 @@
 import { Uuid } from '@common/types/common.type';
 import { ROLE } from '@core/constants/entity.enum';
 import { ErrorCode } from '@core/constants/error-code.constant';
+import { TOKEN_TYPE } from '@core/constants/token-type.enum';
 import { ValidationException } from '@core/exceptions/validation.exception';
 import { JwtUtil } from '@core/utils/jwt.util';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
 import { MailService } from '@mail/mail.service';
-import { SessionEntity } from '@modules/session/entities/session.entity';
+import { AuthResetPasswordDto } from '@modules/auth/dto/request/auth-reset-password.dto';
+import { EmailDto } from '@modules/auth/dto/request/email.dto';
+import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
 import { SessionService } from '@modules/session/session.service';
 import { UserService } from '@modules/user/user.service';
 import {
-  ForbiddenException,
+  BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
@@ -33,16 +37,25 @@ export class AuthService {
     private readonly sessionService: SessionService,
   ) {}
 
-  async signIn(dto: LoginReqDto): Promise<LoginResDto> {
+  async signIn(
+    dto: LoginReqDto,
+    forAdmin: boolean = false,
+  ): Promise<LoginResDto> {
     const { email, password } = dto;
-    const user = await this.userService.findOneByCondition({
-      email,
-      isActive: true,
-      isConfirmed: true,
-    });
+    const user = await this.userService.findOneByCondition({ email });
+    if (!user) {
+      throw new NotFoundException(ErrorCode.A012);
+    }
 
-    const isPasswordValid =
-      user && (await verifyPassword(password, user.password));
+    if (forAdmin && user.role !== ROLE.ADMIN) {
+      throw new UnauthorizedException(ErrorCode.A005);
+    }
+
+    if (!user.isActive || !user.isConfirmed) {
+      throw new BadRequestException(ErrorCode.A010);
+    }
+
+    const isPasswordValid = await verifyPassword(password, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException(ErrorCode.A001);
@@ -96,17 +109,22 @@ export class AuthService {
     await this.sessionService.deleteById(sessionId);
   }
 
-  async refreshToken(dto: RefreshReqDto): Promise<RefreshResDto> {
+  async refreshToken(
+    dto: RefreshReqDto,
+    forAdmin: boolean = false,
+  ): Promise<RefreshResDto> {
     const { sessionId, hash } = this.jwtUtil.verifyRefreshToken(
       dto.refreshToken,
     );
-    const session = await SessionEntity.findOneBy({ id: sessionId });
-
+    const session = await this.sessionService.findById(sessionId);
     if (!session || session.hash !== hash) {
       throw new UnauthorizedException(ErrorCode.A006);
     }
 
     const user = await this.userService.findById(session.userId);
+    if (forAdmin && user.role !== ROLE.ADMIN) {
+      throw new UnauthorizedException(ErrorCode.A005);
+    }
 
     const newHash = crypto
       .createHash('sha256')
@@ -123,30 +141,63 @@ export class AuthService {
     });
   }
 
-  async signInAdmin(dto: LoginReqDto): Promise<LoginResDto> {
+  async verifyEmailToken(token: string, type: TOKEN_TYPE) {
+    let payload: Omit<JwtPayloadType, 'role' | 'sessionId'>;
+    if (type === TOKEN_TYPE.ACTIVATION) {
+      payload = this.jwtUtil.verifyActivateAccountToken(token);
+      const user = await this.userService.updateUser(payload.id as Uuid, {
+        isConfirmed: true,
+        isActive: true,
+      });
+
+      if (!user) {
+        throw new BadRequestException(ErrorCode.A012);
+      }
+    } else if (type === TOKEN_TYPE.FORGOT_PASSWORD) {
+      payload = this.jwtUtil.verifyForgotPasswordToken(token);
+    }
+  }
+
+  async resendEmailActivation(dto: EmailDto) {
     const user = await this.userService.findOneByCondition({
       email: dto.email,
     });
-
-    if (user.role !== ROLE.ADMIN) {
-      throw new ForbiddenException();
+    if (!user) {
+      throw new NotFoundException(ErrorCode.A012);
     }
-    return this.signIn(dto);
+
+    if (user.isActive) {
+      throw new BadRequestException(ErrorCode.A011);
+    }
+
+    const token = await this.jwtUtil.createVerificationToken({ id: user.id });
+
+    await this.mailService.sendEmailVerification(user.email, token);
   }
 
-  async logoutAdmin(
-    id: Uuid | string,
-    sessionId: Uuid | string,
-  ): Promise<void> {
-    const user = await this.userService.findById(id as Uuid);
-
-    if (user.role !== ROLE.ADMIN) {
-      throw new ForbiddenException();
+  async forgotPassword(dto: EmailDto) {
+    const user = await this.userService.findOneByCondition({
+      email: dto.email,
+    });
+    if (!user) {
+      throw new NotFoundException(ErrorCode.E002);
     }
-    await this.logout(sessionId);
+
+    const token = await this.jwtUtil.createForgotPasswordToken({ id: user.id });
+
+    await this.mailService.forgotPassword(dto.email, token);
   }
 
-  async refreshTokenAdmin(dto: RefreshReqDto): Promise<RefreshResDto> {
-    return this.refreshToken(dto);
+  async resetPassword(dto: AuthResetPasswordDto) {
+    const payload = this.jwtUtil.verifyForgotPasswordToken(dto.token);
+    const user = await this.userService.findById(payload.id as Uuid);
+
+    if (!user) {
+      throw new BadRequestException(ErrorCode.A004);
+    }
+
+    await this.userService.updateUser(payload.id as Uuid, {
+      password: dto.password,
+    });
   }
 }

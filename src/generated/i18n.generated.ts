@@ -5,6 +5,23 @@
 import { Path } from "nestjs-i18n";
 /* prettier-ignore */
 export type I18nTranslations = {
+    "auth": {
+        "auth": {
+            "error": {
+                "invalid_credentials": string;
+                "unauthorized": string;
+                "token_expired": string;
+                "token_invalid": string;
+                "access_denied": string;
+                "refresh_token_invalid": string;
+                "account_locked": string;
+                "account_disabled": string;
+                "account_not_registered": string;
+                "account_not_activated": string;
+                "account_already_activated": string;
+            };
+        };
+    };
     "common": {
         "validation": {
             "error": string;

@@ -1,7 +1,10 @@
 import { Uuid } from '@common/types/common.type';
-import { BooleanField, DateField, StringField } from '@core/decorators/field.decorators';
+import {
+  BooleanField,
+  DateField,
+  StringField,
+} from '@core/decorators/field.decorators';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
-import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { Expose } from 'class-transformer';
 
 export class InfoDetailQuizzflyResDto {
