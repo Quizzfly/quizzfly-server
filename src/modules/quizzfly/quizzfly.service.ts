@@ -1,9 +1,10 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
-import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.request';
-import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.response';
-import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly.response';
+import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
+import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.req';
+import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.res';
+import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly.res';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { QuizzflyRepository } from '@modules/quizzfly/repository/quizzfly.repository';
@@ -73,5 +74,26 @@ export class QuizzflyService {
     )
       .throwIfNotPresent(new NotFoundException(ErrorCode.E004))
       .get();
+  }
+
+  async getDetailQuizzfly(quizzflyId: Uuid) {
+    const quizzfly = await this.findById(quizzflyId);
+    return quizzfly.toDto(InfoDetailQuizzflyResDto);
+  }
+
+  async changeThemeQuizzfly(
+    quizzflyId: Uuid,
+    userId: Uuid,
+    dto: ChangeThemeQuizzflyReqDto,
+  ) {
+    const quizzfly = await this.findById(quizzflyId);
+
+    if (quizzfly.userId !== userId) {
+      throw new ForbiddenException(ErrorCode.A009);
+    }
+
+    quizzfly.theme = dto.theme;
+    await this.quizzflyRepository.save(quizzfly);
+    return quizzfly.toDto(InfoDetailQuizzflyResDto);
   }
 }
