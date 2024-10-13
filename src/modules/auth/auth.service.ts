@@ -5,7 +5,7 @@ import { TOKEN_TYPE } from '@core/constants/token-type.enum';
 import { ValidationException } from '@core/exceptions/validation.exception';
 import { JwtUtil } from '@core/utils/jwt.util';
 import { Optional } from '@core/utils/optional';
-import { verifyPassword } from '@core/utils/password.util';
+import { hashPassword, verifyPassword } from '@core/utils/password.util';
 import { MailService } from '@mail/mail.service';
 import { AuthResetPasswordDto } from '@modules/auth/dto/request/auth-reset-password.dto';
 import { EmailDto } from '@modules/auth/dto/request/email.dto';
@@ -197,7 +197,7 @@ export class AuthService {
     }
 
     await this.userService.updateUser(payload.id as Uuid, {
-      password: dto.password,
+      password: hashPassword(dto.password),
     });
   }
 }
