@@ -197,7 +197,7 @@ export class AuthService {
     }
 
     await this.userService.updateUser(payload.id as Uuid, {
-      password: hashPassword(dto.password),
+      password: await hashPassword(dto.password),
     });
   }
 }
