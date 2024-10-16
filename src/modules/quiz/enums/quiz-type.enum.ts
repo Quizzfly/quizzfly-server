@@ -1,0 +1,4 @@
+export enum QuizType {
+  'MULTIPLE_ANSWERS' = 'MULTIPLE_ANSWERS',
+  'TRUE_FALSE' = 'TRUE_FALSE',
+}

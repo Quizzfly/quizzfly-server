@@ -1,5 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
@@ -7,6 +8,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -55,4 +57,7 @@ export class QuizzflyEntity extends AbstractEntity {
   })
   @ManyToOne('UserEntity', 'quizzflys')
   user!: UserEntity;
+
+  @OneToMany(() => QuizEntity, (quiz) => quiz.quizzfly)
+  quizzes?: QuizEntity[];
 }

@@ -1,6 +1,8 @@
 import { AuthModule } from '@modules//auth/auth.module';
+import { AnswerModule } from '@modules/answer/answer.module';
 import { FileModule } from '@modules/file/file.module';
 import { HealthModule } from '@modules/health/health.module';
+import { QuizModule } from '@modules/quiz/quiz.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
 import { SessionModule } from '@modules/session/session.module';
 import { UserModule } from '@modules/user/user.module';
@@ -20,6 +22,8 @@ const modulesGenerate = generateModulesSet();
     SharedModule,
     FileModule,
     QuizzflyModule,
+    QuizModule,
+    AnswerModule,
   ],
 })
 export class AppModule {}
