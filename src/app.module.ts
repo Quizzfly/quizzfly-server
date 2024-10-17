@@ -3,6 +3,7 @@ import { FileModule } from '@modules/file/file.module';
 import { HealthModule } from '@modules/health/health.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
 import { SessionModule } from '@modules/session/session.module';
+import { SlideModule } from '@modules/slide/slide.module';
 import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
 import generateModulesSet from '@shared/modules-set';
@@ -20,6 +21,7 @@ const modulesGenerate = generateModulesSet();
     SharedModule,
     FileModule,
     QuizzflyModule,
+    SlideModule,
   ],
 })
 export class AppModule {}

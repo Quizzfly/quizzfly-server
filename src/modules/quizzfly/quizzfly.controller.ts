@@ -82,4 +82,20 @@ export class QuizzflyController {
   ) {
     return this.quizzflyService.changeThemeQuizzfly(quizzflyId, userId, dto);
   }
+
+  @Get(':quizzflyId/questions')
+  @ApiAuth({
+    summary: 'Get list question by quizzflyId',
+  })
+  @ApiParam({
+    name: 'quizzflyId',
+    description: 'The UUID of the Quizzfly',
+    type: 'string',
+  })
+  async getQuestionsByQuizzflyId(
+    @CurrentUser('id') userId: Uuid,
+    @Param('quizzflyId') quizzflyId: Uuid,
+  ) {
+    return this.quizzflyService.getQuestionsByQuizzflyId(quizzflyId, userId);
+  }
 }

@@ -1,8 +1,9 @@
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
+import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UserResDto } from './dto/response/user.res.dto';
 import { UserService } from './user.service';
@@ -31,5 +32,14 @@ export class UserController {
     @Body() dto: UpdateUserInfoDto,
   ) {
     return this.userService.updateUserInfo(userId, dto);
+  }
+
+  @ApiAuth({ summary: 'Change password' })
+  @Post('change-password')
+  async changePassword(
+    @Body() dto: ChangePasswordReqDto,
+    @CurrentUser('id') userId: Uuid,
+  ) {
+    return this.userService.changePassword(dto, userId);
   }
 }
