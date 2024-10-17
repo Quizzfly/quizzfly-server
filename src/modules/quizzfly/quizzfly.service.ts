@@ -96,4 +96,13 @@ export class QuizzflyService {
     await this.quizzflyRepository.save(quizzfly);
     return quizzfly.toDto(InfoDetailQuizzflyResDto);
   }
+
+  async getQuestionsByQuizzflyId(quizzflyId: Uuid, userId: Uuid) {
+    const quizzfly = await this.findById(quizzflyId);
+    if (quizzfly.userId !== userId) {
+      throw new ForbiddenException(ErrorCode.A009);
+    }
+
+    return await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
+  }
 }

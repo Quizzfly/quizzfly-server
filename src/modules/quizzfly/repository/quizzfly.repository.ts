@@ -14,4 +14,12 @@ export class QuizzflyRepository extends Repository<QuizzflyEntity> {
       where: { userId: userId },
     });
   }
+
+  async getQuestionsByQuizzflyId(quizzflyId: Uuid) {
+    return this.createQueryBuilder('quizzfly')
+      .innerJoinAndSelect('quizzfly.slides', 'slides')
+      .select('slides')
+      .where('quizzfly.id = :quizzflyId', { quizzflyId })
+      .getRawMany();
+  }
 }
