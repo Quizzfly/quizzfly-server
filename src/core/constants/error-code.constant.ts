@@ -27,4 +27,5 @@ export enum ErrorCode {
   A010 = 'auth.error.account_not_activated',
   A011 = 'auth.error.account_already_activated',
   A012 = 'auth.error.account_not_registered',
+  A013 = 'auth.error.old_password_is_incorrect',
 }
