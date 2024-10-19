@@ -50,8 +50,8 @@ export class QuizzflyService {
 
     quizzfly.title = dto.title;
     quizzfly.description = dto.description;
-    quizzfly.isPublic = dto.isPublic;
-    quizzfly.coverImage = dto.coverImage;
+    quizzfly.isPublic = dto.is_public;
+    quizzfly.coverImage = dto.cover_image;
     await this.quizzflyRepository.save(quizzfly);
 
     return quizzfly.toDto(InfoDetailQuizzflyResDto);
@@ -95,5 +95,14 @@ export class QuizzflyService {
     quizzfly.theme = dto.theme;
     await this.quizzflyRepository.save(quizzfly);
     return quizzfly.toDto(InfoDetailQuizzflyResDto);
+  }
+
+  async getQuestionsByQuizzflyId(quizzflyId: Uuid, userId: Uuid) {
+    const quizzfly = await this.findById(quizzflyId);
+    if (quizzfly.userId !== userId) {
+      throw new ForbiddenException(ErrorCode.A009);
+    }
+
+    return await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
   }
 }

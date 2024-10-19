@@ -10,5 +10,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [TypeOrmModule.forFeature([QuizzflyEntity]), UserModule],
   controllers: [QuizzflyController],
   providers: [QuizzflyRepository, QuizzflyService],
+  exports: [QuizzflyService],
 })
 export class QuizzflyModule {}

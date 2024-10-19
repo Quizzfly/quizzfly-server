@@ -1,6 +1,8 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
+import { verifyPassword } from '@core/utils/password.util';
+import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
 import { CreateUserDto } from '@modules/user/dto/request/create-user.req.dto';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
 import { UserResDto } from '@modules/user/dto/response/user.res.dto';
@@ -8,7 +10,12 @@ import { UserInfoEntity } from '@modules/user/entities/user-info.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { UserInfoRepository } from '@modules/user/repositories/user-info.repository';
 import { UserRepository } from '@modules/user/repositories/user.repository';
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
@@ -85,5 +92,15 @@ export class UserService {
 
   async getUserInfoByCondition(condition: any) {
     return this.userRepository.findOne({ where: condition });
+  }
+
+  async changePassword(dto: ChangePasswordReqDto, userId: Uuid) {
+    const user = await this.findByUserId(userId);
+    if ((await verifyPassword(dto.old_password, user.password)) === false) {
+      throw new BadRequestException(ErrorCode.A013);
+    }
+
+    user.password = dto.new_password;
+    await this.userRepository.save(user);
   }
 }

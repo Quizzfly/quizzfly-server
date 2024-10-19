@@ -1,12 +1,14 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
+import { SlideEntity } from '@modules/slide/entity/slide.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -55,4 +57,7 @@ export class QuizzflyEntity extends AbstractEntity {
   })
   @ManyToOne('UserEntity', 'quizzflys')
   user!: UserEntity;
+
+  @OneToMany('SlideEntity', 'quizzfly')
+  slides?: SlideEntity[];
 }

@@ -12,6 +12,17 @@ export class QuizzflyRepository extends Repository<QuizzflyEntity> {
   async getMyQuizzfly(userId: Uuid) {
     return this.find({
       where: { userId: userId },
+      order: {
+        createdAt: 'DESC',
+      },
     });
+  }
+
+  async getQuestionsByQuizzflyId(quizzflyId: Uuid) {
+    return this.createQueryBuilder('quizzfly')
+      .innerJoinAndSelect('quizzfly.slides', 'slides')
+      .select('slides')
+      .where('quizzfly.id = :quizzflyId', { quizzflyId })
+      .getRawMany();
   }
 }
