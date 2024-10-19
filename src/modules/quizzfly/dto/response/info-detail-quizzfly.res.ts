@@ -29,6 +29,7 @@ export class InfoDetailQuizzflyResDto {
   theme: string;
 
   @BooleanField()
+  @Expose()
   isPublic: boolean;
 
   @StringField()

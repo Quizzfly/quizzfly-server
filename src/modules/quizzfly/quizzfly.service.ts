@@ -50,8 +50,8 @@ export class QuizzflyService {
 
     quizzfly.title = dto.title;
     quizzfly.description = dto.description;
-    quizzfly.isPublic = dto.isPublic;
-    quizzfly.coverImage = dto.coverImage;
+    quizzfly.isPublic = dto.is_public;
+    quizzfly.coverImage = dto.cover_image;
     await this.quizzflyRepository.save(quizzfly);
 
     return quizzfly.toDto(InfoDetailQuizzflyResDto);
