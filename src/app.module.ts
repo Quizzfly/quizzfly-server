@@ -5,6 +5,7 @@ import { HealthModule } from '@modules/health/health.module';
 import { QuizModule } from '@modules/quiz/quiz.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
 import { SessionModule } from '@modules/session/session.module';
+import { SlideModule } from '@modules/slide/slide.module';
 import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
 import generateModulesSet from '@shared/modules-set';
@@ -24,6 +25,7 @@ const modulesGenerate = generateModulesSet();
     QuizzflyModule,
     QuizModule,
     AnswerModule,
+    SlideModule,
   ],
 })
 export class AppModule {}

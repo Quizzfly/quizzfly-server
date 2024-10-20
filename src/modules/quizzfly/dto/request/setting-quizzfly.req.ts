@@ -11,8 +11,8 @@ export class SettingQuizzflyReqDto {
   description?: string;
 
   @BooleanFieldOptional()
-  isPublic?: boolean;
+  is_public?: boolean;
 
   @StringFieldOptional()
-  coverImage?: string;
+  cover_image?: string;
 }
