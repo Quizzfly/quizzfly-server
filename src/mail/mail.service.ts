@@ -49,4 +49,21 @@ export class MailService {
         this.logger.error(err);
       });
   }
+
+  async requestDeleteAccount(email: string, code: string) {
+    await this.mailerService
+      .sendMail({
+        to: email,
+        subject: 'Request delete account',
+        template: 'request-delete',
+        context: {
+          name: email.split('@')[0],
+          code: code,
+        },
+      })
+      .catch((err) => {
+        this.logger.error('Error sending email request delete account');
+        this.logger.error(err);
+      });
+  }
 }

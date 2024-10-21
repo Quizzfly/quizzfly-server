@@ -3,7 +3,15 @@ import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UserResDto } from './dto/response/user.res.dto';
 import { UserService } from './user.service';
@@ -41,5 +49,20 @@ export class UserController {
     @CurrentUser('id') userId: Uuid,
   ) {
     return this.userService.changePassword(dto, userId);
+  }
+
+  @ApiAuth({ summary: 'Request delete account' })
+  @Post('request-delete')
+  async requestDeleteAccount(@CurrentUser('id') userId: Uuid) {
+    return await this.userService.requestDeleteAccount(userId);
+  }
+
+  @ApiAuth({ summary: 'Verify delete account' })
+  @Delete('verify-delete')
+  async verifyDeleteAccount(
+    @CurrentUser('id') userId: Uuid,
+    @Query('code') code: string,
+  ) {
+    return await this.userService.verifyDeleteAccount(userId, code);
   }
 }
