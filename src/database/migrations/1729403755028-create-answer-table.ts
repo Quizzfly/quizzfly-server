@@ -7,9 +7,12 @@ export class CreateAnswerTable1729403755028 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE "answer" (
         "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
-        "content" character varying NOT NULL,
+        "content" character varying,
         "is_correct" boolean NOT NULL DEFAULT false,
         "files" jsonb NOT NULL DEFAULT '[]',
+        "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+        "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+        "deleted_at" TIMESTAMP WITH TIME ZONE DEFAULT null,
         "quiz_id" uuid NOT NULL,
         CONSTRAINT "PK_answer_id" PRIMARY KEY ("id")
       )
