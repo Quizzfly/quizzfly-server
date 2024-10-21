@@ -1,7 +1,6 @@
 import { type AllConfigType } from '@config/config.type';
 import { GlobalExceptionFilter } from '@core/filters/global-exception.filter';
 import { AuthGuard } from '@core/guards/auth.guard';
-import { CamelToSnakeInterceptor } from '@core/interceptors/camel-to-snake.interceptor';
 import { ResponseInterceptor } from '@core/interceptors/response.interceptor';
 import { JwtUtil } from '@core/utils/jwt.util';
 import setupSwagger from '@core/utils/setup-swagger';
@@ -85,7 +84,6 @@ async function bootstrap() {
   );
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(reflector),
-    new CamelToSnakeInterceptor(),
     new ResponseInterceptor(),
   );
 

@@ -1,11 +1,14 @@
+import { FileDto } from '@common/dto/file.dto';
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { QuizType } from '@modules/quiz/enums/quiz-type.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import {
   Column,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
@@ -42,10 +45,10 @@ export class QuizEntity extends AbstractEntity {
   quizType: QuizType;
 
   @Column('jsonb', { default: [] })
-  files: object[];
+  files?: FileDto[];
 
-  @Column('int')
-  no: number;
+  @Column({ name: 'prev_element_id', type: 'uuid', nullable: true })
+  prevElementId: Uuid | null;
 
   @Column({
     name: 'quizzfly_id',
@@ -55,4 +58,7 @@ export class QuizEntity extends AbstractEntity {
 
   @ManyToOne(() => QuizzflyEntity, (quizzfly) => quizzfly.quizzes)
   quizzfly: Relation<QuizzflyEntity>;
+
+  @OneToMany(() => AnswerEntity, (answer) => answer.quiz)
+  answers?: AnswerEntity[];
 }

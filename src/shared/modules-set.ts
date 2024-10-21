@@ -1,6 +1,7 @@
 import appConfig from '@config/app.config';
 import { AllConfigType } from '@config/config.type';
 import { Environment } from '@core/constants/app.constant';
+import { getEnvFilePath } from '@core/helpers';
 import loggerFactory from '@core/utils/logger-factory';
 import databaseConfig from '@database/config/database.config';
 import { TypeOrmConfigService } from '@database/typeorm-config.service';
@@ -28,7 +29,7 @@ function generateModulesSet() {
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig, databaseConfig, authConfig, mailConfig, fileConfig],
-      envFilePath: ['.env'],
+      envFilePath: getEnvFilePath(),
     }),
   ];
   let customModules: ModuleMetadata['imports'] = [];
