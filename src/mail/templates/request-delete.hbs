@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Request for Account Deletion</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .email-container {
+      max-width: 600px;
+      background-color: #fff;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+    }
+
+    .email-header {
+      background-color: #E74C3C;
+      padding: 10px;
+      text-align: center;
+      color: white;
+    }
+
+    .email-body {
+      padding: 20px;
+    }
+
+    .email-footer {
+      margin-top: 20px;
+      text-align: center;
+      color: #777;
+      font-size: 12px;
+    }
+
+    .btn {
+      display: inline-block;
+      background-color: #E74C3C;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .direct-link {
+      margin-top: 10px;
+      color: #777;
+      font-size: 14px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    a.direct-link {
+      color: #3498db;
+      text-decoration: none;
+    }
+
+    a.direct-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="email-container">
+  <div class="email-header">
+    <h1>Request for Account Deletion</h1>
+  </div>
+  <div class="email-body">
+    <p>Hello {{name}},</p>
+    <p>We have received your request to delete your account from our system.</p>
+    <p>If this was you, please confirm the deletion of your account by using the code below:</p>
+    <p><strong>Code: {{code}}</strong></p>
+    <p>If you did not make this request, please ignore this email, and your account will remain active.</p>
+  </div>
+  <div class="email-footer">
+    <p>&copy; 2024 - Quizzfly. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>
