@@ -1,3 +1,4 @@
+import redisConfig from '@libs/redis/config/redis.config';
 import appConfig from '@config/app.config';
 import { AllConfigType } from '@config/config.type';
 import { Environment } from '@core/constants/app.constant';
@@ -13,6 +14,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ModuleMetadata } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { redisStore } from 'cache-manager-ioredis-yet';
 import {
   AcceptLanguageResolver,
   HeaderResolver,
@@ -28,7 +30,14 @@ function generateModulesSet() {
   const imports: ModuleMetadata['imports'] = [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, authConfig, mailConfig, fileConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        authConfig,
+        mailConfig,
+        fileConfig,
+        redisConfig,
+      ],
       envFilePath: getEnvFilePath(),
     }),
   ];
@@ -79,8 +88,20 @@ function generateModulesSet() {
     useFactory: loggerFactory,
   });
 
-  const cacheModule = CacheModule.register({
-    imports: [ConfigService],
+  const cacheModule = CacheModule.registerAsync({
+    imports: [ConfigModule],
+    useFactory: async (configService: ConfigService<AllConfigType>) => {
+      return {
+        store: await redisStore({
+          host: configService.getOrThrow('redis.host', {
+            infer: true,
+          }),
+          port: configService.getOrThrow('redis.port', {
+            infer: true,
+          }),
+        }),
+      };
+    },
     isGlobal: true,
     inject: [ConfigService],
   });
