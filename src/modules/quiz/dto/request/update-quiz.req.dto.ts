@@ -1,4 +1,13 @@
-import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto';
-import { PartialType } from '@nestjs/swagger';
+import { FileDto } from '@common/dto/file.dto';
+import {
+  ClassFieldOptional,
+  StringFieldOptional,
+} from '@core/decorators/field.decorators';
 
-export class UpdateQuizReqDto extends PartialType(CreateQuizReqDto) {}
+export class UpdateQuizReqDto {
+  @StringFieldOptional()
+  content: string;
+
+  @ClassFieldOptional(() => FileDto, { each: true, isArray: true })
+  files?: FileDto[];
+}

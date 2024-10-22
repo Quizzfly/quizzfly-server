@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
+import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
 import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.req';
 import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.res';
@@ -8,6 +9,7 @@ import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { QuizzflyRepository } from '@modules/quizzfly/repository/quizzfly.repository';
+import { SlideEntity } from '@modules/slide/entity/slide.entity';
 import { UserService } from '@modules/user/user.service';
 import {
   ForbiddenException,
@@ -104,5 +106,11 @@ export class QuizzflyService {
     }
 
     return await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
+  }
+
+  async getLastItem(
+    quizzflyId: Uuid,
+  ): Promise<SlideEntity | QuizEntity | null> {
+    return this.quizzflyRepository.getLastItem(quizzflyId);
   }
 }

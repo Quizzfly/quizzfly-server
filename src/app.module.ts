@@ -23,9 +23,9 @@ const modulesGenerate = generateModulesSet();
     SharedModule,
     FileModule,
     QuizzflyModule,
+    SlideModule,
     QuizModule,
     AnswerModule,
-    SlideModule,
   ],
 })
 export class AppModule {}

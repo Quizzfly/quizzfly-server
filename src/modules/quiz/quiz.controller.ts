@@ -1,8 +1,11 @@
 import { Uuid } from '@common/types/common.type';
+import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
 import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto';
+import { SettingQuizReqDto } from '@modules/quiz/dto/request/setting-quiz.req.dto';
 import { UpdateQuizReqDto } from '@modules/quiz/dto/request/update-quiz.req.dto';
+import { QuizResDto } from '@modules/quiz/dto/response/quiz.res.dto';
 import {
   Body,
   Controller,
@@ -23,6 +26,7 @@ export class QuizController {
   @ApiAuth({
     summary: 'Create a quiz for a quizzfly',
     statusCode: HttpStatus.CREATED,
+    type: QuizResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -31,15 +35,17 @@ export class QuizController {
   })
   @Post('quizzfly/:quizzflyId/quizzes')
   async createQuiz(
+    @CurrentUser('id') userId: Uuid,
     @Param('quizzflyId', ValidateUuid) quizzflyId: Uuid,
     @Body() dto: CreateQuizReqDto,
   ) {
-    return this.quizService.create(dto);
+    return this.quizService.create(userId, quizzflyId, dto);
   }
 
   @ApiAuth({
     summary: 'Duplicate a quiz',
     statusCode: HttpStatus.CREATED,
+    type: QuizResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -59,6 +65,7 @@ export class QuizController {
 
   @ApiAuth({
     summary: 'Update a quiz',
+    type: QuizResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -79,6 +86,7 @@ export class QuizController {
 
   @ApiAuth({
     summary: 'Setting a quiz',
+    type: QuizResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -94,11 +102,12 @@ export class QuizController {
   settingQuiz(
     @Param('quizzflyId', ValidateUuid) quizzflyId: Uuid,
     @Param('quizId', ValidateUuid) quizId: Uuid,
-    @Body() dto: UpdateQuizReqDto,
+    @Body() dto: SettingQuizReqDto,
   ) {}
 
   @ApiAuth({
     summary: 'Setting a quiz',
+    statusCode: HttpStatus.NO_CONTENT,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -114,6 +123,5 @@ export class QuizController {
   deleteQuiz(
     @Param('quizzflyId', ValidateUuid) quizzflyId: Uuid,
     @Param('quizId', ValidateUuid) quizId: Uuid,
-    @Body() dto: UpdateQuizReqDto,
   ) {}
 }
