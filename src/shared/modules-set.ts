@@ -1,10 +1,10 @@
-import redisConfig from '@libs/redis/config/redis.config';
 import appConfig from '@config/app.config';
 import { AllConfigType } from '@config/config.type';
 import { Environment } from '@core/constants/app.constant';
 import loggerFactory from '@core/utils/logger-factory';
 import databaseConfig from '@database/config/database.config';
 import { TypeOrmConfigService } from '@database/typeorm-config.service';
+import redisConfig from '@libs/redis/config/redis.config';
 import mailConfig from '@mail/config/mail.config';
 import { MailModule } from '@mail/mail.module';
 import authConfig from '@modules/auth/config/auth.config';
