@@ -1,34 +1,28 @@
 import { Uuid } from '@common/types/common.type';
 import {
-  DateField,
-  NumberField,
+  ClassField,
   StringField,
+  StringFieldOptional,
   UUIDField,
+  UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
-import { Exclude, Expose } from 'class-transformer';
 
-@Exclude()
 export class InfoSlideResDto {
   @UUIDField()
-  @Expose()
   id: Uuid;
 
   @StringField()
-  @Expose()
   content: string;
 
-  @Expose()
+  @StringFieldOptional({ each: true })
   files: string[];
 
-  @StringField()
-  @Expose()
+  @StringField({ name: 'background_color' })
   backgroundColor: string;
 
-  @NumberField()
-  @Expose()
-  no: number;
+  @UUIDFieldOptional({ name: 'prev_element_id', nullable: true })
+  prevElementId: Uuid = null;
 
-  @DateField()
-  @Expose()
+  @ClassField(() => Date, { name: 'created_at' })
   createdAt: Date;
 }

@@ -31,36 +31,14 @@ export class QuizzflyRepository extends Repository<QuizzflyEntity> {
   async getLastItem(
     quizzflyId: Uuid,
   ): Promise<SlideEntity | QuizEntity | null> {
-    const lastItem: any = await this.dataSource
-      .createQueryBuilder()
-      .select('item.id', 'id')
-      .from((subQuery) => {
-        return subQuery
-          .select('quiz.id', 'id')
-          .from('quiz', 'quiz')
-          .where('quiz.quizzflyId = :quizzflyId', { quizzflyId })
-          .unionAll(
-            subQuery
-              .select('slide.id', 'id')
-              .from('slide', 'slide')
-              .where('slide.quizzflyId = :quizzflyId', { quizzflyId }),
-          );
-      }, 'item')
-      .where(
-        `item.id NOT IN (
-      SELECT "quiz"."prevElementId" FROM "quiz" WHERE "quizzflyId" = :quizzflyId
-      UNION ALL
-      SELECT "slide"."prevElementId" FROM "slide" WHERE "quizzflyId" = :quizzflyId
-    )`,
-        { quizzflyId },
-      )
-      .getRawOne();
-
+    const lastItem: any = await this.find({
+      where: { id: quizzflyId },
+      relations: ['quizzes', 'quizzes.answers', 'slides'],
+    });
     if (!lastItem) {
       return null;
     }
-
-    return lastItem;
+    return lastItem[0];
   }
 
   async getNextItem(quizzflyId: Uuid) {}

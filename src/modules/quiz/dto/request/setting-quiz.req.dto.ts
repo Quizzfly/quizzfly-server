@@ -1,9 +1,11 @@
 import { NumberFieldOptional } from '@core/decorators/field.decorators';
 import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto';
-import { PartialType } from '@nestjs/swagger';
+import { OmitType } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
-export class SettingQuizReqDto extends PartialType(CreateQuizReqDto) {
+export class SettingQuizReqDto extends OmitType(CreateQuizReqDto, [
+  'prevElement',
+]) {
   @Expose({ name: 'time_limit' })
   @NumberFieldOptional({ name: 'time_limit', default: 20 })
   timeLimit?: number = 20;

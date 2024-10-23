@@ -3,6 +3,6 @@ import { CreateAnswerReqDto } from '@modules/answer/dto/request/create-answer.re
 import { PartialType } from '@nestjs/swagger';
 
 export class UpdateAnswerReqDto extends PartialType(CreateAnswerReqDto) {
-  @BooleanField()
-  is_correct: boolean;
+  @BooleanField({ name: 'is_correct' })
+  isCorrect: boolean;
 }

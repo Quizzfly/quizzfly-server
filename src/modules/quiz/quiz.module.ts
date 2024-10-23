@@ -10,5 +10,6 @@ import { QuizService } from './quiz.service';
   imports: [TypeOrmModule.forFeature([QuizEntity]), QuizzflyModule],
   controllers: [QuizController],
   providers: [QuizService, QuizRepository],
+  exports: [QuizService],
 })
 export class QuizModule {}

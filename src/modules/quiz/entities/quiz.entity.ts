@@ -7,6 +7,7 @@ import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -56,6 +57,11 @@ export class QuizEntity extends AbstractEntity {
   })
   quizzflyId!: Uuid;
 
+  @JoinColumn({
+    name: 'quizzfly_id',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'FK_quizzfly_quiz',
+  })
   @ManyToOne(() => QuizzflyEntity, (quizzfly) => quizzfly.quizzes)
   quizzfly: Relation<QuizzflyEntity>;
 

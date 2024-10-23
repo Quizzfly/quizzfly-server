@@ -1,15 +1,15 @@
 import { NumberField, StringField } from '@core/decorators/field.decorators';
 
 export class LoginResDto {
-  @StringField()
+  @StringField({ name: 'user_id' })
   userId!: string;
 
-  @StringField()
+  @StringField({ name: 'access_token' })
   accessToken!: string;
 
-  @StringField()
+  @StringField({ name: 'refresh_token' })
   refreshToken!: string;
 
-  @NumberField()
+  @NumberField({ name: 'token_expires' })
   tokenExpires!: number;
 }

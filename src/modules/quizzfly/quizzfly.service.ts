@@ -72,6 +72,7 @@ export class QuizzflyService {
     return Optional.of(
       await this.quizzflyRepository.findOne({
         where: { id: quizzflyId },
+        relations: ['user'],
       }),
     )
       .throwIfNotPresent(new NotFoundException(ErrorCode.E004))

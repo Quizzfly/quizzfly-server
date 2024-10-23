@@ -55,7 +55,10 @@ export class QuizzflyController {
   }
 
   @Get(':quizzflyId')
-  @ApiPublic()
+  @ApiPublic({
+    summary: 'Get quizzfly by id',
+    type: InfoQuizzflyResDto,
+  })
   @ApiParam({
     name: 'quizzflyId',
     description: 'The UUID of the Quizzfly',

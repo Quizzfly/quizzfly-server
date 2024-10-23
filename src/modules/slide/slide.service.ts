@@ -2,6 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
+import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
 import { InfoSlideResDto } from '@modules/slide/dto/response/info-slide.res';
 import { SlideEntity } from '@modules/slide/entity/slide.entity';
@@ -21,16 +22,15 @@ export class SlideService {
   ) {}
 
   @Transactional()
-  async createSlide(userId: Uuid, quizzflyId: Uuid) {
+  async createSlide(userId: Uuid, quizzflyId: Uuid, dto: CreateSlideReqDto) {
     const quizzfly = await this.quizzflyService.findById(quizzflyId);
     if (quizzfly.userId !== userId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
 
     const slide = new SlideEntity();
-    slide.quizzfly = quizzfly;
-    await this.slideRepository.save(slide);
-
+    slide.quizzflyId = quizzflyId;
+    await slide.save();
     return slide.toDto(InfoSlideResDto);
   }
 
