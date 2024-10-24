@@ -4,6 +4,7 @@ import { FileModule } from '@modules/file/file.module';
 import { HealthModule } from '@modules/health/health.module';
 import { QuizModule } from '@modules/quiz/quiz.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
+import { RoomModule } from '@modules/room/room.module';
 import { SessionModule } from '@modules/session/session.module';
 import { SlideModule } from '@modules/slide/slide.module';
 import { UserModule } from '@modules/user/user.module';
@@ -26,6 +27,7 @@ const modulesGenerate = generateModulesSet();
     SlideModule,
     QuizModule,
     AnswerModule,
+    RoomModule,
   ],
 })
 export class AppModule {}

@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
 
-import { RedisConfig } from '@libs/redis/config/redis-config.type';
 import validateConfig from '@core/utils/validate-config';
+import { RedisConfig } from '@libs/redis/config/redis-config.type';
 import {
   IsInt,
   IsNotEmpty,
