@@ -52,6 +52,9 @@ export class UserEntity extends AbstractEntity {
   @OneToMany('RoomEntity', 'user')
   rooms?: RoomEntity[];
 
+  @OneToMany('RoomEntity', 'user')
+  rooms?: RoomEntity[];
+
   @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
   userInfo?: UserInfoEntity;
 
