@@ -70,6 +70,7 @@ export class QuizzflyService {
     return Optional.of(
       await this.quizzflyRepository.findOne({
         where: { id: quizzflyId },
+        relations: ['user'],
       }),
     )
       .throwIfNotPresent(new NotFoundException(ErrorCode.E004))
@@ -103,6 +104,33 @@ export class QuizzflyService {
       throw new ForbiddenException(ErrorCode.A009);
     }
 
-    return await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
+    const questions =
+      await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
+
+    const questionMap = new Map<any, any>();
+    questions.forEach((question: any) => {
+      questionMap.set(question.prev_element_id, question);
+    });
+    const firstQuestion = questions.find(
+      (question: any) => question.prev_element_id === null,
+    );
+
+    const orderedQuestions: any[] = [];
+    let currentQuestion = firstQuestion;
+
+    while (currentQuestion) {
+      orderedQuestions.push(currentQuestion);
+      currentQuestion = questionMap.get(currentQuestion.id);
+    }
+
+    return orderedQuestions;
+  }
+
+  async getLastQuestion(quizzflyId: Uuid) {
+    return this.quizzflyRepository.getLastQuestion(quizzflyId);
+  }
+
+  async getBehindQuestion(quizzflyId: Uuid, currentItemId: Uuid) {
+    return this.quizzflyRepository.getBehindQuestion(quizzflyId, currentItemId);
   }
 }

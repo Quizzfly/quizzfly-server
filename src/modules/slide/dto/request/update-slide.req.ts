@@ -1,4 +1,5 @@
 import { StringFieldOptional } from '@core/decorators/field.decorators';
+import { Expose } from 'class-transformer';
 
 export class UpdateSlideReqDto {
   @StringFieldOptional()
@@ -7,6 +8,7 @@ export class UpdateSlideReqDto {
   @StringFieldOptional({ each: true })
   files?: string[];
 
-  @StringFieldOptional()
+  @StringFieldOptional({ name: 'background_color' })
+  @Expose({ name: 'background_color' })
   backgroundColor?: string;
 }

@@ -2,6 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
+import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
 import { InfoSlideResDto } from '@modules/slide/dto/response/info-slide.res';
 import { SlideEntity } from '@modules/slide/entity/slide.entity';
@@ -21,16 +22,21 @@ export class SlideService {
   ) {}
 
   @Transactional()
-  async createSlide(userId: Uuid, quizzflyId: Uuid) {
+  async createSlide(userId: Uuid, quizzflyId: Uuid, dto: CreateSlideReqDto) {
     const quizzfly = await this.quizzflyService.findById(quizzflyId);
     if (quizzfly.userId !== userId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
+    const currentLastQuestion =
+      await this.quizzflyService.getLastQuestion(quizzflyId);
 
-    const slide = new SlideEntity();
-    slide.quizzfly = quizzfly;
+    const slide = new SlideEntity({
+      quizzflyId: quizzflyId,
+      content: dto.content,
+      prevElementId:
+        currentLastQuestion !== null ? currentLastQuestion.id : null,
+    });
     await this.slideRepository.save(slide);
-
     return slide.toDto(InfoSlideResDto);
   }
 
@@ -53,6 +59,19 @@ export class SlideService {
 
     slide.deletedAt = new Date();
     await this.slideRepository.save(slide);
+
+    const behindQuestion = await this.quizzflyService.getBehindQuestion(
+      quizzflyId,
+      slideId,
+    );
+    if (behindQuestion !== null) {
+      if (behindQuestion.type === 'SLIDE') {
+        await this.changePrevPointerSlide(
+          behindQuestion.id,
+          slide.prevElementId,
+        );
+      }
+    }
   }
 
   async updateSlide(
@@ -79,14 +98,32 @@ export class SlideService {
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
+    const behindQuestion = await this.quizzflyService.getBehindQuestion(
+      quizzflyId,
+      slideId,
+    );
 
     const duplicateSlide = new SlideEntity();
     duplicateSlide.content = slide.content;
     duplicateSlide.files = slide.files;
     duplicateSlide.backgroundColor = slide.backgroundColor;
     duplicateSlide.quizzfly = slide.quizzfly;
+    duplicateSlide.prevElementId = slide.id;
 
     await this.slideRepository.save(duplicateSlide);
+
+    if (behindQuestion !== null) {
+      if (behindQuestion.type === 'SLIDE') {
+        await this.changePrevPointerSlide(behindQuestion.id, duplicateSlide.id);
+      }
+    }
+
     return duplicateSlide.toDto(InfoSlideResDto);
+  }
+
+  async changePrevPointerSlide(slideId: Uuid, prevElementId: Uuid) {
+    const slide = await this.findById(slideId);
+    slide.prevElementId = prevElementId;
+    await this.slideRepository.save(slide);
   }
 }

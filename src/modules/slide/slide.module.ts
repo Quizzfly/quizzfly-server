@@ -10,5 +10,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [TypeOrmModule.forFeature([SlideEntity]), QuizzflyModule],
   controllers: [SlideController],
   providers: [SlideRepository, SlideService],
+  exports: [SlideService],
 })
 export class SlideModule {}

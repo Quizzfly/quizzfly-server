@@ -1,3 +1,4 @@
+import { FileDto } from '@common/dto/file.dto';
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
@@ -24,16 +25,16 @@ export class SlideEntity extends AbstractEntity {
   @Column()
   content: string;
 
-  @Column({ type: 'varchar', array: true })
-  files: string[];
+  @Column('jsonb', { default: [] })
+  files?: FileDto[];
 
   @Column({
     name: 'background_color',
   })
   backgroundColor: string;
 
-  @Column()
-  no: number;
+  @Column({ name: 'prev_element_id', type: 'uuid', nullable: true })
+  prevElementId: Uuid | null;
 
   @Column({
     name: 'quizzfly_id',

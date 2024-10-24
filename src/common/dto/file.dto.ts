@@ -1,7 +1,7 @@
 import { NumberField, StringField } from '@core/decorators/field.decorators';
 import { Expose } from 'class-transformer';
 
-export class FileInfoResDto {
+export class FileDto {
   @Expose({ name: 'public_id' })
   @StringField({ name: 'public_id' })
   publicId: string;

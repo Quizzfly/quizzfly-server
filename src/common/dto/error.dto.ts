@@ -5,13 +5,13 @@ export class ErrorDto {
   @ApiProperty()
   timestamp: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: 'status_code' })
   statusCode: number;
 
   @ApiProperty()
   error: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ name: 'error_code' })
   errorCode?: string;
 
   @ApiProperty()
