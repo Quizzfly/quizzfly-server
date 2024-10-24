@@ -3,6 +3,7 @@ import { ROLE } from '@core/constants/entity.enum';
 import { hashPassword as hashPass } from '@core/utils/password.util';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
+import { RoomEntity } from '@modules/room/entity/room.entity';
 import { SessionEntity } from '@modules/session/entities/session.entity';
 import {
   BeforeInsert,
@@ -47,6 +48,9 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany('QuizzflyEntity', 'user')
   quizzflys?: QuizzflyEntity[];
+
+  @OneToMany('RoomEntity', 'user')
+  rooms?: RoomEntity[];
 
   @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
   userInfo?: UserInfoEntity;

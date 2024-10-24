@@ -2,6 +2,7 @@ import { AuthModule } from '@modules//auth/auth.module';
 import { FileModule } from '@modules/file/file.module';
 import { HealthModule } from '@modules/health/health.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
+import { RoomModule } from '@modules/room/room.module';
 import { SessionModule } from '@modules/session/session.module';
 import { SlideModule } from '@modules/slide/slide.module';
 import { UserModule } from '@modules/user/user.module';
@@ -22,6 +23,7 @@ const modulesGenerate = generateModulesSet();
     FileModule,
     QuizzflyModule,
     SlideModule,
+    RoomModule,
   ],
 })
 export class AppModule {}

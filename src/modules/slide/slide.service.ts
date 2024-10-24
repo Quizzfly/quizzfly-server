@@ -75,7 +75,6 @@ export class SlideService {
   }
 
   async duplicateSlide(quizzflyId: Uuid, slideId: Uuid, userId: Uuid) {
-    console.log(slideId);
     const slide = await this.findById(slideId);
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
       throw new ForbiddenException(ErrorCode.E004);

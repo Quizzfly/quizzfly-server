@@ -1,8 +1,12 @@
-import { CacheTTL } from '@libs/redis/utils/cache-ttl.utils';
+import { CommonFunction } from '@common/common.function';
 import { Uuid } from '@common/types/common.type';
+import { CacheKey } from '@core/constants/cache.constant';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
+import { CacheTTL } from '@libs/redis/utils/cache-ttl.utils';
+import { CreateCacheKey } from '@libs/redis/utils/create-cache-key.utils';
+import { MailService } from '@mail/mail.service';
 import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
 import { CreateUserDto } from '@modules/user/dto/request/create-user.req.dto';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
@@ -20,14 +24,9 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
-import { CommonFunction } from '@common/common.function';
-import { CreateCacheKey } from '@libs/redis/utils/create-cache-key.utils';
-import { CacheKey } from '@core/constants/cache.constant';
-import { MailService } from '@mail/mail.service';
 
 @Injectable()
 export class UserService {
-
   constructor(
     private readonly userRepository: UserRepository,
     private readonly userInfoRepository: UserInfoRepository,
@@ -104,26 +103,36 @@ export class UserService {
   }
 
   async requestDeleteAccount(userId: Uuid) {
-    const isExistRequest = await this.cacheManager.get(CreateCacheKey(CacheKey.REQUEST_DELETE, userId));
-    if(isExistRequest) {
+    const isExistRequest = await this.cacheManager.get(
+      CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
+    );
+    if (isExistRequest) {
       throw new BadRequestException(ErrorCode.E006);
     }
     const user = await this.findByUserId(userId);
     const code = await CommonFunction.generateCode();
-    await this.cacheManager.set(CreateCacheKey(CacheKey.REQUEST_DELETE,  userId), code, CacheTTL.minutes(5));
+    await this.cacheManager.set(
+      CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
+      code,
+      CacheTTL.minutes(5),
+    );
     await this.mailService.requestDeleteAccount(user.email, code);
   }
 
   async verifyDeleteAccount(userId: Uuid, code: string) {
-    const codeInRedis = await this.cacheManager.get(CreateCacheKey(CacheKey.REQUEST_DELETE, userId));
-    if(code !== codeInRedis || codeInRedis === null) {
-      throw new BadRequestException(ErrorCode.E007)
+    const codeInRedis = await this.cacheManager.get(
+      CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
+    );
+    if (code !== codeInRedis || codeInRedis === null) {
+      throw new BadRequestException(ErrorCode.E007);
     }
     const user = await this.findByUserId(userId);
     user.deletedAt = new Date();
     await this.userRepository.save(user);
 
-    await this.cacheManager.del(CreateCacheKey(CacheKey.REQUEST_DELETE, userId));
+    await this.cacheManager.del(
+      CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
+    );
     // revoke token
   }
 }

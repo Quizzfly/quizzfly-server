@@ -15,6 +15,7 @@ export enum ErrorCode {
   E005 = 'slide.error.not_found',
   E006 = 'user.error.request_delete_account_is_invalid',
   E007 = 'user.error.code_is_incorrect',
+  E008 = 'room.error.not_found',
 
   // Authentication Errors
   A001 = 'auth.error.invalid_credentials',
