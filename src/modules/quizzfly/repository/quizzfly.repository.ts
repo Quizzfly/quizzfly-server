@@ -1,7 +1,5 @@
 import { Uuid } from '@common/types/common.type';
-import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
-import { SlideEntity } from '@modules/slide/entity/slide.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 
@@ -21,27 +19,107 @@ export class QuizzflyRepository extends Repository<QuizzflyEntity> {
   }
 
   async getQuestionsByQuizzflyId(quizzflyId: Uuid) {
-    return this.createQueryBuilder('quizzfly')
-      .innerJoinAndSelect('quizzfly.slides', 'slides')
-      .select('slides')
-      .where('quizzfly.id = :quizzflyId', { quizzflyId })
-      .getRawMany();
+    return await this.manager.query(
+      `
+      SELECT
+        id as id,
+        content AS content,
+        'SLIDE' AS type,
+        created_at as created_at,
+        updated_at as updated_at,
+        to_jsonb(files) as files,
+        background_color as background_color,
+        NULL as time_limit,
+        NULL as point_multiplier,
+        NULL as quiz_type,
+        prev_element_id as prev_element_id
+      FROM slide
+      WHERE quizzfly_id = $1 and deleted_at is null
+
+      UNION ALL
+
+      SELECT
+        id as id,
+        content AS content,
+        'QUIZ' AS type,
+        created_at as created_at,
+        updated_at as updated_at,
+        files as files,
+        NULL as background_color,
+        time_limit as time_limit,
+        point_multiplier as point_multiplier,
+        quiz_type as quiz_type,
+        prev_element_id as prev_element_id
+      FROM quiz
+      WHERE quizzfly_id = $1 and deleted_at is null
+    `,
+      [quizzflyId],
+    );
   }
 
-  async getLastItem(
-    quizzflyId: Uuid,
-  ): Promise<SlideEntity | QuizEntity | null> {
-    const lastItem: any = await this.find({
-      where: { id: quizzflyId },
-      relations: ['quizzes', 'quizzes.answers', 'slides'],
-    });
-    if (!lastItem) {
-      return null;
+  async getLastQuestion(quizzflyId: Uuid) {
+    const result = await this.manager.query(
+      `
+    SELECT id, 'SLIDE' as type
+    FROM slide
+    WHERE quizzfly_id = $1 and deleted_at is null
+    AND id NOT IN (
+      SELECT prev_element_id
+      FROM slide
+      WHERE prev_element_id IS NOT NULL AND quizzfly_id = $1
+      UNION ALL
+      SELECT prev_element_id
+      FROM quiz
+      WHERE prev_element_id IS NOT NULL AND quizzfly_id = $1
+    )
+    UNION ALL
+    SELECT id, 'QUIZ' as type
+    FROM quiz
+    WHERE quizzfly_id = $1 and deleted_at is null
+    AND id NOT IN (
+      SELECT prev_element_id
+      FROM slide
+      WHERE prev_element_id IS NOT NULL AND quizzfly_id = $1
+      UNION ALL
+      SELECT prev_element_id
+      FROM quiz
+      WHERE prev_element_id IS NOT NULL AND quizzfly_id = $1
+    )
+  `,
+      [quizzflyId],
+    );
+
+    if (Array.isArray(result) && result.length > 0) {
+      const { id, type } = result[0];
+      return { id, type };
     }
-    return lastItem[0];
+
+    return null;
   }
 
-  async getNextItem(quizzflyId: Uuid) {}
+  async getBehindQuestion(quizzflyId: Uuid, currentItemId: Uuid) {
+    const result = await this.manager.query(
+      `
+    SELECT id, 'SLIDE' as type
+    FROM slide
+    WHERE quizzfly_id = $1 and deleted_at is null
+    and prev_element_id = $2
 
-  async getPreviousItem(quizzflyId: Uuid) {}
+    UNION ALL
+
+    SELECT id, 'QUIZ' as type
+    FROM quiz
+    WHERE quizzfly_id = $1 and deleted_at is null
+    and prev_element_id = $2
+  `,
+      [quizzflyId, currentItemId],
+    );
+
+    if (Array.isArray(result) && result.length > 0) {
+      const { id, type } = result[0];
+      return { id, type };
+    }
+
+    return null;
+  }
 }

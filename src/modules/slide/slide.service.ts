@@ -27,10 +27,16 @@ export class SlideService {
     if (quizzfly.userId !== userId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
+    const currentLastQuestion =
+      await this.quizzflyService.getLastQuestion(quizzflyId);
 
-    const slide = new SlideEntity();
-    slide.quizzflyId = quizzflyId;
-    await slide.save();
+    const slide = new SlideEntity({
+      quizzflyId: quizzflyId,
+      content: dto.content,
+      prevElementId:
+        currentLastQuestion !== null ? currentLastQuestion.id : null,
+    });
+    await this.slideRepository.save(slide);
     return slide.toDto(InfoSlideResDto);
   }
 
@@ -53,6 +59,19 @@ export class SlideService {
 
     slide.deletedAt = new Date();
     await this.slideRepository.save(slide);
+
+    const behindQuestion = await this.quizzflyService.getBehindQuestion(
+      quizzflyId,
+      slideId,
+    );
+    if (behindQuestion !== null) {
+      if (behindQuestion.type === 'SLIDE') {
+        await this.changePrevPointerSlide(
+          behindQuestion.id,
+          slide.prevElementId,
+        );
+      }
+    }
   }
 
   async updateSlide(
@@ -79,14 +98,32 @@ export class SlideService {
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
+    const behindQuestion = await this.quizzflyService.getBehindQuestion(
+      quizzflyId,
+      slideId,
+    );
 
     const duplicateSlide = new SlideEntity();
     duplicateSlide.content = slide.content;
     duplicateSlide.files = slide.files;
     duplicateSlide.backgroundColor = slide.backgroundColor;
     duplicateSlide.quizzfly = slide.quizzfly;
+    duplicateSlide.prevElementId = slide.id;
 
     await this.slideRepository.save(duplicateSlide);
+
+    if (behindQuestion !== null) {
+      if (behindQuestion.type === 'SLIDE') {
+        await this.changePrevPointerSlide(behindQuestion.id, duplicateSlide.id);
+      }
+    }
+
     return duplicateSlide.toDto(InfoSlideResDto);
+  }
+
+  async changePrevPointerSlide(slideId: Uuid, prevElementId: Uuid) {
+    const slide = await this.findById(slideId);
+    slide.prevElementId = prevElementId;
+    await this.slideRepository.save(slide);
   }
 }

@@ -1,4 +1,7 @@
-import { ClassFieldOptional } from '@core/decorators/field.decorators';
+import {
+  ClassFieldOptional,
+  StringFieldOptional,
+} from '@core/decorators/field.decorators';
 import { PrevElementDto } from '@modules/quiz/dto/prev-element.dto';
 import { Expose } from 'class-transformer';
 
@@ -9,4 +12,10 @@ export class CreateSlideReqDto {
   })
   @Expose({ name: 'prev_element' })
   prevElement?: PrevElementDto = null;
+
+  @StringFieldOptional()
+  @Expose({
+    name: 'content',
+  })
+  content: string;
 }

@@ -22,9 +22,14 @@ export class QuizService {
     if (quizzfly.userId !== userId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
+    const currentLastQuestion =
+      await this.quizzflyService.getLastQuestion(quizzflyId);
 
     const quiz = new QuizEntity(dto);
     quiz.quizzflyId = quizzflyId;
+    quiz.prevElementId =
+      currentLastQuestion !== null ? currentLastQuestion.id : null;
+
     await this.quizRepository.save(quiz);
 
     return this.findOneById(quiz.id);
