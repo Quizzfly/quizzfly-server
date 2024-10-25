@@ -9,15 +9,20 @@ export class UpdateSlideTableUpdateColumnFiles1729813277442
     await queryRunner.query(`
       ALTER TABLE "slide"
       ALTER
-      COLUMN "files" TYPE jsonb NOT NULL DEFAULT '[]' USING to_jsonb("files")
+      COLUMN "files" TYPE jsonb USING to_jsonb("files")
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
+      UPDATE "slide"
+      SET "files" = null
+    `);
+
+    await queryRunner.query(`
       ALTER TABLE "slide"
       ALTER
-      COLUMN "files" TYPE character varying[]
+      COLUMN "files" TYPE character varying[] USING "files"::text[]
     `);
   }
 }

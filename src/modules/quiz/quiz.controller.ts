@@ -10,6 +10,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpStatus,
   Param,
   Post,
@@ -64,6 +65,20 @@ export class QuizController {
     @Param('quizId', ValidateUuid) quizId: Uuid,
   ) {
     return this.quizService.duplicateQuiz(quizzflyId, quizId, userId);
+  }
+
+  @ApiAuth({
+    summary: 'Find a quiz',
+    type: QuizResDto,
+  })
+  @ApiParam({
+    name: 'quizId',
+    description: 'The UUID of the Quiz',
+    type: String,
+  })
+  @Get('quizzfly/quizzes/:quizId')
+  findQuiz(@Param('quizId') quizId: Uuid) {
+    return this.quizService.findOneById(quizId);
   }
 
   @ApiAuth({

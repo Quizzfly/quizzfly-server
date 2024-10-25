@@ -37,7 +37,11 @@ export class QuizService {
   }
 
   async findOneById(quizId: Uuid) {
-    const quiz = await this.quizRepository.findOne({ where: { id: quizId } });
+    const quiz: QuizEntity = Optional.of(
+      await this.quizRepository.findOne({ where: { id: quizId } }),
+    )
+      .throwIfNullable(new NotFoundException('Quiz is not found'))
+      .get();
     return quiz.toDto(QuizResDto);
   }
 
