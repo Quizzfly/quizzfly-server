@@ -28,10 +28,11 @@ export class SlideService {
     }
 
     const slide = new SlideEntity();
-    slide.quizzfly = quizzfly;
-    await this.slideRepository.save(slide);
-
-    return slide.toDto(InfoSlideResDto);
+    slide.quizzflyId = quizzflyId;
+    await slide.save();
+    return (await this.slideRepository.findOneBy({ id: slide.id })).toDto(
+      InfoSlideResDto,
+    );
   }
 
   async findById(id: Uuid) {
@@ -51,8 +52,7 @@ export class SlideService {
       throw new ForbiddenException(ErrorCode.E004);
     }
 
-    slide.deletedAt = new Date();
-    await this.slideRepository.save(slide);
+    await this.slideRepository.softDelete({ id: slideId });
   }
 
   async updateSlide(
@@ -65,13 +65,12 @@ export class SlideService {
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
-
-    slide.content = dto.content;
-    slide.files = dto.files;
-    slide.backgroundColor = dto.backgroundColor;
+    Object.assign(slide, dto);
 
     await this.slideRepository.save(slide);
-    return slide.toDto(InfoSlideResDto);
+    return (await this.slideRepository.findOneBy({ id: slideId })).toDto(
+      InfoSlideResDto,
+    );
   }
 
   async duplicateSlide(quizzflyId: Uuid, slideId: Uuid, userId: Uuid) {
@@ -84,9 +83,11 @@ export class SlideService {
     duplicateSlide.content = slide.content;
     duplicateSlide.files = slide.files;
     duplicateSlide.backgroundColor = slide.backgroundColor;
-    duplicateSlide.quizzfly = slide.quizzfly;
+    duplicateSlide.quizzflyId = slide.quizzflyId;
 
     await this.slideRepository.save(duplicateSlide);
-    return duplicateSlide.toDto(InfoSlideResDto);
+    return (
+      await this.slideRepository.findOneBy({ id: duplicateSlide.id })
+    ).toDto(InfoSlideResDto);
   }
 }

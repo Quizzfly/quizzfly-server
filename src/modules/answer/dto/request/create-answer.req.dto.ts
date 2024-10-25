@@ -3,16 +3,11 @@ import {
   ClassFieldOptional,
   StringFieldOptional,
 } from '@core/decorators/field.decorators';
-import { Expose } from 'class-transformer';
 
-export class UpdateSlideReqDto {
+export class CreateAnswerReqDto {
   @StringFieldOptional()
-  content?: string;
+  content: string;
 
   @ClassFieldOptional(() => FileDto, { each: true, isArray: true })
   files?: FileDto[];
-
-  @StringFieldOptional({ name: 'background_color' })
-  @Expose({ name: 'background_color' })
-  backgroundColor?: string;
 }

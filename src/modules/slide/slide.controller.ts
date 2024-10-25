@@ -4,7 +4,15 @@ import { ApiAuth } from '@core/decorators/http.decorators';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
 import { InfoSlideResDto } from '@modules/slide/dto/response/info-slide.res';
 import { SlideService } from '@modules/slide/slide.service';
-import { Body, Controller, Delete, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Slide APIs')
@@ -14,9 +22,11 @@ import { ApiParam, ApiTags } from '@nestjs/swagger';
 export class SlideController {
   constructor(private readonly slideService: SlideService) {}
 
-  @Post('quizzflies/:quizzflyId/slides')
+  @Post('quizzfly/:quizzflyId/slides')
   @ApiAuth({
     summary: 'Create a slide quizzfly',
+    statusCode: HttpStatus.CREATED,
+    type: InfoSlideResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -30,9 +40,11 @@ export class SlideController {
     return this.slideService.createSlide(userId, quizzflyId);
   }
 
-  @Post('quizzflies/:quizzflyId/slides/:slideId/duplicate')
+  @Post('quizzfly/:quizzflyId/slides/:slideId/duplicate')
   @ApiAuth({
     summary: 'Duplicate a slide quizzfly',
+    statusCode: HttpStatus.CREATED,
+    type: InfoSlideResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -52,10 +64,10 @@ export class SlideController {
     return this.slideService.duplicateSlide(quizzflyId, slideId, userId);
   }
 
-  @Put('quizzflies/:quizzflyId/slides/:slideId')
+  @Put('quizzfly/:quizzflyId/slides/:slideId')
   @ApiAuth({
-    type: InfoSlideResDto,
     summary: 'Update a slide quizzfly',
+    type: InfoSlideResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -76,9 +88,10 @@ export class SlideController {
     return this.slideService.updateSlide(quizzflyId, slideId, userId, dto);
   }
 
-  @Delete('quizzflies/:quizzflyId/slides/:slideId')
+  @Delete('quizzfly/:quizzflyId/slides/:slideId')
   @ApiAuth({
     summary: 'Delete a slide quizzfly',
+    statusCode: HttpStatus.NO_CONTENT,
   })
   @ApiParam({
     name: 'quizzflyId',

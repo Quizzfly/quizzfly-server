@@ -47,7 +47,7 @@ export class UserEntity extends AbstractEntity {
   sessions?: SessionEntity[];
 
   @OneToMany('QuizzflyEntity', 'user')
-  quizzflys?: QuizzflyEntity[];
+  quizzflies?: QuizzflyEntity[];
 
   @OneToMany('RoomEntity', 'user')
   rooms?: RoomEntity[];

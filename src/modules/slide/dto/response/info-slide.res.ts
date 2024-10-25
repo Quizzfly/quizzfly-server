@@ -1,32 +1,29 @@
+import { FileDto } from '@common/dto/file.dto';
 import { Uuid } from '@common/types/common.type';
 import {
-  DateField,
-  NumberField,
+  ClassField,
+  ClassFieldOptional,
   StringField,
+  UUIDField,
+  UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
-import { Exclude, Expose } from 'class-transformer';
 
-@Exclude()
 export class InfoSlideResDto {
-  @Expose()
+  @UUIDField()
   id: Uuid;
 
   @StringField()
-  @Expose()
   content: string;
 
-  @Expose()
-  files: string[];
+  @ClassFieldOptional(() => FileDto, { each: true, isArray: true })
+  files?: FileDto[];
 
-  @StringField()
-  @Expose()
+  @StringField({ name: 'background_color' })
   backgroundColor: string;
 
-  @NumberField()
-  @Expose()
-  no: number;
+  @UUIDFieldOptional({ name: 'prev_element_id', nullable: true })
+  prevElementId: Uuid = null;
 
-  @DateField()
-  @Expose()
+  @ClassField(() => Date, { name: 'created_at' })
   createdAt: Date;
 }

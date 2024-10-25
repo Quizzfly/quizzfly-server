@@ -1,6 +1,8 @@
 import { AuthModule } from '@modules//auth/auth.module';
+import { AnswerModule } from '@modules/answer/answer.module';
 import { FileModule } from '@modules/file/file.module';
 import { HealthModule } from '@modules/health/health.module';
+import { QuizModule } from '@modules/quiz/quiz.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
 import { RoomModule } from '@modules/room/room.module';
 import { SessionModule } from '@modules/session/session.module';
@@ -23,6 +25,8 @@ const modulesGenerate = generateModulesSet();
     FileModule,
     QuizzflyModule,
     SlideModule,
+    QuizModule,
+    AnswerModule,
     RoomModule,
   ],
 })

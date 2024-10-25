@@ -32,8 +32,8 @@ export class SlideEntity extends AbstractEntity {
   })
   backgroundColor: string;
 
-  @Column()
-  no: number;
+  @Column({ name: 'prev_element_id', type: 'uuid', nullable: true })
+  prevElementId: Uuid | null;
 
   @Column({
     name: 'quizzfly_id',
