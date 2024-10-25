@@ -1,7 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
-import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
 import { InfoSlideResDto } from '@modules/slide/dto/response/info-slide.res';
 import { SlideService } from '@modules/slide/slide.service';
@@ -37,14 +36,15 @@ export class SlideController {
   async createSlide(
     @CurrentUser('id') userId: Uuid,
     @Param('quizzflyId') quizzflyId: Uuid,
-    @Body() dto: CreateSlideReqDto,
   ) {
-    return this.slideService.createSlide(userId, quizzflyId, dto);
+    return this.slideService.createSlide(userId, quizzflyId);
   }
 
   @Post('quizzfly/:quizzflyId/slides/:slideId/duplicate')
   @ApiAuth({
     summary: 'Duplicate a slide quizzfly',
+    statusCode: HttpStatus.CREATED,
+    type: InfoSlideResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -66,8 +66,8 @@ export class SlideController {
 
   @Put('quizzfly/:quizzflyId/slides/:slideId')
   @ApiAuth({
-    type: InfoSlideResDto,
     summary: 'Update a slide quizzfly',
+    type: InfoSlideResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -91,6 +91,7 @@ export class SlideController {
   @Delete('quizzfly/:quizzflyId/slides/:slideId')
   @ApiAuth({
     summary: 'Delete a slide quizzfly',
+    statusCode: HttpStatus.NO_CONTENT,
   })
   @ApiParam({
     name: 'quizzflyId',

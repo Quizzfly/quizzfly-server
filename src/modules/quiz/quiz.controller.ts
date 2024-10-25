@@ -59,9 +59,12 @@ export class QuizController {
   })
   @Post('quizzfly/:quizzflyId/quizzes/:quizId/duplicate')
   async duplicateQuiz(
+    @CurrentUser('id') userId: Uuid,
     @Param('quizzflyId', ValidateUuid) quizzflyId: Uuid,
     @Param('quizId', ValidateUuid) quizId: Uuid,
-  ) {}
+  ) {
+    return this.quizService.duplicateQuiz(quizzflyId, quizId, userId);
+  }
 
   @ApiAuth({
     summary: 'Update a quiz',
@@ -79,10 +82,13 @@ export class QuizController {
   })
   @Put('quizzfly/:quizzflyId/quizzes/:quizId')
   updateQuiz(
+    @CurrentUser('id') userId: Uuid,
     @Param('quizzflyId', ValidateUuid) quizzflyId: Uuid,
     @Param('quizId', ValidateUuid) quizId: Uuid,
     @Body() dto: UpdateQuizReqDto,
-  ) {}
+  ) {
+    return this.quizService.updateOne(quizzflyId, quizId, userId, dto);
+  }
 
   @ApiAuth({
     summary: 'Setting a quiz',
@@ -100,13 +106,16 @@ export class QuizController {
   })
   @Put('quizzfly/:quizzflyId/quizzes/:quizId/settings')
   settingQuiz(
+    @CurrentUser('id') userId: Uuid,
     @Param('quizzflyId', ValidateUuid) quizzflyId: Uuid,
     @Param('quizId', ValidateUuid) quizId: Uuid,
     @Body() dto: SettingQuizReqDto,
-  ) {}
+  ) {
+    return this.quizService.updateOne(quizzflyId, quizId, userId, dto);
+  }
 
   @ApiAuth({
-    summary: 'Setting a quiz',
+    summary: 'Delete a quiz',
     statusCode: HttpStatus.NO_CONTENT,
   })
   @ApiParam({
@@ -121,7 +130,10 @@ export class QuizController {
   })
   @Delete('quizzfly/:quizzflyId/quizzes/:quizId')
   deleteQuiz(
+    @CurrentUser('id') userId: Uuid,
     @Param('quizzflyId', ValidateUuid) quizzflyId: Uuid,
     @Param('quizId', ValidateUuid) quizId: Uuid,
-  ) {}
+  ) {
+    return this.quizService.deleteOne(quizzflyId, quizId, userId);
+  }
 }

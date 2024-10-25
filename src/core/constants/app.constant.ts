@@ -35,3 +35,8 @@ export const DEFAULT_CURRENT_PAGE = 1;
 export const SYSTEM_USER_ID = 'system';
 export const SUCCESS = 'success';
 export const FAILURE = 'failure';
+export const defaultInstanceEntity = Object.freeze({
+  id: undefined,
+  createdAt: undefined,
+  updatedAt: undefined,
+});
