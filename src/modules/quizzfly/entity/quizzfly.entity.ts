@@ -2,6 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
+import { RoomEntity } from '@modules/room/entity/room.entity';
 import { SlideEntity } from '@modules/slide/entity/slide.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
@@ -64,4 +65,7 @@ export class QuizzflyEntity extends AbstractEntity {
 
   @OneToMany('SlideEntity', 'quizzfly')
   slides?: SlideEntity[];
+
+  @OneToMany('RoomEntity', 'quizzfly')
+  rooms?: RoomEntity[];
 }

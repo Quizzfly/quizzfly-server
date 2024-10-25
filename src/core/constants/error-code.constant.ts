@@ -13,6 +13,9 @@ export enum ErrorCode {
   E003 = 'user.error.email_exists',
   E004 = 'quizzfly.error.not_found',
   E005 = 'slide.error.not_found',
+  E006 = 'user.error.request_delete_account_is_invalid',
+  E007 = 'user.error.code_is_incorrect',
+  E008 = 'room.error.not_found',
 
   // Authentication Errors
   A001 = 'auth.error.invalid_credentials',

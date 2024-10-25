@@ -1,7 +1,12 @@
+import { CommonFunction } from '@common/common.function';
 import { Uuid } from '@common/types/common.type';
+import { CacheKey } from '@core/constants/cache.constant';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
+import { CacheTTL } from '@libs/redis/utils/cache-ttl.utils';
+import { CreateCacheKey } from '@libs/redis/utils/create-cache-key.utils';
+import { MailService } from '@mail/mail.service';
 import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
 import { CreateUserDto } from '@modules/user/dto/request/create-user.req.dto';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
@@ -10,21 +15,23 @@ import { UserInfoEntity } from '@modules/user/entities/user-info.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { UserInfoRepository } from '@modules/user/repositories/user-info.repository';
 import { UserRepository } from '@modules/user/repositories/user.repository';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
+  Inject,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class UserService {
-  private readonly logger = new Logger(UserService.name);
-
   constructor(
     private readonly userRepository: UserRepository,
     private readonly userInfoRepository: UserInfoRepository,
+    private readonly mailService: MailService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async create(dto: CreateUserDto): Promise<UserEntity> {
@@ -85,15 +92,6 @@ export class UserService {
     return this.userRepository.findOne({ where: condition });
   }
 
-  async remove(id: Uuid) {
-    await this.userRepository.findOneByOrFail({ id });
-    await this.userRepository.softDelete(id);
-  }
-
-  async getUserInfoByCondition(condition: any) {
-    return this.userRepository.findOne({ where: condition });
-  }
-
   async changePassword(dto: ChangePasswordReqDto, userId: Uuid) {
     const user = await this.findByUserId(userId);
     if ((await verifyPassword(dto.old_password, user.password)) === false) {
@@ -102,5 +100,39 @@ export class UserService {
 
     user.password = dto.new_password;
     await this.userRepository.save(user);
+  }
+
+  async requestDeleteAccount(userId: Uuid) {
+    const isExistRequest = await this.cacheManager.get(
+      CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
+    );
+    if (isExistRequest) {
+      throw new BadRequestException(ErrorCode.E006);
+    }
+    const user = await this.findByUserId(userId);
+    const code = await CommonFunction.generateCode();
+    await this.cacheManager.set(
+      CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
+      code,
+      CacheTTL.minutes(5),
+    );
+    await this.mailService.requestDeleteAccount(user.email, code);
+  }
+
+  async verifyDeleteAccount(userId: Uuid, code: string) {
+    const codeInRedis = await this.cacheManager.get(
+      CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
+    );
+    if (code !== codeInRedis || codeInRedis === null) {
+      throw new BadRequestException(ErrorCode.E007);
+    }
+    const user = await this.findByUserId(userId);
+    user.deletedAt = new Date();
+    await this.userRepository.save(user);
+
+    await this.cacheManager.del(
+      CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
+    );
+    // revoke token
   }
 }
