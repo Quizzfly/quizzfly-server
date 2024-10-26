@@ -1,6 +1,6 @@
-import { FileDto } from '@common/dto/file.dto';
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import {
   Column,
@@ -26,7 +26,7 @@ export class SlideEntity extends AbstractEntity {
   content: string;
 
   @Column('jsonb', { default: [] })
-  files?: FileDto[];
+  files?: FileResDto[];
 
   @Column({
     name: 'background_color',

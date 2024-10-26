@@ -1,7 +1,7 @@
-import { FileDto } from '@common/dto/file.dto';
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
+import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { QuizType } from '@modules/quiz/enums/quiz-type.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import {
@@ -46,7 +46,7 @@ export class QuizEntity extends AbstractEntity {
   quizType: QuizType;
 
   @Column('jsonb', { default: [] })
-  files?: FileDto[];
+  files?: FileResDto[];
 
   @Column({ name: 'prev_element_id', type: 'uuid', nullable: true })
   prevElementId: Uuid | null;

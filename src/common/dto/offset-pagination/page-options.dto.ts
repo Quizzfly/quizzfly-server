@@ -30,7 +30,7 @@ export class PageOptionsDto {
   @EnumFieldOptional(() => Order, { default: Order.ASC })
   readonly order?: Order = Order.ASC;
 
-  get offset() {
+  get offset(): number {
     return this.page ? (this.page - 1) * this.limit : 0;
   }
 }

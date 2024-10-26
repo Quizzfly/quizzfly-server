@@ -45,6 +45,7 @@ async function bootstrap() {
   const corsOrigin = configService.getOrThrow('app.corsOrigin', {
     infer: true,
   });
+  const appUrl = configService.getOrThrow<string>('app.url', { infer: true });
 
   app.enableCors({
     origin: corsOrigin,
@@ -88,15 +89,12 @@ async function bootstrap() {
     new CamelToSnakeInterceptor(),
     new ResponseInterceptor(),
   );
-
-  if (isDevelopment) {
-    setupSwagger(app);
-  }
+  setupSwagger(app);
 
   await app.listen(configService.getOrThrow('app.port', { infer: true }));
 
   console.info(`Server running on ${await app.getUrl()}`);
-
+  console.log(`Api docs at: ${appUrl}/api-docs`);
   return app;
 }
 
