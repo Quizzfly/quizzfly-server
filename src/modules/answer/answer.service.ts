@@ -10,7 +10,6 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class AnswerService {
-  async;
   private readonly logger = new Logger(AnswerService.name);
 
   constructor(

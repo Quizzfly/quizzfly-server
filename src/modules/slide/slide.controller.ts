@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
+import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
 import { InfoSlideResDto } from '@modules/slide/dto/response/info-slide.res';
 import { SlideService } from '@modules/slide/slide.service';
@@ -36,8 +37,9 @@ export class SlideController {
   async createSlide(
     @CurrentUser('id') userId: Uuid,
     @Param('quizzflyId') quizzflyId: Uuid,
+    @Body() dto: CreateSlideReqDto,
   ) {
-    return this.slideService.createSlide(userId, quizzflyId);
+    return this.slideService.createSlide(userId, quizzflyId, dto);
   }
 
   @Post('quizzfly/:quizzflyId/slides/:slideId/duplicate')

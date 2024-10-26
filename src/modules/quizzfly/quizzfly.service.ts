@@ -1,7 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
-import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
 import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.req';
 import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.res';
@@ -9,7 +8,6 @@ import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { QuizzflyRepository } from '@modules/quizzfly/repository/quizzfly.repository';
-import { SlideEntity } from '@modules/slide/entity/slide.entity';
 import { UserService } from '@modules/user/user.service';
 import {
   ForbiddenException,
@@ -106,12 +104,33 @@ export class QuizzflyService {
       throw new ForbiddenException(ErrorCode.A009);
     }
 
-    return await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
+    const questions =
+      await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
+
+    const questionMap = new Map<any, any>();
+    questions.forEach((question: any) => {
+      questionMap.set(question.prev_element_id, question);
+    });
+    const firstQuestion = questions.find(
+      (question: any) => question.prev_element_id === null,
+    );
+
+    const orderedQuestions: any[] = [];
+    let currentQuestion = firstQuestion;
+
+    while (currentQuestion) {
+      orderedQuestions.push(currentQuestion);
+      currentQuestion = questionMap.get(currentQuestion.id);
+    }
+
+    return orderedQuestions;
   }
 
-  async getLastItem(
-    quizzflyId: Uuid,
-  ): Promise<SlideEntity | QuizEntity | null> {
-    return this.quizzflyRepository.getLastItem(quizzflyId);
+  async getLastQuestion(quizzflyId: Uuid) {
+    return this.quizzflyRepository.getLastQuestion(quizzflyId);
+  }
+
+  async getBehindQuestion(quizzflyId: Uuid, currentItemId: Uuid) {
+    return this.quizzflyRepository.getBehindQuestion(quizzflyId, currentItemId);
   }
 }
