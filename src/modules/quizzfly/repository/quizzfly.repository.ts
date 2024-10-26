@@ -57,46 +57,6 @@ export class QuizzflyRepository extends Repository<QuizzflyEntity> {
     );
   }
 
-  async getLastQuestion(quizzflyId: Uuid) {
-    const result = await this.manager.query(
-      `
-    SELECT id, 'SLIDE' as type
-    FROM slide
-    WHERE quizzfly_id = $1 and deleted_at is null
-    AND id NOT IN (
-      SELECT prev_element_id
-      FROM slide
-      WHERE prev_element_id IS NOT NULL AND quizzfly_id = $1
-      UNION ALL
-      SELECT prev_element_id
-      FROM quiz
-      WHERE prev_element_id IS NOT NULL AND quizzfly_id = $1
-    )
-    UNION ALL
-    SELECT id, 'QUIZ' as type
-    FROM quiz
-    WHERE quizzfly_id = $1 and deleted_at is null
-    AND id NOT IN (
-      SELECT prev_element_id
-      FROM slide
-      WHERE prev_element_id IS NOT NULL AND quizzfly_id = $1
-      UNION ALL
-      SELECT prev_element_id
-      FROM quiz
-      WHERE prev_element_id IS NOT NULL AND quizzfly_id = $1
-    )
-  `,
-      [quizzflyId],
-    );
-
-    if (Array.isArray(result) && result.length > 0) {
-      const { id, type } = result[0];
-      return { id, type };
-    }
-
-    return null;
-  }
-
   async getBehindQuestion(quizzflyId: Uuid, currentItemId: Uuid) {
     const result = await this.manager.query(
       `

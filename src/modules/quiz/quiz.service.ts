@@ -13,6 +13,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class QuizService {
@@ -21,6 +22,7 @@ export class QuizService {
   constructor(
     private readonly quizRepository: QuizRepository,
     private readonly quizzflyService: QuizzflyService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(userId: Uuid, quizzflyId: Uuid, dto: CreateQuizReqDto) {
@@ -28,9 +30,13 @@ export class QuizService {
     if (quizzfly.userId !== userId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
+    const currentLastQuestion =
+      await this.quizzflyService.getLastQuestion(quizzflyId);
 
     const quiz = new QuizEntity(dto);
     quiz.quizzflyId = quizzflyId;
+    quiz.prevElementId =
+      currentLastQuestion !== null ? currentLastQuestion.id : null;
     await this.quizRepository.save(quiz);
 
     return this.findOneById(quiz.id);
@@ -60,18 +66,34 @@ export class QuizService {
 
   async duplicateQuiz(quizzflyId: Uuid, quizId: Uuid, userId: Uuid) {
     const quiz = await this.findOneDetailById(quizId);
-    console.log(
-      quiz.quizzfly.userId !== userId || quiz.quizzfly.id !== quizzflyId,
-    );
     if (quiz.quizzfly.userId !== userId || quiz.quizzfly.id !== quizzflyId) {
       throw new ForbiddenException(
         'You do not have permission to modify this quiz.',
       );
     }
+    const behindQuestion = await this.quizzflyService.getBehindQuestion(
+      quizzflyId,
+      quizId,
+    );
 
     const dto = { ...quiz, ...defaultInstanceEntity };
     const quizDuplicate = new QuizEntity(dto);
+    quizDuplicate.prevElementId = quiz.id;
     await quizDuplicate.save();
+
+    if (behindQuestion !== null) {
+      if (behindQuestion.type === 'SLIDE') {
+        this.eventEmitter.emit('update.slide.position', {
+          quizId: behindQuestion.id,
+          prevElementId: quizDuplicate.id,
+        });
+      } else {
+        await this.changePrevPointerQuiz({
+          quizId: behindQuestion.id,
+          prevElementId: quizDuplicate.id,
+        });
+      }
+    }
 
     return this.findOneById(quizDuplicate.id);
   }
@@ -104,5 +126,36 @@ export class QuizService {
     }
 
     await this.quizRepository.softDelete({ id: quizId });
+
+    const behindQuestion = await this.quizzflyService.getBehindQuestion(
+      quizzflyId,
+      quizId,
+    );
+    if (behindQuestion !== null) {
+      if (behindQuestion.type === 'SLIDE') {
+        this.eventEmitter.emit('update.slide.position', {
+          quizId: behindQuestion.id,
+          prevElementId: quiz.prevElementId,
+        });
+      } else {
+        await this.changePrevPointerQuiz({
+          quizId: behindQuestion.id,
+          prevElementId: quiz.prevElementId,
+        });
+      }
+    }
+  }
+
+  @OnEvent('update.quiz.position')
+  async changePrevPointerQuiz({
+    quizId,
+    prevElementId,
+  }: {
+    quizId: Uuid;
+    prevElementId: Uuid;
+  }) {
+    const quiz = await this.findOneDetailById(quizId);
+    quiz.prevElementId = prevElementId;
+    await this.quizRepository.save(quiz);
   }
 }

@@ -12,6 +12,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class SlideService {
   constructor(
     private readonly slideRepository: SlideRepository,
     private readonly quizzflyService: QuizzflyService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @Transactional()
@@ -65,10 +67,15 @@ export class SlideService {
     );
     if (behindQuestion !== null) {
       if (behindQuestion.type === 'SLIDE') {
-        await this.changePrevPointerSlide(
-          behindQuestion.id,
-          slide.prevElementId,
-        );
+        await this.changePrevPointerSlide({
+          slideId: behindQuestion.id,
+          prevElementId: slide.prevElementId,
+        });
+      } else {
+        this.eventEmitter.emit('update.quiz.position', {
+          quizId: behindQuestion.id,
+          prevElementId: slide.prevElementId,
+        });
       }
     }
   }
@@ -110,14 +117,29 @@ export class SlideService {
 
     if (behindQuestion !== null) {
       if (behindQuestion.type === 'SLIDE') {
-        await this.changePrevPointerSlide(behindQuestion.id, duplicateSlide.id);
+        await this.changePrevPointerSlide({
+          slideId: behindQuestion.id,
+          prevElementId: duplicateSlide.id,
+        });
+      } else {
+        this.eventEmitter.emit('update.quiz.position', {
+          quizId: behindQuestion.id,
+          prevElementId: duplicateSlide.id,
+        });
       }
     }
 
     return duplicateSlide.toDto(InfoSlideResDto);
   }
 
-  async changePrevPointerSlide(slideId: Uuid, prevElementId: Uuid) {
+  @OnEvent('update.slide.position')
+  async changePrevPointerSlide({
+    slideId,
+    prevElementId,
+  }: {
+    slideId: Uuid;
+    prevElementId: Uuid;
+  }) {
     const slide = await this.findById(slideId);
     slide.prevElementId = prevElementId;
     await this.slideRepository.save(slide);

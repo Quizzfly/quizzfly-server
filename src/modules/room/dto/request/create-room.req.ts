@@ -8,10 +8,10 @@ import { Expose } from 'class-transformer';
 
 export class CreateRoomReqDto {
   @UUIDField({
-    name: 'quizzfy_id',
+    name: 'quizzfly_id',
   })
   @Expose({
-    name: 'quizzfy_id',
+    name: 'quizzfly_id',
   })
   quizzflyId: Uuid;
 

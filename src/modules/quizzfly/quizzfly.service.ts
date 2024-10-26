@@ -107,6 +107,19 @@ export class QuizzflyService {
     const questions =
       await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
 
+    return await this.orderedQuestions(questions);
+  }
+
+  async getLastQuestion(quizzflyId: Uuid) {
+    const questions = await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
+    const orderedQuestions = await this.orderedQuestions(questions);
+    if (Array.isArray(orderedQuestions) && orderedQuestions.length > 0) {
+      return orderedQuestions[orderedQuestions.length - 1];
+    }
+    return null;
+  }
+
+  async orderedQuestions(questions: any) {
     const questionMap = new Map<any, any>();
     questions.forEach((question: any) => {
       questionMap.set(question.prev_element_id, question);
@@ -122,12 +135,7 @@ export class QuizzflyService {
       orderedQuestions.push(currentQuestion);
       currentQuestion = questionMap.get(currentQuestion.id);
     }
-
     return orderedQuestions;
-  }
-
-  async getLastQuestion(quizzflyId: Uuid) {
-    return this.quizzflyRepository.getLastQuestion(quizzflyId);
   }
 
   async getBehindQuestion(quizzflyId: Uuid, currentItemId: Uuid) {
