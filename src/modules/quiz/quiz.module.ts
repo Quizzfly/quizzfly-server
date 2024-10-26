@@ -3,7 +3,7 @@ import { QuizController } from '@modules/quiz/quiz.controller';
 import { QuizRepository } from '@modules/quiz/repositories/quiz.repository';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
 import { SlideModule } from '@modules/slide/slide.module';
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { QuizService } from './quiz.service';
 
@@ -11,7 +11,7 @@ import { QuizService } from './quiz.service';
   imports: [
     TypeOrmModule.forFeature([QuizEntity]),
     QuizzflyModule,
-    forwardRef(() => SlideModule),
+    SlideModule,
   ],
   controllers: [QuizController],
   providers: [QuizService, QuizRepository],

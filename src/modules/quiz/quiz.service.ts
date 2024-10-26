@@ -24,7 +24,6 @@ export class QuizService {
   constructor(
     private readonly quizRepository: QuizRepository,
     private readonly quizzflyService: QuizzflyService,
-    // @Inject(forwardRef(() => SlideService))
     private readonly slideService: SlideService,
   ) {}
 
