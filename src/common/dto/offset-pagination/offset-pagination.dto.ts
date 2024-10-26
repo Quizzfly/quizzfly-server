@@ -7,37 +7,34 @@ export class OffsetPaginationDto {
   @Expose()
   readonly limit: number;
 
-  @ApiProperty()
+  @ApiProperty({ name: 'current_page' })
   @Expose()
   readonly currentPage: number;
 
-  @ApiProperty()
+  @ApiProperty({ name: 'has_next_page' })
   @Expose()
-  readonly nextPage?: number;
+  readonly hasNextPage?: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ name: 'has_previous_page' })
   @Expose()
-  readonly previousPage?: number;
+  readonly hasPreviousPage?: boolean = false;
 
-  @ApiProperty()
+  @ApiProperty({ name: 'total_records' })
   @Expose()
   readonly totalRecords: number;
 
-  @ApiProperty()
+  @ApiProperty({ name: 'total_pages' })
   @Expose()
   readonly totalPages: number;
 
   constructor(totalRecords: number, pageOptions: PageOptionsDto) {
     this.limit = pageOptions.limit;
     this.currentPage = pageOptions.page;
-    this.nextPage =
-      this.currentPage < this.totalPages ? this.currentPage + 1 : undefined;
-    this.previousPage =
-      this.currentPage > 1 && this.currentPage - 1 < this.totalPages
-        ? this.currentPage - 1
-        : undefined;
-    this.totalRecords = totalRecords;
     this.totalPages =
       this.limit > 0 ? Math.ceil(totalRecords / pageOptions.limit) : 0;
+    this.totalRecords = totalRecords;
+    this.hasNextPage = this.currentPage < this.totalPages;
+    this.hasPreviousPage =
+      this.currentPage > 1 && this.currentPage - 1 < this.totalPages;
   }
 }

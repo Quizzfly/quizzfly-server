@@ -1,11 +1,11 @@
 import { BaseResDto } from '@common/dto/base.res.dto';
-import { FileDto } from '@common/dto/file.dto';
 import {
   BooleanField,
   ClassFieldOptional,
   StringField,
   UUIDField,
 } from '@core/decorators/field.decorators';
+import { FileResDto } from '@modules/file/dto/file.res.dto';
 
 export class AnswerResDto extends BaseResDto {
   @StringField()
@@ -14,8 +14,8 @@ export class AnswerResDto extends BaseResDto {
   @BooleanField({ name: 'is_correct' })
   isCorrect: boolean;
 
-  @ClassFieldOptional(() => FileDto, { each: true, isArray: true })
-  files?: Array<FileDto>;
+  @ClassFieldOptional(() => FileResDto, { each: true, isArray: true })
+  files?: Array<FileResDto>;
 
   @UUIDField({ name: 'quiz_id' })
   quizId: string;

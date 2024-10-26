@@ -1,6 +1,6 @@
-import { FileDto } from '@common/dto/file.dto';
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import {
   Column,
@@ -30,7 +30,7 @@ export class AnswerEntity extends AbstractEntity {
   isCorrect: boolean;
 
   @Column('jsonb', { default: [] })
-  files?: FileDto[];
+  files?: FileResDto[];
 
   @Column({
     name: 'quiz_id',

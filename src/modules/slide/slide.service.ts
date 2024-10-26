@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
+import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
@@ -31,10 +32,9 @@ export class SlideService {
     }
     const currentLastQuestion =
       await this.quizzflyService.getLastQuestion(quizzflyId);
-
     const slide = new SlideEntity({
       quizzflyId: quizzflyId,
-      content: dto.content,
+      ...dto,
       prevElementId:
         currentLastQuestion !== null ? currentLastQuestion.id : null,
     });

@@ -6,7 +6,9 @@ import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto'
 import { QuizResDto } from '@modules/quiz/dto/response/quiz.res.dto';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { QuizRepository } from '@modules/quiz/repositories/quiz.repository';
+import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
+import { SlideService } from '@modules/slide/slide.service';
 import {
   ForbiddenException,
   Injectable,
@@ -14,6 +16,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class QuizService {
@@ -25,6 +28,7 @@ export class QuizService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
+  @Transactional()
   async create(userId: Uuid, quizzflyId: Uuid, dto: CreateQuizReqDto) {
     const quizzfly = await this.quizzflyService.findById(quizzflyId);
     if (quizzfly.userId !== userId) {
@@ -39,7 +43,7 @@ export class QuizService {
       currentLastQuestion !== null ? currentLastQuestion.id : null;
     await this.quizRepository.save(quiz);
 
-    return this.findOneById(quiz.id);
+    return quiz.toDto(QuizResDto);
   }
 
   async findOneById(quizId: Uuid) {
@@ -76,6 +80,7 @@ export class QuizService {
       quizId,
     );
 
+    delete quiz.quizzfly;
     const dto = { ...quiz, ...defaultInstanceEntity };
     const quizDuplicate = new QuizEntity(dto);
     quizDuplicate.prevElementId = quiz.id;
@@ -114,7 +119,7 @@ export class QuizService {
     Object.assign(quiz, dto);
     await this.quizRepository.save(quiz);
 
-    return this.findOneById(quizId);
+    return quiz.toDto(QuizResDto);
   }
 
   async deleteOne(quizzflyId: Uuid, quizId: Uuid, userId: Uuid) {

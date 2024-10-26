@@ -30,7 +30,7 @@ export const loggingRedactPaths = [
   'req.body.oldPassword',
 ];
 
-export const DEFAULT_PAGE_LIMIT = 10;
+export const DEFAULT_PAGE_LIMIT = 20;
 export const DEFAULT_CURRENT_PAGE = 1;
 export const SYSTEM_USER_ID = 'system';
 export const SUCCESS = 'success';

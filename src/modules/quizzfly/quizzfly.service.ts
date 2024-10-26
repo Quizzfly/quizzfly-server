@@ -1,7 +1,11 @@
+import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
+import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
+import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
 import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.req';
 import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.res';
 import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly.res';
@@ -57,13 +61,23 @@ export class QuizzflyService {
     return quizzfly.toDto(InfoDetailQuizzflyResDto);
   }
 
-  async getMyQuizzfly(userId: Uuid) {
-    const quizzflys = await this.quizzflyRepository.getMyQuizzfly(userId);
+  async getMyQuizzfly(userId: Uuid, filterOptions: QueryQuizzflyReqDto) {
+    const quizzflys = await this.quizzflyRepository.getMyQuizzfly(
+      userId,
+      filterOptions,
+    );
     const user = await this.userService.findByUserId(userId);
 
-    return quizzflys.map((quizzfly) =>
+    const items = quizzflys.map((quizzfly) =>
       InfoQuizzflyResDto.toInfoQuizzflyResponse(quizzfly, user),
     );
+    const totalRecords = await this.quizzflyRepository.countBy({ userId });
+    const meta = new OffsetPaginationDto(
+      totalRecords,
+      filterOptions as PageOptionsDto,
+    );
+
+    return new OffsetPaginatedDto(items, meta);
   }
 
   async findById(quizzflyId: Uuid) {
@@ -140,5 +154,15 @@ export class QuizzflyService {
 
   async getBehindQuestion(quizzflyId: Uuid, currentItemId: Uuid) {
     return this.quizzflyRepository.getBehindQuestion(quizzflyId, currentItemId);
+  }
+
+  async deleteOne(quizzflyId: Uuid, userId: Uuid) {
+    const quizzfly = await this.findById(quizzflyId);
+
+    if (quizzfly.userId !== userId) {
+      throw new ForbiddenException(ErrorCode.A009);
+    }
+
+    await this.quizzflyRepository.softDelete({ id: quizzflyId });
   }
 }
