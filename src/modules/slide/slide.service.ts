@@ -57,8 +57,7 @@ export class SlideService {
       throw new ForbiddenException(ErrorCode.E004);
     }
 
-    slide.deletedAt = new Date();
-    await this.slideRepository.save(slide);
+    await this.slideRepository.softDelete({ id: slideId });
 
     const behindQuestion = await this.quizzflyService.getBehindQuestion(
       quizzflyId,
@@ -84,10 +83,7 @@ export class SlideService {
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
-
-    slide.content = dto.content;
-    slide.files = dto.files;
-    slide.backgroundColor = dto.backgroundColor;
+    Object.assign(slide, dto);
 
     await this.slideRepository.save(slide);
     return slide.toDto(InfoSlideResDto);

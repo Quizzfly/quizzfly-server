@@ -16,7 +16,6 @@ export enum ErrorCode {
   E006 = 'user.error.request_delete_account_is_invalid',
   E007 = 'user.error.code_is_incorrect',
   E008 = 'room.error.not_found',
-  E009 = 'quiz.error.not_found',
 
   // Authentication Errors
   A001 = 'auth.error.invalid_credentials',

@@ -45,6 +45,8 @@ export class SlideController {
   @Post('quizzfly/:quizzflyId/slides/:slideId/duplicate')
   @ApiAuth({
     summary: 'Duplicate a slide quizzfly',
+    statusCode: HttpStatus.CREATED,
+    type: InfoSlideResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -66,8 +68,8 @@ export class SlideController {
 
   @Put('quizzfly/:quizzflyId/slides/:slideId')
   @ApiAuth({
-    type: InfoSlideResDto,
     summary: 'Update a slide quizzfly',
+    type: InfoSlideResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -91,6 +93,7 @@ export class SlideController {
   @Delete('quizzfly/:quizzflyId/slides/:slideId')
   @ApiAuth({
     summary: 'Delete a slide quizzfly',
+    statusCode: HttpStatus.NO_CONTENT,
   })
   @ApiParam({
     name: 'quizzflyId',
