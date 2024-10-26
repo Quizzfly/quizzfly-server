@@ -9,10 +9,10 @@ export class OffsetPaginatedDto<TData> {
 
   @ApiProperty()
   @Expose()
-  pagination: OffsetPaginationDto;
+  meta: OffsetPaginationDto;
 
   constructor(data: TData[], meta: OffsetPaginationDto) {
     this.data = data;
-    this.pagination = meta;
+    this.meta = meta;
   }
 }

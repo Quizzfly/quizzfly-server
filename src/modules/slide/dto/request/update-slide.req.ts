@@ -1,18 +1,4 @@
-import { FileDto } from '@common/dto/file.dto';
-import {
-  ClassFieldOptional,
-  StringFieldOptional,
-} from '@core/decorators/field.decorators';
-import { Expose } from 'class-transformer';
+import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
+import { PartialType } from '@nestjs/swagger';
 
-export class UpdateSlideReqDto {
-  @StringFieldOptional()
-  content?: string;
-
-  @ClassFieldOptional(() => FileDto, { each: true, isArray: true })
-  files?: FileDto[];
-
-  @StringFieldOptional({ name: 'background_color' })
-  @Expose({ name: 'background_color' })
-  backgroundColor?: string;
-}
+export class UpdateSlideReqDto extends PartialType(CreateSlideReqDto) {}

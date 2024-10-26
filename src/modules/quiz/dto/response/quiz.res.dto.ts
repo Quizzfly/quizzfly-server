@@ -1,5 +1,4 @@
 import { BaseResDto } from '@common/dto/base.res.dto';
-import { FileDto } from '@common/dto/file.dto';
 import { Uuid } from '@common/types/common.type';
 import {
   ClassFieldOptional,
@@ -9,6 +8,7 @@ import {
   UUIDField,
   UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
+import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { QuizType } from '@modules/quiz/enums/quiz-type.enum';
 
 export class QuizResDto extends BaseResDto {
@@ -27,8 +27,8 @@ export class QuizResDto extends BaseResDto {
   })
   quizType: QuizType;
 
-  @ClassFieldOptional(() => FileDto, { each: true, isArray: true })
-  files?: FileDto[];
+  @ClassFieldOptional(() => FileResDto, { each: true, isArray: true })
+  files?: FileResDto[];
 
   @UUIDFieldOptional({ name: 'prev_element_id', nullable: true })
   prevElementId: Uuid = null;

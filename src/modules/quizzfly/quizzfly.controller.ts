@@ -2,11 +2,23 @@ import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
+import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
 import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.req';
 import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.res';
 import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly.res';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
-import { Body, Controller, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Quizzfly APIs')
@@ -48,10 +60,14 @@ export class QuizzflyController {
   @ApiAuth({
     summary: 'Get my quizzfly',
     type: InfoQuizzflyResDto,
-    isArray: true,
+    isPaginated: true,
+    paginationType: 'offset',
   })
-  async getMyQuizzfly(@CurrentUser('id') userId: Uuid) {
-    return this.quizzflyService.getMyQuizzfly(userId);
+  async getMyQuizzfly(
+    @CurrentUser('id') userId: Uuid,
+    @Query() filterOptions: QueryQuizzflyReqDto,
+  ) {
+    return this.quizzflyService.getMyQuizzfly(userId, filterOptions);
   }
 
   @Get(':quizzflyId')
@@ -100,5 +116,22 @@ export class QuizzflyController {
     @Param('quizzflyId') quizzflyId: Uuid,
   ) {
     return this.quizzflyService.getQuestionsByQuizzflyId(quizzflyId, userId);
+  }
+
+  @Delete(':quizzflyId')
+  @ApiAuth({
+    summary: 'Delete a quizzfly',
+    statusCode: HttpStatus.NO_CONTENT,
+  })
+  @ApiParam({
+    name: 'quizzflyId',
+    description: 'The UUID of the Quizzfly',
+    type: 'string',
+  })
+  deleteQuizzfly(
+    @CurrentUser('id') userId: Uuid,
+    @Param('quizzflyId') quizzflyId: Uuid,
+  ) {
+    return this.quizzflyService.deleteOne(quizzflyId, userId);
   }
 }

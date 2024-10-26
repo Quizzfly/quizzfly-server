@@ -1,6 +1,6 @@
 import { NumberField, StringField } from '@core/decorators/field.decorators';
 
-export class FileDto {
+export class FileResDto {
   @StringField({ name: 'public_id' })
   publicId: string;
 

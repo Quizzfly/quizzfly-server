@@ -24,7 +24,7 @@ export class AnswerService {
     answer.quizId = quizId;
     await this.answerRepository.save(answer);
 
-    return this.findOneById(answer.id);
+    return answer.toDto(AnswerResDto);
   }
 
   async findOneById(answerId: Uuid) {
@@ -42,7 +42,7 @@ export class AnswerService {
     Object.assign(answer, dto);
     await this.answerRepository.save(answer);
 
-    return this.findOneById(answerId);
+    return answer;
   }
 
   async deleteOne(answerId: Uuid) {

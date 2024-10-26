@@ -1,4 +1,3 @@
-import { FileDto } from '@common/dto/file.dto';
 import { Uuid } from '@common/types/common.type';
 import {
   ClassField,
@@ -7,6 +6,7 @@ import {
   UUIDField,
   UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
+import { FileResDto } from '@modules/file/dto/file.res.dto';
 
 export class InfoSlideResDto {
   @UUIDField()
@@ -15,8 +15,8 @@ export class InfoSlideResDto {
   @StringField()
   content: string;
 
-  @ClassFieldOptional(() => FileDto, { each: true, isArray: true })
-  files?: FileDto[];
+  @ClassFieldOptional(() => FileResDto, { each: true, isArray: true })
+  files?: FileResDto[];
 
   @StringField({ name: 'background_color' })
   backgroundColor: string;
