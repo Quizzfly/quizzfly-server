@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
+import { ChangePositionQuestionReqDto } from '@modules/quizzfly/dto/request/change-position-question.req';
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
 import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
 import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.req';
@@ -133,5 +134,26 @@ export class QuizzflyController {
     @Param('quizzflyId') quizzflyId: Uuid,
   ) {
     return this.quizzflyService.deleteOne(quizzflyId, userId);
+  }
+
+  @Put(':quizzflyId/questions/position')
+  @ApiAuth({
+    summary: 'Change position question',
+  })
+  @ApiParam({
+    name: 'quizzflyId',
+    description: 'The UUID of the Quizzfly',
+    type: 'string',
+  })
+  async changePositionQuestion(
+    @CurrentUser('id') userId: Uuid,
+    @Param('quizzflyId') quizzflyId: Uuid,
+    @Body() dto: ChangePositionQuestionReqDto,
+  ) {
+    return this.quizzflyService.changePositionQuestions(
+      quizzflyId,
+      userId,
+      dto,
+    );
   }
 }

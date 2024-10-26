@@ -1,7 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
-import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
@@ -13,6 +12,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -20,6 +20,7 @@ export class SlideService {
   constructor(
     private readonly slideRepository: SlideRepository,
     private readonly quizzflyService: QuizzflyService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @Transactional()
@@ -40,6 +41,7 @@ export class SlideService {
     return slide.toDto(InfoSlideResDto);
   }
 
+  @OnEvent('get.slide.entity')
   async findById(id: Uuid) {
     return Optional.of(
       await this.slideRepository.findOne({
@@ -64,11 +66,16 @@ export class SlideService {
       slideId,
     );
     if (behindQuestion !== null) {
-      if (behindQuestion.type === PrevElementType.SLIDE) {
-        await this.changePrevPointerSlide(
-          behindQuestion.id,
-          slide.prevElementId,
-        );
+      if (behindQuestion.type === 'SLIDE') {
+        await this.changePrevPointerSlide({
+          slideId: behindQuestion.id,
+          prevElementId: slide.prevElementId,
+        });
+      } else {
+        this.eventEmitter.emit('update.quiz.position', {
+          quizId: behindQuestion.id,
+          prevElementId: slide.prevElementId,
+        });
       }
     }
   }
@@ -109,15 +116,30 @@ export class SlideService {
     await this.slideRepository.save(duplicateSlide);
 
     if (behindQuestion !== null) {
-      if (behindQuestion.type === PrevElementType.SLIDE) {
-        await this.changePrevPointerSlide(behindQuestion.id, duplicateSlide.id);
+      if (behindQuestion.type === 'SLIDE') {
+        await this.changePrevPointerSlide({
+          slideId: behindQuestion.id,
+          prevElementId: duplicateSlide.id,
+        });
+      } else {
+        this.eventEmitter.emit('update.quiz.position', {
+          quizId: behindQuestion.id,
+          prevElementId: duplicateSlide.id,
+        });
       }
     }
 
     return duplicateSlide.toDto(InfoSlideResDto);
   }
 
-  async changePrevPointerSlide(slideId: Uuid, prevElementId: Uuid) {
+  @OnEvent('update.slide.position')
+  async changePrevPointerSlide({
+    slideId,
+    prevElementId,
+  }: {
+    slideId: Uuid;
+    prevElementId: Uuid;
+  }) {
     const slide = await this.findById(slideId);
     slide.prevElementId = prevElementId;
     await this.slideRepository.save(slide);

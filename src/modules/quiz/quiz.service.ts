@@ -6,15 +6,14 @@ import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto'
 import { QuizResDto } from '@modules/quiz/dto/response/quiz.res.dto';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { QuizRepository } from '@modules/quiz/repositories/quiz.repository';
-import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
-import { SlideService } from '@modules/slide/slide.service';
 import {
   ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -24,7 +23,7 @@ export class QuizService {
   constructor(
     private readonly quizRepository: QuizRepository,
     private readonly quizzflyService: QuizzflyService,
-    private readonly slideService: SlideService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @Transactional()
@@ -33,13 +32,13 @@ export class QuizService {
     if (quizzfly.userId !== userId) {
       throw new ForbiddenException(ErrorCode.E004);
     }
-
     const currentLastQuestion =
       await this.quizzflyService.getLastQuestion(quizzflyId);
 
     const quiz = new QuizEntity(dto);
     quiz.quizzflyId = quizzflyId;
-    quiz.prevElementId = currentLastQuestion ? currentLastQuestion.id : null;
+    quiz.prevElementId =
+      currentLastQuestion !== null ? currentLastQuestion.id : null;
     await this.quizRepository.save(quiz);
 
     return quiz.toDto(QuizResDto);
@@ -54,6 +53,7 @@ export class QuizService {
     return quiz.toDto(QuizResDto);
   }
 
+  @OnEvent('get.quiz.entity')
   async findOneDetailById(quizId: Uuid) {
     const quiz: QuizEntity = Optional.of(
       await this.quizRepository.findOne({
@@ -74,6 +74,10 @@ export class QuizService {
         'You do not have permission to modify this quiz.',
       );
     }
+    const behindQuestion = await this.quizzflyService.getBehindQuestion(
+      quizzflyId,
+      quizId,
+    );
 
     delete quiz.quizzfly;
     const dto = { ...quiz, ...defaultInstanceEntity };
@@ -81,23 +85,21 @@ export class QuizService {
     quizDuplicate.prevElementId = quiz.id;
     await quizDuplicate.save();
 
-    const behindQuestion = await this.quizzflyService.getBehindQuestion(
-      quizzflyId,
-      quizId,
-    );
-
-    if (behindQuestion) {
-      if (behindQuestion.type === PrevElementType.SLIDE) {
-        await this.slideService.changePrevPointerSlide(
-          behindQuestion.id,
-          quizDuplicate.id,
-        );
-      } else if (behindQuestion.type === PrevElementType.QUIZ) {
-        await this.changePrevPointerQuiz(behindQuestion.id, quizDuplicate.id);
+    if (behindQuestion !== null) {
+      if (behindQuestion.type === 'SLIDE') {
+        this.eventEmitter.emit('update.slide.position', {
+          quizId: behindQuestion.id,
+          prevElementId: quizDuplicate.id,
+        });
+      } else {
+        await this.changePrevPointerQuiz({
+          quizId: behindQuestion.id,
+          prevElementId: quizDuplicate.id,
+        });
       }
     }
 
-    return quizDuplicate.toDto(QuizResDto);
+    return this.findOneById(quizDuplicate.id);
   }
 
   async updateOne(
@@ -133,22 +135,30 @@ export class QuizService {
       quizzflyId,
       quizId,
     );
-
-    if (behindQuestion) {
-      if (behindQuestion.type === PrevElementType.SLIDE) {
-        await this.slideService.changePrevPointerSlide(
-          behindQuestion.id,
-          quiz.prevElementId,
-        );
-      } else if (behindQuestion.type === PrevElementType.QUIZ) {
-        await this.changePrevPointerQuiz(behindQuestion.id, quiz.prevElementId);
+    if (behindQuestion !== null) {
+      if (behindQuestion.type === 'SLIDE') {
+        this.eventEmitter.emit('update.slide.position', {
+          quizId: behindQuestion.id,
+          prevElementId: quiz.prevElementId,
+        });
+      } else {
+        await this.changePrevPointerQuiz({
+          quizId: behindQuestion.id,
+          prevElementId: quiz.prevElementId,
+        });
       }
     }
   }
 
-  async changePrevPointerQuiz(quizId: Uuid, prevElementId: Uuid) {
+  @OnEvent('update.quiz.position')
+  async changePrevPointerQuiz({
+    quizId,
+    prevElementId,
+  }: {
+    quizId: Uuid;
+    prevElementId: Uuid;
+  }) {
     const quiz = await this.findOneDetailById(quizId);
-
     quiz.prevElementId = prevElementId;
     await this.quizRepository.save(quiz);
   }
