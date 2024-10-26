@@ -1,9 +1,8 @@
 import { Uuid } from '@common/types/common.type';
+import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
-
 
 @Injectable()
 export class QuizzflyRepository extends Repository<QuizzflyEntity> {

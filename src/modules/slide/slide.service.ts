@@ -1,7 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
-import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
@@ -42,6 +41,7 @@ export class SlideService {
     return slide.toDto(InfoSlideResDto);
   }
 
+  @OnEvent('get.slide.entity')
   async findById(id: Uuid) {
     return Optional.of(
       await this.slideRepository.findOne({

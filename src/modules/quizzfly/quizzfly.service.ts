@@ -4,6 +4,7 @@ import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto'
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
+import { ChangePositionQuestionReqDto } from '@modules/quizzfly/dto/request/change-position-question.req';
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
 import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
 import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.req';
@@ -11,6 +12,7 @@ import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-de
 import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly.res';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
+import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
 import { QuizzflyRepository } from '@modules/quizzfly/repository/quizzfly.repository';
 import { UserService } from '@modules/user/user.service';
 import {
@@ -18,6 +20,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -25,6 +28,7 @@ export class QuizzflyService {
   constructor(
     private readonly quizzflyRepository: QuizzflyRepository,
     private readonly userService: UserService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @Transactional()
@@ -125,7 +129,8 @@ export class QuizzflyService {
   }
 
   async getLastQuestion(quizzflyId: Uuid) {
-    const questions = await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
+    const questions =
+      await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
     const orderedQuestions = await this.orderedQuestions(questions);
     if (Array.isArray(orderedQuestions) && orderedQuestions.length > 0) {
       return orderedQuestions[orderedQuestions.length - 1];
@@ -164,5 +169,116 @@ export class QuizzflyService {
     }
 
     await this.quizzflyRepository.softDelete({ id: quizzflyId });
+  }
+
+  async changePositionQuestions(
+    quizzflyId: Uuid,
+    userId: Uuid,
+    dto: ChangePositionQuestionReqDto,
+  ) {
+    const quizzfly = await this.findById(quizzflyId);
+    console.log(quizzfly.userId, userId);
+    if (quizzfly.userId !== userId) {
+      throw new ForbiddenException(ErrorCode.A009);
+    }
+
+    let firstQuestion,
+      behindFirstQuestion,
+      secondQuestion,
+      behindSecondQuestion,
+      previousFirstQuestion,
+      previouseSecondQuestion;
+
+    if (dto.firstQuestionType === PrevElementType.QUIZ) {
+      firstQuestion = await this.eventEmitter.emitAsync(
+        'get.quiz.entity',
+        dto.firstQuestionId,
+      );
+    } else {
+      firstQuestion = await this.eventEmitter.emitAsync(
+        'get.slide.entity',
+        dto.firstQuestionId,
+      );
+    }
+
+    if (dto.secondQuestionType === PrevElementType.QUIZ) {
+      secondQuestion = await this.eventEmitter.emitAsync(
+        'get.quiz.entity',
+        dto.secondQuestionId,
+      );
+    } else {
+      secondQuestion = await this.eventEmitter.emitAsync(
+        'get.slide.entity',
+        dto.secondQuestionId,
+      );
+    }
+
+    behindFirstQuestion = await this.getBehindQuestion(
+      quizzflyId,
+      dto.firstQuestionId,
+    );
+    previousFirstQuestion = firstQuestion.prevElementId;
+    behindSecondQuestion = await this.getBehindQuestion(
+      quizzflyId,
+      dto.secondQuestionId,
+    );
+    previouseSecondQuestion = secondQuestion.prevElementId;
+
+    if (dto.firstQuestionType === PrevElementType.QUIZ) {
+      this.eventEmitter.emit('update.quiz.position', {
+        quizId: firstQuestion.id,
+        prevElementId: secondQuestion.prevElementId,
+      });
+    } else {
+      this.eventEmitter.emit('update.slide.position', {
+        slideId: firstQuestion.id,
+        prevElementId: secondQuestion.prevElementId,
+      });
+    }
+
+    if (dto.secondQuestionType === PrevElementType.QUIZ) {
+      this.eventEmitter.emit('update.quiz.position', {
+        quizId: secondQuestion.id,
+        prevElementId: firstQuestion.prevElementId,
+      });
+    } else {
+      this.eventEmitter.emit('update.slide.position', {
+        slideId: secondQuestion.id,
+        prevElementId: firstQuestion.prevElementId,
+      });
+    }
+
+    if (behindFirstQuestion !== null) {
+      if (behindFirstQuestion.type === PrevElementType.QUIZ) {
+        this.eventEmitter.emit('update.quiz.position', {
+          quizId: behindFirstQuestion.id,
+          prevElementId: previouseSecondQuestion,
+        });
+      } else {
+        this.eventEmitter.emit('update.slide.position', {
+          slideId: behindFirstQuestion.id,
+          prevElementId: previouseSecondQuestion,
+        });
+      }
+    }
+
+    if (behindSecondQuestion !== null) {
+      if (behindSecondQuestion.type === PrevElementType.QUIZ) {
+        this.eventEmitter.emit('update.quiz.position', {
+          quizId: behindSecondQuestion.id,
+          prevElementId: previousFirstQuestion,
+        });
+      } else {
+        this.eventEmitter.emit('update.slide.position', {
+          slideId: behindSecondQuestion.id,
+          prevElementId: previousFirstQuestion,
+        });
+      }
+    }
+
+    console.log(firstQuestion);
+    console.log(secondQuestion);
+    console.log(behindFirstQuestion);
+    console.log(behindSecondQuestion);
   }
 }

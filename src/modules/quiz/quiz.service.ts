@@ -6,9 +6,7 @@ import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto'
 import { QuizResDto } from '@modules/quiz/dto/response/quiz.res.dto';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { QuizRepository } from '@modules/quiz/repositories/quiz.repository';
-import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
-import { SlideService } from '@modules/slide/slide.service';
 import {
   ForbiddenException,
   Injectable,
@@ -55,6 +53,7 @@ export class QuizService {
     return quiz.toDto(QuizResDto);
   }
 
+  @OnEvent('get.quiz.entity')
   async findOneDetailById(quizId: Uuid) {
     const quiz: QuizEntity = Optional.of(
       await this.quizRepository.findOne({
