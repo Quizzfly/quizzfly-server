@@ -224,7 +224,7 @@ export class QuizzflyService {
     );
     previouseSecondQuestion = secondQuestion[0].prevElementId;
 
-    if(secondQuestion[0].prevElementId !== firstQuestion[0].id) {
+    if (secondQuestion[0].prevElementId !== firstQuestion[0].id) {
       if (dto.firstQuestionType === PrevElementType.QUIZ) {
         await this.eventEmitter.emitAsync('update.quiz.position', {
           quizId: firstQuestion[0].id,
