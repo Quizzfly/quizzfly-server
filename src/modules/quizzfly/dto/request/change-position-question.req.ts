@@ -1,5 +1,5 @@
 import { Uuid } from '@common/types/common.type';
-import { StringField, UUIDField } from '@core/decorators/field.decorators';
+import { NumberField, StringField, UUIDField } from '@core/decorators/field.decorators';
 import { Expose } from 'class-transformer';
 
 export class ChangePositionQuestionReqDto {
@@ -11,6 +11,10 @@ export class ChangePositionQuestionReqDto {
   @StringField({ name: 'first_question_type' })
   firstQuestionType: string;
 
+  @Expose({ name: 'first_question_index' })
+  @NumberField({ name: 'first_question_index' })
+  firstQuestionIndex: number;
+
   @Expose({ name: 'second_question_id' })
   @UUIDField({ name: 'second_question_id' })
   secondQuestionId?: Uuid;
@@ -18,4 +22,8 @@ export class ChangePositionQuestionReqDto {
   @Expose({ name: 'second_question_type' })
   @StringField({ name: 'second_question_type' })
   secondQuestionType: string;
+
+  @Expose({ name: 'second_question_index' })
+  @NumberField({ name: 'second_question_index' })
+  secondQuestionIndex: number;
 }

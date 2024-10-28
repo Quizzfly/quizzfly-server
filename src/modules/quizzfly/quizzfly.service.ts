@@ -190,130 +190,88 @@ export class QuizzflyService {
       previouseSecondQuestion;
 
     if (dto.firstQuestionType === PrevElementType.QUIZ) {
-      firstQuestion = await this.eventEmitter.emitAsync(
+      [firstQuestion] = await this.eventEmitter.emitAsync(
         'get.quiz.entity',
         dto.firstQuestionId,
       );
     } else {
-      firstQuestion = await this.eventEmitter.emitAsync(
+      [firstQuestion] = await this.eventEmitter.emitAsync(
         'get.slide.entity',
         dto.firstQuestionId,
       );
     }
 
     if (dto.secondQuestionType === PrevElementType.QUIZ) {
-      secondQuestion = await this.eventEmitter.emitAsync(
+      [secondQuestion] = await this.eventEmitter.emitAsync(
         'get.quiz.entity',
         dto.secondQuestionId,
       );
     } else {
-      secondQuestion = await this.eventEmitter.emitAsync(
+      [secondQuestion] = await this.eventEmitter.emitAsync(
         'get.slide.entity',
         dto.secondQuestionId,
       );
     }
+    previousFirstQuestion = firstQuestion.prevElementId;
+    previouseSecondQuestion = secondQuestion.prevElementId;
 
     behindFirstQuestion = await this.getBehindQuestion(
       quizzflyId,
       dto.firstQuestionId,
     );
-    previousFirstQuestion = firstQuestion[0].prevElementId;
     behindSecondQuestion = await this.getBehindQuestion(
       quizzflyId,
       dto.secondQuestionId,
     );
-    previouseSecondQuestion = secondQuestion[0].prevElementId;
 
-    if (secondQuestion[0].prevElementId !== firstQuestion[0].id) {
-      if (dto.firstQuestionType === PrevElementType.QUIZ) {
-        await this.eventEmitter.emitAsync('update.quiz.position', {
-          quizId: firstQuestion[0].id,
-          prevElementId: previouseSecondQuestion,
-        });
-      } else {
-        await this.eventEmitter.emitAsync('update.slide.position', {
-          slideId: firstQuestion[0].id,
-          prevElementId: previouseSecondQuestion,
-        });
+    if (firstQuestion.prevElementId === secondQuestion.id) {
+      await this.updatePrevQuestion(firstQuestion.id, previouseSecondQuestion, dto.firstQuestionType);
+      await this.updatePrevQuestion(secondQuestion.id, firstQuestion.id, dto.secondQuestionType);
+
+      if (behindFirstQuestion) {
+        await this.updatePrevQuestion(behindFirstQuestion.id, secondQuestion.id, behindFirstQuestion.type);
       }
+    } else if (secondQuestion.prevElementId === firstQuestion.id) {
+      await this.updatePrevQuestion(firstQuestion.id, secondQuestion.id, dto.firstQuestionType);
+      await this.updatePrevQuestion(secondQuestion.id, previousFirstQuestion, dto.secondQuestionType);
 
-      if (dto.secondQuestionType === PrevElementType.QUIZ) {
-        await this.eventEmitter.emitAsync('update.quiz.position', {
-          quizId: secondQuestion[0].id,
-          prevElementId: previousFirstQuestion,
-        });
-      } else {
-        await this.eventEmitter.emitAsync('update.slide.position', {
-          slideId: secondQuestion[0].id,
-          prevElementId: previousFirstQuestion,
-        });
-      }
-
-      if (behindFirstQuestion !== null) {
-        if (behindFirstQuestion.type === PrevElementType.QUIZ) {
-          await this.eventEmitter.emitAsync('update.quiz.position', {
-            quizId: behindFirstQuestion.id,
-            prevElementId: dto.secondQuestionId,
-          });
-        } else {
-          await this.eventEmitter.emitAsync('update.slide.position', {
-            slideId: behindFirstQuestion.id,
-            prevElementId: dto.secondQuestionId,
-          });
-        }
-      }
-
-      if (behindSecondQuestion !== null) {
-        if (behindSecondQuestion.type === PrevElementType.QUIZ) {
-          await this.eventEmitter.emitAsync('update.quiz.position', {
-            quizId: behindSecondQuestion.id,
-            prevElementId: dto.firstQuestionId,
-          });
-        } else {
-          await this.eventEmitter.emitAsync('update.slide.position', {
-            slideId: behindSecondQuestion.id,
-            prevElementId: dto.firstQuestionId,
-          });
-        }
+      if (behindSecondQuestion) {
+        await this.updatePrevQuestion(behindSecondQuestion.id, firstQuestion.id, behindSecondQuestion.type);
       }
     } else {
-      if (dto.firstQuestionType === PrevElementType.QUIZ) {
-        await this.eventEmitter.emitAsync('update.quiz.position', {
-          quizId: firstQuestion[0].id,
-          prevElementId: dto.secondQuestionId,
-        });
-      } else {
-        await this.eventEmitter.emitAsync('update.slide.position', {
-          slideId: firstQuestion[0].id,
-          prevElementId: dto.secondQuestionId,
-        });
-      }
-
-      if (dto.secondQuestionType === PrevElementType.QUIZ) {
-        await this.eventEmitter.emitAsync('update.quiz.position', {
-          quizId: secondQuestion[0].id,
-          prevElementId: previousFirstQuestion,
-        });
-      } else {
-        await this.eventEmitter.emitAsync('update.slide.position', {
-          slideId: secondQuestion[0].id,
-          prevElementId: previousFirstQuestion,
-        });
-      }
-
-      if (behindSecondQuestion !== null) {
-        if (behindSecondQuestion.type === PrevElementType.QUIZ) {
-          await this.eventEmitter.emitAsync('update.quiz.position', {
-            quizId: behindSecondQuestion.id,
-            prevElementId: dto.firstQuestionId,
-          });
-        } else {
-          await this.eventEmitter.emitAsync('update.slide.position', {
-            slideId: behindSecondQuestion.id,
-            prevElementId: dto.firstQuestionId,
-          });
+      if(dto.firstQuestionIndex > dto.secondQuestionIndex) {
+        if(behindFirstQuestion) {
+          await this.updatePrevQuestion(behindFirstQuestion.id, previousFirstQuestion, behindFirstQuestion.type);
         }
+        await this.updatePrevQuestion(firstQuestion.id, previouseSecondQuestion, dto.firstQuestionType);
+        await this.updatePrevQuestion(secondQuestion.id, firstQuestion.id, dto.secondQuestionType);
+      } else {
+         if(behindFirstQuestion) {
+           await this.updatePrevQuestion(behindFirstQuestion.id, previousFirstQuestion, behindFirstQuestion.type);
+         }
+        if(behindSecondQuestion) {
+          await this.updatePrevQuestion(behindSecondQuestion.id, firstQuestion.id, behindSecondQuestion.type);
+        }
+        await this.updatePrevQuestion(firstQuestion.id, secondQuestion.id, dto.firstQuestionType);
       }
+    }
+  }
+
+  async updatePrevQuestion(
+    questionId: any,
+    newPrevElementId: string | null,
+    questionType: any,
+  ) {
+    if (questionType === PrevElementType.QUIZ) {
+      await this.eventEmitter.emitAsync('update.quiz.position', {
+        quizId: questionId,
+        prevElementId: newPrevElementId,
+      });
+    } else {
+      await this.eventEmitter.emitAsync('update.slide.position', {
+        slideId: questionId,
+        prevElementId: newPrevElementId,
+      });
     }
   }
 }
