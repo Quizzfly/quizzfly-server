@@ -225,24 +225,16 @@ export class QuizzflyService {
     );
 
     if (firstQuestion.prevElementId === secondQuestion.id) {
-      console.log('previous second', previouseSecondQuestion);
-
       await this.updatePrevQuestion(firstQuestion.id, previouseSecondQuestion, dto.firstQuestionType);
       await this.updatePrevQuestion(secondQuestion.id, firstQuestion.id, dto.secondQuestionType);
 
       if (behindFirstQuestion) {
         await this.updatePrevQuestion(behindFirstQuestion.id, secondQuestion.id, behindFirstQuestion.type);
       }
-      if (behindSecondQuestion) {
-        await this.updatePrevQuestion(behindSecondQuestion.id, firstQuestion.id, behindSecondQuestion.type);
-      }
     } else if (secondQuestion.prevElementId === firstQuestion.id) {
       await this.updatePrevQuestion(firstQuestion.id, secondQuestion.id, dto.firstQuestionType);
       await this.updatePrevQuestion(secondQuestion.id, previousFirstQuestion, dto.secondQuestionType);
 
-      if (behindFirstQuestion) {
-        await this.updatePrevQuestion(behindFirstQuestion.id, secondQuestion.id, behindFirstQuestion.type);
-      }
       if (behindSecondQuestion) {
         await this.updatePrevQuestion(behindSecondQuestion.id, firstQuestion.id, behindSecondQuestion.type);
       }
