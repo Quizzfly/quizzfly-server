@@ -3,6 +3,7 @@ import { SessionEntity } from '@modules/session/entities/session.entity';
 import { SessionRepository } from '@modules/session/repositories/session.repository';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Not } from 'typeorm';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { UpdateSessionDto } from './dto/update-session.dto';
 
@@ -45,6 +46,9 @@ export class SessionService {
     userId: Uuid;
     excludeSessionId: Uuid;
   }) {
-    return this.sessionRepository.delete(conditions);
+    return this.sessionRepository.delete({
+      userId: conditions.userId,
+      id: Not(conditions.excludeSessionId),
+    });
   }
 }

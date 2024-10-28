@@ -7,6 +7,8 @@ import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { AnswerRepository } from '@modules/answer/repositories/answer.repository';
 import { QuizService } from '@modules/quiz/quiz.service';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { FindOptionsWhere } from 'typeorm';
 
 @Injectable()
 export class AnswerService {
@@ -35,6 +37,16 @@ export class AnswerService {
       .get();
 
     return answer.toDto(AnswerResDto);
+  }
+
+  async findAllByCondition(filter: FindOptionsWhere<AnswerEntity> = {}) {
+    if (filter.quizId) {
+      await this.quizService.findOneById(filter.quizId as Uuid);
+    }
+
+    const answers = await this.answerRepository.findBy(filter);
+
+    return plainToInstance(AnswerResDto, answers);
   }
 
   async updateOne(answerId: Uuid, dto: UpdateAnswerReqDto) {

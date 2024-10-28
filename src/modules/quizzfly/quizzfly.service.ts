@@ -125,7 +125,7 @@ export class QuizzflyService {
     const questions =
       await this.quizzflyRepository.getQuestionsByQuizzflyId(quizzflyId);
 
-    return await this.orderedQuestions(questions);
+    return this.orderedQuestions(questions);
   }
 
   async getLastQuestion(quizzflyId: Uuid) {
@@ -154,7 +154,7 @@ export class QuizzflyService {
       orderedQuestions.push(currentQuestion);
       currentQuestion = questionMap.get(currentQuestion.id);
     }
-    return orderedQuestions;
+    return orderedQuestions.length > 0 ? orderedQuestions : questions;
   }
 
   async getBehindQuestion(quizzflyId: Uuid, currentItemId: Uuid) {
