@@ -10,6 +10,7 @@ import { MailService } from '@mail/mail.service';
 import { AuthResetPasswordDto } from '@modules/auth/dto/request/auth-reset-password.dto';
 import { EmailDto } from '@modules/auth/dto/request/email.dto';
 import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
+import { SessionEntity } from '@modules/session/entities/session.entity';
 import { SessionService } from '@modules/session/session.service';
 import { UserService } from '@modules/user/user.service';
 import {
@@ -198,6 +199,19 @@ export class AuthService {
 
     await this.userService.updateUser(payload.id as Uuid, {
       password: await hashPassword(dto.password),
+    });
+  }
+
+  async revokeTokens(payload: JwtPayloadType) {
+    const session: SessionEntity = Optional.of(
+      await this.sessionService.findById(payload.sessionId as Uuid),
+    )
+      .throwIfNullable(new BadRequestException('Session not found'))
+      .get();
+
+    await this.sessionService.deleteByUserIdWithExclude({
+      userId: payload.id as Uuid,
+      excludeSessionId: session.id,
     });
   }
 }
