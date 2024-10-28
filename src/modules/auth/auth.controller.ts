@@ -6,9 +6,11 @@ import { RolesGuard } from '@core/guards/role.guard';
 import { AuthConfirmEmailDto } from '@modules/auth/dto/request/auth-confirm-email.dto';
 import { AuthResetPasswordDto } from '@modules/auth/dto/request/auth-reset-password.dto';
 import { EmailDto } from '@modules/auth/dto/request/email.dto';
+import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Post,
@@ -147,5 +149,14 @@ export class AuthController {
   @Post('auth/reset-password')
   resetPassword(@Body() dto: AuthResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+
+  @ApiAuth({
+    summary: 'Revoke tokens in other login sessions',
+    statusCode: HttpStatus.NO_CONTENT,
+  })
+  @Delete('auth/revoke-token')
+  revokeToken(@CurrentUser() user: JwtPayloadType) {
+    return this.authService.revokeTokens(user);
   }
 }

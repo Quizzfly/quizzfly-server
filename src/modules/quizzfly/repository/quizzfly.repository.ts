@@ -25,42 +25,20 @@ export class QuizzflyRepository extends Repository<QuizzflyEntity> {
   }
 
   async getQuestionsByQuizzflyId(quizzflyId: Uuid) {
-    return await this.manager.query(
-      `
-        SELECT id               as id,
-               content          AS content,
-               'SLIDE'          AS type,
-               created_at       as created_at,
-               updated_at       as updated_at,
-               to_jsonb(files)  as files,
-               background_color as background_color,
-               NULL             as time_limit,
-               NULL             as point_multiplier,
-               NULL             as quiz_type,
-               prev_element_id  as prev_element_id
-        FROM slide
-        WHERE quizzfly_id = $1
-          and deleted_at is null
+    const quizzfly = await this.findOne({
+      where: { id: quizzflyId },
+      relations: ['slides', 'quizzes', 'quizzes.answers'],
+    });
 
-        UNION ALL
+    const slides = quizzfly.slides.map((slide) => {
+      return Object.assign({}, slide, { type: 'SLIDE' });
+    });
 
-        SELECT id               as id,
-               content          AS content,
-               'QUIZ'           AS type,
-               created_at       as created_at,
-               updated_at       as updated_at,
-               files            as files,
-               NULL             as background_color,
-               time_limit       as time_limit,
-               point_multiplier as point_multiplier,
-               quiz_type        as quiz_type,
-               prev_element_id  as prev_element_id
-        FROM quiz
-        WHERE quizzfly_id = $1
-          and deleted_at is null
-      `,
-      [quizzflyId],
-    );
+    const quizzes = quizzfly.quizzes.map((quiz) => {
+      return Object.assign({}, quiz, { type: 'QUIZ' });
+    });
+
+    return [...slides, ...quizzes];
   }
 
   async getBehindQuestion(quizzflyId: Uuid, currentItemId: Uuid) {

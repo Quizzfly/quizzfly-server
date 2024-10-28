@@ -1,5 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { ApiAuth } from '@core/decorators/http.decorators';
+import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
 import { CreateAnswerReqDto } from '@modules/answer/dto/request/create-answer.req.dto';
 import { UpdateAnswerReqDto } from '@modules/answer/dto/request/update-answer.req.dto';
 import { AnswerResDto } from '@modules/answer/dto/response/answer.res.dto';
@@ -31,7 +32,10 @@ export class AnswerController {
     description: 'The UUID of the Quiz',
   })
   @Post('quizzes/:quizId/answers')
-  createAnswer(@Param('quizId') quizId: Uuid, @Body() dto: CreateAnswerReqDto) {
+  createAnswer(
+    @Param('quizId', ValidateUuid) quizId: Uuid,
+    @Body() dto: CreateAnswerReqDto,
+  ) {
     return this.answerService.create(quizId, dto);
   }
 
@@ -44,8 +48,22 @@ export class AnswerController {
     description: 'The UUID of the Answer',
   })
   @Get('quizzes/answers/:answerId')
-  findAnswer(@Param('answerId') answerId: Uuid) {
+  findAnswer(@Param('answerId', ValidateUuid) answerId: Uuid) {
     return this.answerService.findOneById(answerId);
+  }
+
+  @ApiAuth({
+    summary: 'Get answers by quiz id',
+    type: AnswerResDto,
+    isArray: true,
+  })
+  @ApiParam({
+    name: 'quizId',
+    description: 'The UUID of the Quiz',
+  })
+  @Get('quizzes/:quizId/answers')
+  findAnswersByQuizId(@Param('quizId', ValidateUuid) quizId: Uuid) {
+    return this.answerService.findAllByCondition({ quizId });
   }
 
   @ApiAuth({
@@ -58,7 +76,7 @@ export class AnswerController {
   })
   @Put('quizzes/answers/:answerId')
   updateAnswer(
-    @Param('answerId') answerId: Uuid,
+    @Param('answerId', ValidateUuid) answerId: Uuid,
     @Body() dto: UpdateAnswerReqDto,
   ) {
     return this.answerService.updateOne(answerId, dto);
@@ -74,7 +92,7 @@ export class AnswerController {
     type: 'string',
   })
   @Delete('quizzes/answers/:answerId')
-  deleteAnswer(@Param('answerId') answerId: Uuid) {
+  deleteAnswer(@Param('answerId', ValidateUuid) answerId: Uuid) {
     return this.answerService.deleteOne(answerId);
   }
 }

@@ -7,6 +7,7 @@ import { verifyPassword } from '@core/utils/password.util';
 import { CacheTTL } from '@libs/redis/utils/cache-ttl.utils';
 import { CreateCacheKey } from '@libs/redis/utils/create-cache-key.utils';
 import { MailService } from '@mail/mail.service';
+import { SessionService } from '@modules/session/session.service';
 import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
 import { CreateUserDto } from '@modules/user/dto/request/create-user.req.dto';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
@@ -31,6 +32,7 @@ export class UserService {
     private readonly userRepository: UserRepository,
     private readonly userInfoRepository: UserInfoRepository,
     private readonly mailService: MailService,
+    private readonly sessionService: SessionService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -134,5 +136,6 @@ export class UserService {
       CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
     );
     // revoke token
+    await this.sessionService.deleteByUserId({ userId: user.id });
   }
 }
