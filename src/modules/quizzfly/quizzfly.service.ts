@@ -140,12 +140,15 @@ export class QuizzflyService {
 
   async orderedQuestions(questions: any) {
     const questionMap = new Map<any, any>();
-    questions.forEach((question: any) => {
-      questionMap.set(question.prev_element_id, question);
-    });
-    const firstQuestion = questions.find(
-      (question: any) => question.prev_element_id === null,
+    const firstQuestionIndex = questions.findIndex(
+      (question: any) => question.prevElementId === null,
     );
+    const firstQuestion = questions[firstQuestionIndex];
+
+    questions.splice(firstQuestionIndex, 1);
+    questions.forEach((question: any) => {
+      questionMap.set(question.prevElementId, question);
+    });
 
     const orderedQuestions: any[] = [];
     let currentQuestion = firstQuestion;
@@ -154,7 +157,7 @@ export class QuizzflyService {
       orderedQuestions.push(currentQuestion);
       currentQuestion = questionMap.get(currentQuestion.id);
     }
-    return orderedQuestions.length > 0 ? orderedQuestions : questions;
+    return orderedQuestions;
   }
 
   async getBehindQuestion(quizzflyId: Uuid, currentItemId: Uuid) {
@@ -225,34 +228,82 @@ export class QuizzflyService {
     );
 
     if (firstQuestion.prevElementId === secondQuestion.id) {
-      await this.updatePrevQuestion(firstQuestion.id, previouseSecondQuestion, dto.firstQuestionType);
-      await this.updatePrevQuestion(secondQuestion.id, firstQuestion.id, dto.secondQuestionType);
+      await this.updatePrevQuestion(
+        firstQuestion.id,
+        previouseSecondQuestion,
+        dto.firstQuestionType,
+      );
+      await this.updatePrevQuestion(
+        secondQuestion.id,
+        firstQuestion.id,
+        dto.secondQuestionType,
+      );
 
       if (behindFirstQuestion) {
-        await this.updatePrevQuestion(behindFirstQuestion.id, secondQuestion.id, behindFirstQuestion.type);
+        await this.updatePrevQuestion(
+          behindFirstQuestion.id,
+          secondQuestion.id,
+          behindFirstQuestion.type,
+        );
       }
     } else if (secondQuestion.prevElementId === firstQuestion.id) {
-      await this.updatePrevQuestion(firstQuestion.id, secondQuestion.id, dto.firstQuestionType);
-      await this.updatePrevQuestion(secondQuestion.id, previousFirstQuestion, dto.secondQuestionType);
+      await this.updatePrevQuestion(
+        firstQuestion.id,
+        secondQuestion.id,
+        dto.firstQuestionType,
+      );
+      await this.updatePrevQuestion(
+        secondQuestion.id,
+        previousFirstQuestion,
+        dto.secondQuestionType,
+      );
 
       if (behindSecondQuestion) {
-        await this.updatePrevQuestion(behindSecondQuestion.id, firstQuestion.id, behindSecondQuestion.type);
+        await this.updatePrevQuestion(
+          behindSecondQuestion.id,
+          firstQuestion.id,
+          behindSecondQuestion.type,
+        );
       }
     } else {
-      if(dto.firstQuestionIndex > dto.secondQuestionIndex) {
-        if(behindFirstQuestion) {
-          await this.updatePrevQuestion(behindFirstQuestion.id, previousFirstQuestion, behindFirstQuestion.type);
+      if (dto.firstQuestionIndex > dto.secondQuestionIndex) {
+        if (behindFirstQuestion) {
+          await this.updatePrevQuestion(
+            behindFirstQuestion.id,
+            previousFirstQuestion,
+            behindFirstQuestion.type,
+          );
         }
-        await this.updatePrevQuestion(firstQuestion.id, previouseSecondQuestion, dto.firstQuestionType);
-        await this.updatePrevQuestion(secondQuestion.id, firstQuestion.id, dto.secondQuestionType);
+        await this.updatePrevQuestion(
+          firstQuestion.id,
+          previouseSecondQuestion,
+          dto.firstQuestionType,
+        );
+        await this.updatePrevQuestion(
+          secondQuestion.id,
+          firstQuestion.id,
+          dto.secondQuestionType,
+        );
       } else {
-         if(behindFirstQuestion) {
-           await this.updatePrevQuestion(behindFirstQuestion.id, previousFirstQuestion, behindFirstQuestion.type);
-         }
-        if(behindSecondQuestion) {
-          await this.updatePrevQuestion(behindSecondQuestion.id, firstQuestion.id, behindSecondQuestion.type);
+        if (behindFirstQuestion) {
+          await this.updatePrevQuestion(
+            behindFirstQuestion.id,
+            previousFirstQuestion,
+            behindFirstQuestion.type,
+          );
         }
-        await this.updatePrevQuestion(firstQuestion.id, secondQuestion.id, dto.firstQuestionType);
+        if (behindSecondQuestion) {
+          await this.updatePrevQuestion(
+            behindSecondQuestion.id,
+            firstQuestion.id,
+            behindSecondQuestion.type,
+          );
+        }
+        await this.updatePrevQuestion(
+          firstQuestion.id,
+          secondQuestion.id,
+          dto.firstQuestionType,
+        );
       }
     }
   }
