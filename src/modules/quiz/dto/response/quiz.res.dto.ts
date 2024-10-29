@@ -5,6 +5,7 @@ import {
   EnumField,
   NumberField,
   StringField,
+  StringFieldOptional,
   UUIDField,
   UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
@@ -29,6 +30,9 @@ export class QuizResDto extends BaseResDto {
 
   @ClassFieldOptional(() => FileResDto, { each: true, isArray: true })
   files?: FileResDto[];
+
+  @StringFieldOptional({ name: 'background_url' })
+  backgroundUrl?: string;
 
   @UUIDFieldOptional({ name: 'prev_element_id', nullable: true })
   prevElementId: Uuid = null;

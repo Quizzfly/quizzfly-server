@@ -109,7 +109,7 @@ export class SlideService {
     const duplicateSlide = new SlideEntity();
     duplicateSlide.content = slide.content;
     duplicateSlide.files = slide.files;
-    duplicateSlide.backgroundColor = slide.backgroundColor;
+    duplicateSlide.backgroundUrl = slide.backgroundUrl;
     duplicateSlide.quizzfly = slide.quizzfly;
     duplicateSlide.prevElementId = slide.id;
 
