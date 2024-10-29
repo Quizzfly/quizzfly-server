@@ -18,8 +18,8 @@ export class InfoSlideResDto {
   @ClassFieldOptional(() => FileResDto, { each: true, isArray: true })
   files?: FileResDto[];
 
-  @StringField({ name: 'background_color' })
-  backgroundColor: string;
+  @StringField({ name: 'background_url' })
+  backgroundUrl: string;
 
   @UUIDFieldOptional({ name: 'prev_element_id', nullable: true })
   prevElementId: Uuid = null;

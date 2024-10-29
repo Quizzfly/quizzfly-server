@@ -12,7 +12,7 @@ export class CreateSlideReqDto {
   @ClassFieldOptional(() => FileInfoResDto, { each: true, isArray: true })
   files?: FileInfoResDto[];
 
-  @StringFieldOptional({ name: 'background_color' })
-  @Expose({ name: 'background_color' })
-  backgroundColor?: string;
+  @StringFieldOptional({ name: 'background_url' })
+  @Expose({ name: 'background_url' })
+  backgroundUrl?: string;
 }

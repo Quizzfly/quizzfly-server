@@ -1,5 +1,9 @@
 import { Uuid } from '@common/types/common.type';
-import { NumberField, StringField, UUIDField } from '@core/decorators/field.decorators';
+import {
+  NumberField,
+  StringField,
+  UUIDField,
+} from '@core/decorators/field.decorators';
 import { Expose } from 'class-transformer';
 
 export class ChangePositionQuestionReqDto {
