@@ -1,3 +1,4 @@
+import { SocketGateway } from '@libs/socket/SocketGateway';
 import { AuthModule } from '@modules//auth/auth.module';
 import { AnswerModule } from '@modules/answer/answer.module';
 import { FileModule } from '@modules/file/file.module';
@@ -30,6 +31,7 @@ const modulesGenerate = generateModulesSet();
     QuizModule,
     AnswerModule,
     RoomModule,
+    SocketGateway,
   ],
 })
 export class AppModule {}
