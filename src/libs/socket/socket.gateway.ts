@@ -13,7 +13,6 @@ import { Server, Socket } from 'socket.io';
     origin: '*',
   },
   namespace: '/ws',
-  transports: ['websocket'],
 })
 export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -45,6 +44,11 @@ export class SocketGateway
     }
     this.rooms[roomPin].add(client.id);
     client.join(roomPin);
+    this.server.to(roomPin).emit('roomMembersCount', this.getRoomMembersCount(roomPin));
+  }
+
+  getRoomMembersCount(roomPin: string): number {
+    return this.rooms[roomPin] ? this.rooms[roomPin].size : 0;
   }
 
   @SubscribeMessage('joinRoom')
@@ -53,6 +57,7 @@ export class SocketGateway
       this.rooms[roomPin].add(client.id);
       client.join(roomPin);
       console.log(`Client ${client.id} joined room ${roomPin}`);
+      this.server.to(roomPin).emit('roomMembersCount', this.getRoomMembersCount(roomPin));
     } else {
       client.emit('error', 'Room not found');
     }
