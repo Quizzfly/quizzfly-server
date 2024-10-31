@@ -1,6 +1,4 @@
-
-export class JoinRoomReqDto  {
-
+export class JoinRoomReqDto {
   roomPin: string;
 
   name: string;

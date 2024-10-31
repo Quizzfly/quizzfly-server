@@ -9,6 +9,7 @@ import {
   UUIDField,
   UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
+import { AnswerResDto } from '@modules/answer/dto/response/answer.res.dto';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { QuizType } from '@modules/quiz/enums/quiz-type.enum';
 
@@ -39,4 +40,7 @@ export class QuizResDto extends BaseResDto {
 
   @UUIDField({ name: 'quizzfly_id' })
   quizzflyId!: Uuid;
+
+  @ClassFieldOptional(() => AnswerResDto, { each: true, isArray: true })
+  answers?: AnswerResDto[] = [];
 }
