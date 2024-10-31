@@ -7,12 +7,15 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { UserInSocket } from '@libs/socket/model/user-in-socket';
+import { CreateRoomMessageReqDto } from '@libs/socket/payload/request/create-room.req';
+import { JoinRoomReqDto } from '@libs/socket/payload/request/join-room.req';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
-  namespace: '/ws',
+  namespace: '/rooms',
 })
 export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -22,6 +25,8 @@ export class SocketGateway
   @WebSocketServer() server: Server;
 
   private rooms: Record<string, Set<string>> = {};
+
+  private users: Record<string, UserInSocket> = {};
 
 
   afterInit(server: Server) {
@@ -37,14 +42,14 @@ export class SocketGateway
   }
 
   @SubscribeMessage('createRoom')
-  handleCreateRoom(@MessageBody() roomPin: string, @ConnectedSocket() client: Socket) {
-    if (!this.rooms[roomPin]) {
-      this.rooms[roomPin] = new Set();
-      console.log(`Room created with pin: ${roomPin}`);
+  handleCreateRoom(@MessageBody() message: CreateRoomMessageReqDto, @ConnectedSocket() client: Socket) {
+    if (!this.rooms[message.roomPin]) {
+      this.rooms[message.roomPin] = new Set();
+      console.log(`Room created with pin: ${message.roomPin}`);
     }
-    this.rooms[roomPin].add(client.id);
-    client.join(roomPin);
-    this.server.to(roomPin).emit('roomMembersCount', this.getRoomMembersCount(roomPin));
+    this.users[client.id] = { socketId: client.id, userId: message.userId, name: message.name, role: 'HOST' };
+    this.rooms[message.roomPin].add(client.id);
+    client.join(message.roomPin);
   }
 
   getRoomMembersCount(roomPin: string): number {
@@ -52,11 +57,26 @@ export class SocketGateway
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(@MessageBody() roomPin: string, @ConnectedSocket() client: Socket) {
+  handleJoinRoom(@MessageBody() message: JoinRoomReqDto, @ConnectedSocket() client: Socket) {
+    if (this.rooms[message.roomPin]) {
+      this.rooms[message.roomPin].add(client.id);
+      this.users[client.id] = { socketId: client.id, name: message.name, role: 'MEMBER' };
+      client.join(message.roomPin);
+      console.log(`Client ${client.id} joined room ${message.roomPin}`);
+      this.server.to(message.roomPin).emit('roomMembersJoin', this.users[client.id]);
+      this.server.to(message.roomPin).emit('roomMembersCount', this.getRoomMembersCount(message.roomPin));
+    } else {
+      client.emit('error', 'Room not found');
+    }
+  }
+
+  @SubscribeMessage('leaveRoom')
+  handleLeaveRoom(@MessageBody() roomPin: string, @ConnectedSocket() client: Socket) {
     if (this.rooms[roomPin]) {
-      this.rooms[roomPin].add(client.id);
-      client.join(roomPin);
-      console.log(`Client ${client.id} joined room ${roomPin}`);
+      this.rooms[roomPin].delete(client.id);
+      client.leave(roomPin);
+      console.log(`Client ${client.id} leaved room ${roomPin}`);
+      this.server.to(roomPin).emit('roomMembersLeave', client.id);
       this.server.to(roomPin).emit('roomMembersCount', this.getRoomMembersCount(roomPin));
     } else {
       client.emit('error', 'Room not found');
