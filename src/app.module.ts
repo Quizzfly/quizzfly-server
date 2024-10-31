@@ -12,6 +12,7 @@ import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import generateModulesSet from '@shared/modules-set';
 import { SharedModule } from '@shared/shared.module';
+import { SocketGateway } from '@libs/socket/socket.gateway';
 
 const modulesGenerate = generateModulesSet();
 
@@ -30,6 +31,7 @@ const modulesGenerate = generateModulesSet();
     QuizModule,
     AnswerModule,
     RoomModule,
+    SocketGateway,
   ],
 })
 export class AppModule {}
