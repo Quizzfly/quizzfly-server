@@ -46,7 +46,10 @@ export class QuizService {
 
   async findOneById(quizId: Uuid) {
     const quiz: QuizEntity = Optional.of(
-      await this.quizRepository.findOne({ where: { id: quizId } }),
+      await this.quizRepository.findOne({
+        where: { id: quizId },
+        relations: ['answers'],
+      }),
     )
       .throwIfNullable(new NotFoundException('Quiz is not found'))
       .get();
@@ -85,6 +88,15 @@ export class QuizService {
     quizDuplicate.prevElementId = quiz.id;
     await quizDuplicate.save();
 
+    const answers = await this.eventEmitter.emitAsync('duplicate.answers', {
+      quizId,
+      duplicateQuizId: quizDuplicate.id,
+    });
+
+    if (answers && answers.length > 0) {
+      quizDuplicate.answers = answers;
+    }
+
     if (behindQuestion !== null) {
       if (behindQuestion.type === 'SLIDE') {
         this.eventEmitter.emit('update.slide.position', {
@@ -99,7 +111,7 @@ export class QuizService {
       }
     }
 
-    return this.findOneById(quizDuplicate.id);
+    return quizDuplicate;
   }
 
   async updateOne(

@@ -1,4 +1,3 @@
-
 export interface UserInSocket {
   socketId: string;
   userId?: string;

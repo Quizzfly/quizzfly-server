@@ -1,4 +1,5 @@
 import { Uuid } from '@common/types/common.type';
+import { defaultInstanceEntity } from '@core/constants/app.constant';
 import { Optional } from '@core/utils/optional';
 import { CreateAnswerReqDto } from '@modules/answer/dto/request/create-answer.req.dto';
 import { UpdateAnswerReqDto } from '@modules/answer/dto/request/update-answer.req.dto';
@@ -7,6 +8,7 @@ import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { AnswerRepository } from '@modules/answer/repositories/answer.repository';
 import { QuizService } from '@modules/quiz/quiz.service';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
 import { FindOptionsWhere } from 'typeorm';
 
@@ -17,6 +19,7 @@ export class AnswerService {
   constructor(
     private readonly answerRepository: AnswerRepository,
     private readonly quizService: QuizService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(quizId: Uuid, dto: CreateAnswerReqDto) {
@@ -61,5 +64,24 @@ export class AnswerService {
     await this.findOneById(answerId);
 
     await this.answerRepository.softDelete({ id: answerId });
+  }
+
+  @OnEvent('duplicate.answers')
+  async addAnswerForDuplicateQuiz(dto: {
+    quizId: Uuid;
+    duplicateQuizId: Uuid;
+  }) {
+    const answers = await this.findAllByCondition({ quizId: dto.quizId });
+    if (answers?.length > 0) {
+      const items = answers.map((answer) => {
+        return new AnswerEntity({
+          ...answer,
+          quizId: dto.duplicateQuizId,
+          ...defaultInstanceEntity,
+        });
+      });
+      return this.answerRepository.save(items);
+    }
+    return null;
   }
 }

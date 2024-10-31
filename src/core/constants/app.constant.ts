@@ -39,4 +39,5 @@ export const defaultInstanceEntity = Object.freeze({
   id: undefined,
   createdAt: undefined,
   updatedAt: undefined,
+  deletedAt: null,
 });

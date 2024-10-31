@@ -1,3 +1,4 @@
+import { SocketGateway } from '@libs/socket/socket.gateway';
 import { AuthModule } from '@modules//auth/auth.module';
 import { AnswerModule } from '@modules/answer/answer.module';
 import { FileModule } from '@modules/file/file.module';
@@ -12,7 +13,6 @@ import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import generateModulesSet from '@shared/modules-set';
 import { SharedModule } from '@shared/shared.module';
-import { SocketGateway } from '@libs/socket/socket.gateway';
 
 const modulesGenerate = generateModulesSet();
 
