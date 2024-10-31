@@ -50,6 +50,7 @@ export class SocketGateway
     this.users[client.id] = { socketId: client.id, userId: message.userId, name: message.name, role: 'HOST' };
     this.rooms[message.roomPin].add(client.id);
     client.join(message.roomPin);
+    this.server.to(message.roomPin).emit('roomMembersJoin', this.users[client.id]);
   }
 
   getRoomMembersCount(roomPin: string): number {
@@ -64,7 +65,7 @@ export class SocketGateway
       client.join(message.roomPin);
       console.log(`Client ${client.id} joined room ${message.roomPin}`);
       this.server.to(message.roomPin).emit('roomMembersJoin', this.users[client.id]);
-      this.server.to(message.roomPin).emit('roomMembersCount', this.getRoomMembersCount(message.roomPin));
+      this.server.to(message.roomPin).emit('roomMembersCount', {count: this.getRoomMembersCount(message.roomPin)});
     } else {
       client.emit('error', 'Room not found');
     }
@@ -76,8 +77,8 @@ export class SocketGateway
       this.rooms[roomPin].delete(client.id);
       client.leave(roomPin);
       console.log(`Client ${client.id} leaved room ${roomPin}`);
-      this.server.to(roomPin).emit('roomMembersLeave', client.id);
-      this.server.to(roomPin).emit('roomMembersCount', this.getRoomMembersCount(roomPin));
+      this.server.to(roomPin).emit('roomMembersLeave', {socketId: client.id});
+      this.server.to(roomPin).emit('roomMembersCount', {count: this.getRoomMembersCount(roomPin)});
     } else {
       client.emit('error', 'Room not found');
     }
