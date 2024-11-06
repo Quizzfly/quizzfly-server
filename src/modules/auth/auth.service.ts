@@ -28,6 +28,12 @@ import { RegisterReqDto } from './dto/request/register.req.dto';
 import { LoginResDto } from './dto/response/login.res.dto';
 import { RefreshResDto } from './dto/response/refresh.res.dto';
 import { RegisterResDto } from './dto/response/register.res.dto';
+import { LoginWithGoogleReqDto } from '@modules/auth/dto/request/login-with-google.req.dto';
+import { HttpService } from '@nestjs/axios';
+import { GOOGLE_URL } from '@core/constants/app.constant';
+import { firstValueFrom } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { UserEntity } from '@modules/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -36,6 +42,7 @@ export class AuthService {
     private readonly mailService: MailService,
     private readonly userService: UserService,
     private readonly sessionService: SessionService,
+    private readonly httpService: HttpService,
   ) {}
 
   async signIn(
@@ -62,24 +69,22 @@ export class AuthService {
       throw new UnauthorizedException(ErrorCode.A001);
     }
 
-    const hash = crypto
-      .createHash('sha256')
-      .update(randomStringGenerator())
-      .digest('hex');
+    return this.createToken(user);
+  }
 
-    const session = await this.sessionService.create({ hash, userId: user.id });
-
-    const token = await this.jwtUtil.createToken({
-      id: user.id,
-      sessionId: session.id,
-      hash,
-      role: user.role,
-    });
-
-    return plainToInstance(LoginResDto, {
-      userId: user.id,
-      ...token,
-    });
+  async loginWithGoogle(dto: LoginWithGoogleReqDto) {
+    const googleResponse = await firstValueFrom(
+      this.httpService
+        .get(GOOGLE_URL.concat(dto.accessToken))
+        .pipe(map((response) => response.data)),
+    );
+    const user = await this.userService.findOneByCondition({ email: googleResponse.email });
+    if(user !== null) {
+      return this.createToken(user);
+    } else {
+      const newUser = await this.userService.createUserWithGoogle(googleResponse.email, googleResponse.id, googleResponse.name, googleResponse.picture);
+      return this.createToken(newUser);
+    }
   }
 
   async register(dto: RegisterReqDto): Promise<RegisterResDto> {
@@ -212,6 +217,27 @@ export class AuthService {
     await this.sessionService.deleteByUserIdWithExclude({
       userId: payload.id as Uuid,
       excludeSessionId: session.id,
+    });
+  }
+
+  async createToken(user: UserEntity) {
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    const session = await this.sessionService.create({ hash, userId: user.id });
+
+    const token = await this.jwtUtil.createToken({
+      id: user.id,
+      sessionId: session.id,
+      hash,
+      role: user.role,
+    });
+
+    return plainToInstance(LoginResDto, {
+      userId: user.id,
+      ...token,
     });
   }
 }

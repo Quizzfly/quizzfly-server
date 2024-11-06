@@ -25,6 +25,7 @@ import { RegisterReqDto } from './dto/request/register.req.dto';
 import { LoginResDto } from './dto/response/login.res.dto';
 import { RefreshResDto } from './dto/response/refresh.res.dto';
 import { RegisterResDto } from './dto/response/register.res.dto';
+import { LoginWithGoogleReqDto } from '@modules/auth/dto/request/login-with-google.req.dto';
 
 @ApiTags('Auth APIs')
 @Controller({
@@ -78,8 +79,17 @@ export class AuthController {
     summary: 'Sign in for user',
   })
   @Post('auth/login')
-  async signIn(@Body() userLogin: LoginReqDto): Promise<LoginResDto> {
+  async login(@Body() userLogin: LoginReqDto): Promise<LoginResDto> {
     return this.authService.signIn(userLogin);
+  }
+
+  @ApiPublic({
+    type: LoginResDto,
+    summary: 'Login with google'
+  })
+  @Post('auth/google')
+  async loginWithGoogle(@Body() request: LoginWithGoogleReqDto) {
+    return await this.authService.loginWithGoogle(request);
   }
 
   @ApiPublic({

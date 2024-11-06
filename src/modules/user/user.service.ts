@@ -57,6 +57,25 @@ export class UserService {
     return savedUser;
   }
 
+  async createUserWithGoogle(email: string, password: string, name: string, avatar: string) {
+    const newUser = new UserEntity({
+      email,
+      password,
+      isConfirmed: true,
+      isActive: true,
+    });
+    const savedUser = await this.userRepository.save(newUser);
+
+    const newUserInfo = new UserInfoEntity({
+      username: email.split('@')[0],
+      userId: savedUser.id,
+      name,
+      avatar
+    });
+    await this.userInfoRepository.save(newUserInfo);
+    return savedUser;
+  }
+
   async findById(id: Uuid) {
     const user = await this.userRepository.findOneByOrFail({ id });
     return plainToInstance(UserResDto, user);
@@ -135,7 +154,6 @@ export class UserService {
     await this.cacheManager.del(
       CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
     );
-    // revoke token
     await this.sessionService.deleteByUserId({ userId: user.id });
   }
 }

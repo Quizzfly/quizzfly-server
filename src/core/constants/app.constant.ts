@@ -41,3 +41,5 @@ export const defaultInstanceEntity = Object.freeze({
   updatedAt: undefined,
   deletedAt: null,
 });
+
+export const GOOGLE_URL = "https://www.googleapis.com/oauth2/v1/userinfo?access_token=";
