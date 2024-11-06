@@ -4,9 +4,10 @@ import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [UserModule, SessionModule, CoreModule],
+  imports: [UserModule, SessionModule, CoreModule, HttpModule.register({}),],
   controllers: [AuthController],
   providers: [AuthService],
 })
