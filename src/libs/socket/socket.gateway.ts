@@ -1,9 +1,11 @@
+import { WsExceptionFilter } from '@core/filters/ws-exception.filter';
 import { RoleInRoom } from '@libs/socket/enums/role-in-room.enum';
-import { RoomSocket } from '@libs/socket/model/room-socket';
+import { RoomModel } from '@libs/socket/model/room.model';
 import { UserInSocket } from '@libs/socket/model/user-in-socket';
 import { CreateRoomMessageReqDto } from '@libs/socket/payload/request/create-room.req';
 import { JoinRoomReqDto } from '@libs/socket/payload/request/join-room.req';
-import { Logger } from '@nestjs/common';
+import { StartQuizReqDto } from '@libs/socket/payload/request/start-quiz.req.dto';
+import { Logger, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -13,9 +15,11 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+@UseFilters(WsExceptionFilter)
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -25,14 +29,12 @@ import { Server, Socket } from 'socket.io';
 export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor() {}
-
   @WebSocketServer() server: Server;
   private readonly logger = new Logger(SocketGateway.name);
-
-  private rooms: Record<string, RoomSocket> = {};
-
+  private rooms: Record<string, RoomModel> = {};
   private users: Record<string, UserInSocket> = {};
+
+  constructor() {}
 
   afterInit(server: Server) {
     console.log(server);
@@ -69,7 +71,7 @@ export class SocketGateway
   }
 
   getRoomMembersCount(roomPin: string): number {
-    return this.rooms[roomPin] ? this.rooms[roomPin].players.size : 0;
+    return this.rooms[roomPin] ? this.rooms[roomPin].players.size - 1 : 0;
   }
 
   @SubscribeMessage('joinRoom')
@@ -129,10 +131,18 @@ export class SocketGateway
     @ConnectedSocket() client: Socket,
   ) {
     const room = this.rooms[message.roomPin];
-    if (room && this.users[client.id].role === RoleInRoom.HOST) {
-      room.locked = true;
-      this.server.to(message.roomPin).emit('roomLocked', { locked: true });
-      console.log(`Room with pin: ${message.roomPin} is now locked`);
+    const host = this.users[client.id];
+
+    if (room) {
+      if (host && host.role === RoleInRoom.HOST) {
+        room.locked = true;
+        this.server.to(message.roomPin).emit('roomLocked', { locked: true });
+        this.logger.log(`Room with pin: ${message.roomPin} is now locked`);
+      } else {
+        throw new WsException('Only the host can lock the room.');
+      }
+    } else {
+      throw new WsException('Room not found');
     }
   }
 
@@ -142,10 +152,39 @@ export class SocketGateway
     @ConnectedSocket() client: Socket,
   ) {
     const room = this.rooms[message.roomPin];
-    if (room && this.users[client.id].role === RoleInRoom.HOST) {
-      room.locked = false;
-      this.server.to(message.roomPin).emit('roomLocked', { locked: false });
-      console.log(`Room with pin: ${message.roomPin} is now unlocked`);
+    const host = this.users[client.id];
+
+    if (room) {
+      if (host && host.role === RoleInRoom.HOST) {
+        room.locked = false;
+        this.server.to(message.roomPin).emit('roomLocked', { locked: false });
+        this.logger.log(`Room with pin: ${message.roomPin} is now unlocked`);
+      } else {
+        throw new WsException('Only the host can unlock the room.');
+      }
+    } else {
+      throw new WsException('Room not found');
+    }
+  }
+
+  @SubscribeMessage('startQuiz')
+  handleStartQuiz(
+    @MessageBody() data: StartQuizReqDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomPin, hostId } = data;
+    const user = this.users[client.id];
+    const room = this.rooms[data.roomPin];
+
+    if (user && user.role === RoleInRoom.HOST && room) {
+      this.server.to(roomPin).emit('quizStarted', {
+        message: 'Quiz has started!',
+        roomPin: roomPin,
+        hostName: user.name,
+      });
+      this.logger.log(`Quiz started in room: ${roomPin}`);
+    } else {
+      throw new WsException('Only the host can start the quiz.');
     }
   }
 }

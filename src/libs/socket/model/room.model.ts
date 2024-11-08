@@ -1,4 +1,4 @@
-export interface RoomSocket {
+export interface RoomModel {
   players: Set<string>;
   locked: boolean;
 }
