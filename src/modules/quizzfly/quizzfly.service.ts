@@ -13,6 +13,10 @@ import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
+import {
+  QuizzflyAction,
+  QuizzflyScope,
+} from '@modules/quizzfly/events/quizzfly.event';
 import { QuizzflyRepository } from '@modules/quizzfly/repository/quizzfly.repository';
 import { UserService } from '@modules/user/user.service';
 import {
@@ -20,7 +24,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -116,7 +120,9 @@ export class QuizzflyService {
     return quizzfly.toDto(InfoDetailQuizzflyResDto);
   }
 
-  async getQuestionsByQuizzflyId(quizzflyId: Uuid, userId: Uuid) {
+  @OnEvent(`${QuizzflyScope}.${QuizzflyAction.getQuestions}`)
+  async getQuestionsByQuizzflyId(payload: { quizzflyId: Uuid; userId: Uuid }) {
+    const { quizzflyId, userId } = payload;
     const quizzfly = await this.findById(quizzflyId);
     if (quizzfly.userId !== userId) {
       throw new ForbiddenException(ErrorCode.A009);
