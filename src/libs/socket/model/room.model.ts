@@ -1,3 +1,5 @@
+import { UserModel } from '@libs/socket/model/user.model';
+
 export interface RoomModel {
   roomPin?: string;
   quizzflyId?: string;
@@ -8,4 +10,5 @@ export interface RoomModel {
   startTime?: number;
   endTime?: number;
   locked: boolean;
+  host: UserModel;
 }

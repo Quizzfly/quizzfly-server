@@ -57,7 +57,12 @@ export class UserService {
     return savedUser;
   }
 
-  async createUserWithGoogle(email: string, password: string, name: string, avatar: string) {
+  async createUserWithGoogle(
+    email: string,
+    password: string,
+    name: string,
+    avatar: string,
+  ) {
     const newUser = new UserEntity({
       email,
       password,
@@ -70,7 +75,7 @@ export class UserService {
       username: email.split('@')[0],
       userId: savedUser.id,
       name,
-      avatar
+      avatar,
     });
     await this.userInfoRepository.save(newUserInfo);
     return savedUser;

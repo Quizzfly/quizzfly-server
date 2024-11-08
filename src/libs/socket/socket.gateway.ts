@@ -61,20 +61,27 @@ export class SocketGateway
         players: new Set(),
         locked: false,
         roomPin: message.roomPin,
+        host: {
+          socketId: client.id,
+          userId: message.userId,
+          name: message.name,
+          role: RoleInRoom.HOST,
+        },
       };
       this.logger.log(`Room created with pin: ${message.roomPin}`);
     }
+
     this.users[client.id] = {
       socketId: client.id,
       userId: message.userId,
       name: message.name,
       role: RoleInRoom.HOST,
     };
-    this.rooms[message.roomPin].players.add(client.id);
+
+    const room = this.rooms[message.roomPin];
+    room.players.add(client.id);
     client.join(message.roomPin);
-    this.server
-      .to(message.roomPin)
-      .emit('roomMembersJoin', this.users[client.id]);
+    client.emit('roomCreated', { ...room, players: undefined });
   }
 
   getRoomMembersCount(roomPin: string): number {
@@ -89,28 +96,32 @@ export class SocketGateway
     const room = this.rooms[message.roomPin];
     if (room) {
       if (room.locked) {
-        client.emit('roomJoinError', { message: 'Room is locked' });
         this.logger.log(
           `User ${client.id} attempted to join a locked room: ${message.roomPin}`,
         );
+        throw new WsException('Room is locked');
       } else {
-        this.rooms[message.roomPin].players.add(client.id);
+        room.players.add(client.id);
         this.users[client.id] = {
           socketId: client.id,
+          userId: message.userId,
           name: message.name,
           role: RoleInRoom.PLAYER,
         };
         client.join(message.roomPin);
-        this.logger.log(`Client ${client.id} joined room ${message.roomPin}`);
-        this.server
-          .to(message.roomPin)
-          .emit('roomMembersJoin', this.users[client.id]);
-        this.server.to(message.roomPin).emit('roomMembersCount', {
-          count: this.getRoomMembersCount(message.roomPin),
+
+        const player = this.users[client.id];
+        this.logger.log(
+          `Player [${player.socketId} - ${player.userId} - ${player.name}] joined room ${message.roomPin}`,
+        );
+
+        this.server.to(message.roomPin).emit('playerJoined', {
+          newPlayer: player,
+          totalPlayer: room.players.size - 1,
         });
       }
     } else {
-      client.emit('error', 'Room not found');
+      throw new WsException('Room not found');
     }
   }
 
@@ -119,16 +130,27 @@ export class SocketGateway
     @MessageBody() roomPin: string,
     @ConnectedSocket() client: Socket,
   ) {
-    if (this.rooms[roomPin]) {
-      this.rooms[roomPin].players.delete(client.id);
+    const room = this.rooms[roomPin];
+
+    if (room) {
+      room.players.delete(client.id);
       client.leave(roomPin);
-      this.logger.log(`Client ${client.id} leaved room ${roomPin}`);
-      this.server.to(roomPin).emit('roomMembersLeave', { socketId: client.id });
-      this.server
-        .to(roomPin)
-        .emit('roomMembersCount', { count: this.getRoomMembersCount(roomPin) });
+
+      const player = this.users[client.id];
+      if (!player) {
+        throw new WsException('Player not found');
+      }
+      this.logger.log(
+        `Player [${player.socketId} - ${player.userId} - ${player.name}] leaved room ${roomPin}`,
+      );
+
+      this.server.to(roomPin).emit('playerLeft', {
+        playerLeft: player,
+        totalPlayer: room.players.size - 1,
+      });
+      this.users[client.id] = undefined;
     } else {
-      client.emit('error', 'Room not found');
+      throw new WsException('Room not found');
     }
   }
 
@@ -187,6 +209,9 @@ export class SocketGateway
     }
 
     if (user && user.role === RoleInRoom.HOST) {
+      if (room.startTime) {
+        throw new WsException('Quiz has been started');
+      }
       const questions = await this.eventService.emitAsync(
         new GetQuestionsEvent({
           userId: hostId as Uuid,

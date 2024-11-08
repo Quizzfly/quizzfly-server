@@ -6,6 +6,7 @@ import { RolesGuard } from '@core/guards/role.guard';
 import { AuthConfirmEmailDto } from '@modules/auth/dto/request/auth-confirm-email.dto';
 import { AuthResetPasswordDto } from '@modules/auth/dto/request/auth-reset-password.dto';
 import { EmailDto } from '@modules/auth/dto/request/email.dto';
+import { LoginWithGoogleReqDto } from '@modules/auth/dto/request/login-with-google.req.dto';
 import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
 import {
   Body,
@@ -25,7 +26,6 @@ import { RegisterReqDto } from './dto/request/register.req.dto';
 import { LoginResDto } from './dto/response/login.res.dto';
 import { RefreshResDto } from './dto/response/refresh.res.dto';
 import { RegisterResDto } from './dto/response/register.res.dto';
-import { LoginWithGoogleReqDto } from '@modules/auth/dto/request/login-with-google.req.dto';
 
 @ApiTags('Auth APIs')
 @Controller({
@@ -85,7 +85,7 @@ export class AuthController {
 
   @ApiPublic({
     type: LoginResDto,
-    summary: 'Login with google'
+    summary: 'Login with google',
   })
   @Post('auth/google')
   async loginWithGoogle(@Body() request: LoginWithGoogleReqDto) {
