@@ -116,7 +116,10 @@ export class QuizzflyController {
     @CurrentUser('id') userId: Uuid,
     @Param('quizzflyId') quizzflyId: Uuid,
   ) {
-    return this.quizzflyService.getQuestionsByQuizzflyId(quizzflyId, userId);
+    return this.quizzflyService.getQuestionsByQuizzflyId({
+      quizzflyId,
+      userId,
+    });
   }
 
   @Delete(':quizzflyId')

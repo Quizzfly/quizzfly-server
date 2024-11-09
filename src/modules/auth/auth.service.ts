@@ -1,4 +1,5 @@
 import { Uuid } from '@common/types/common.type';
+import { GOOGLE_URL } from '@core/constants/app.constant';
 import { ROLE } from '@core/constants/entity.enum';
 import { ErrorCode } from '@core/constants/error-code.constant';
 import { TOKEN_TYPE } from '@core/constants/token-type.enum';
@@ -9,10 +10,13 @@ import { hashPassword, verifyPassword } from '@core/utils/password.util';
 import { MailService } from '@mail/mail.service';
 import { AuthResetPasswordDto } from '@modules/auth/dto/request/auth-reset-password.dto';
 import { EmailDto } from '@modules/auth/dto/request/email.dto';
+import { LoginWithGoogleReqDto } from '@modules/auth/dto/request/login-with-google.req.dto';
 import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
 import { SessionEntity } from '@modules/session/entities/session.entity';
 import { SessionService } from '@modules/session/session.service';
+import { UserEntity } from '@modules/user/entities/user.entity';
 import { UserService } from '@modules/user/user.service';
+import { HttpService } from '@nestjs/axios';
 import {
   BadRequestException,
   Injectable,
@@ -22,18 +26,14 @@ import {
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { plainToInstance } from 'class-transformer';
 import crypto from 'crypto';
+import { firstValueFrom } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { LoginReqDto } from './dto/request/login.req.dto';
 import { RefreshReqDto } from './dto/request/refresh.req.dto';
 import { RegisterReqDto } from './dto/request/register.req.dto';
 import { LoginResDto } from './dto/response/login.res.dto';
 import { RefreshResDto } from './dto/response/refresh.res.dto';
 import { RegisterResDto } from './dto/response/register.res.dto';
-import { LoginWithGoogleReqDto } from '@modules/auth/dto/request/login-with-google.req.dto';
-import { HttpService } from '@nestjs/axios';
-import { GOOGLE_URL } from '@core/constants/app.constant';
-import { firstValueFrom } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { UserEntity } from '@modules/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -78,11 +78,18 @@ export class AuthService {
         .get(GOOGLE_URL.concat(dto.accessToken))
         .pipe(map((response) => response.data)),
     );
-    const user = await this.userService.findOneByCondition({ email: googleResponse.email });
-    if(user !== null) {
+    const user = await this.userService.findOneByCondition({
+      email: googleResponse.email,
+    });
+    if (user !== null) {
       return this.createToken(user);
     } else {
-      const newUser = await this.userService.createUserWithGoogle(googleResponse.email, googleResponse.id, googleResponse.name, googleResponse.picture);
+      const newUser = await this.userService.createUserWithGoogle(
+        googleResponse.email,
+        googleResponse.id,
+        googleResponse.name,
+        googleResponse.picture,
+      );
       return this.createToken(newUser);
     }
   }
