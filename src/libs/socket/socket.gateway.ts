@@ -1,12 +1,15 @@
 import { Uuid } from '@common/types/common.type';
 import { EventService } from '@core/events/event.service';
 import { WsExceptionFilter } from '@core/filters/ws-exception.filter';
+import { Optional } from '@core/utils/optional';
 import { RoleInRoom } from '@libs/socket/enums/role-in-room.enum';
 import { RoomModel } from '@libs/socket/model/room.model';
 import { UserModel } from '@libs/socket/model/user.model';
 import { CreateRoomMessageReqDto } from '@libs/socket/payload/request/create-room.req';
 import { JoinRoomReqDto } from '@libs/socket/payload/request/join-room.req';
 import { StartQuizReqDto } from '@libs/socket/payload/request/start-quiz.req.dto';
+import { CalculateScoreUtil } from '@libs/socket/utils/calculate-score.util';
+import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { GetQuestionsEvent } from '@modules/quizzfly/events/quizzfly.event';
 import { Logger, UseFilters } from '@nestjs/common';
 import {
@@ -36,6 +39,7 @@ export class SocketGateway
   private readonly logger = new Logger(SocketGateway.name);
   private rooms: Record<string, RoomModel> = {};
   private users: Record<string, UserModel> = {};
+  private clients: Map<string, Socket> = new Map();
 
   constructor(private readonly eventService: EventService) {}
 
@@ -44,10 +48,12 @@ export class SocketGateway
   }
 
   handleDisconnect(client: Socket) {
+    this.clients.delete(client.id);
     this.logger.log(`Disconnected: ${client.id}`);
   }
 
   handleConnection(client: Socket, ...args: any[]) {
+    this.clients.set(client.id, client);
     this.logger.log(`Connected ${client.id}`);
   }
 
@@ -107,6 +113,8 @@ export class SocketGateway
           userId: message.userId,
           name: message.name,
           role: RoleInRoom.PLAYER,
+          answers: {},
+          totalScore: 0,
         };
         client.join(message.roomPin);
 
@@ -227,7 +235,18 @@ export class SocketGateway
 
       room.startTime = Date.now();
       room.currentQuestion = questions[0];
+      room.currentQuestion.startTime = Date.now();
       room.currentQuestionId = room.currentQuestion.id;
+      const question = room.currentQuestion;
+      if (question.type === 'QUIZ') {
+        question.choices = {};
+        question?.answers.forEach((answer: AnswerEntity) => {
+          question.choices[answer.id] = 0;
+          if (answer.isCorrect) {
+            question.correctAnswerId = answer.id;
+          }
+        });
+      }
 
       this.server.to(roomPin).emit('quizStarted', {
         roomPin,
@@ -263,8 +282,20 @@ export class SocketGateway
         room.endTime = Date.now();
         throw new WsException('The quiz has run out of questions.');
       }
+
       room.currentQuestion = question;
+      room.currentQuestion.startTime = Date.now();
       room.currentQuestionId = question.id;
+
+      if (room.currentQuestion.type === 'QUIZ') {
+        room.currentQuestion.choices = {};
+        room.currentQuestion.answers.forEach((answer: AnswerEntity) => {
+          room.currentQuestion.choices[answer.id] = 0;
+          if (answer.isCorrect) {
+            room.currentQuestion.correctAnswerId = answer.id;
+          }
+        });
+      }
 
       this.server.to(payload.roomPin).emit('nextQuestion', {
         roomPin: payload.roomPin,
@@ -274,5 +305,95 @@ export class SocketGateway
     } else {
       throw new WsException('Only the host can get next question.');
     }
+  }
+
+  @SubscribeMessage('answerQuestion')
+  handleAnswerQuestion(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: { roomPin: string; questionId: string; answerId: string },
+  ) {
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found'))
+      .get();
+
+    const player: UserModel = Optional.of(this.users[client.id])
+      .throwIfNotPresent(new WsException('Player invalid'))
+      .get();
+    const question = room.currentQuestion;
+    if (question.type !== 'QUIZ') {
+      throw new WsException('Not allowed');
+    }
+
+    if (!question.choices[payload.answerId]) {
+      question.choices[payload.answerId] = 1;
+    } else {
+      question.choices[payload.answerId] += 1;
+    }
+
+    const calculateScore = new CalculateScoreUtil({
+      baseScore: 100,
+      startTime: question.startTime,
+      timeLimit: question.timeLimit,
+      responseTime: Date.now(),
+      isCorrect: payload.answerId === question.correctAnswerId,
+      pointMultiplier: question.pointMultiplier,
+    });
+    const score = calculateScore.score;
+
+    if (!player.answers[payload.questionId]) {
+      player.answers[payload.questionId] = {
+        questionId: payload.questionId,
+        chosenAnswerId: payload.answerId,
+        isCorrect: question.correctAnswerId === payload.answerId,
+        score,
+      };
+    }
+
+    player.totalScore = player.totalScore ? player.totalScore + score : score;
+    client.emit('answerQuestion', { message: 'Waiting...' });
+  }
+
+  @SubscribeMessage('finishQuestion')
+  handleQuestionFinish(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    payload: {
+      roomPin: string;
+      questionId: string;
+    },
+  ) {
+    const room: RoomModel = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found'))
+      .get();
+    const user = this.users[client.id];
+    if (!user || user.role !== RoleInRoom.HOST) {
+      throw new WsException(
+        'Only the room owner is allowed to perform this action.',
+      );
+    }
+
+    Array.from(room.players).forEach((playerId: string) => {
+      const player = this.users[playerId];
+      const client = this.clients.get(playerId);
+      if (player && client && player.role === RoleInRoom.PLAYER) {
+        client.emit('resultAnswer', {
+          roomPin: payload.roomPin,
+          score: player.answers[payload.questionId].score,
+          totalScore: player.totalScore,
+          correct: player.answers[payload.questionId].isCorrect,
+          questionId: payload.questionId,
+          correctAnswerId: room.currentQuestion.correctAnswerId,
+          chosenAnswerId: player.answers[payload.questionId].chosenAnswerId,
+        });
+      }
+    });
+
+    client.emit('summaryAnswer', {
+      roomPin: payload.roomPin,
+      questionId: payload.questionId,
+      correctAnswerId: room.currentQuestion.correctAnswerId,
+      answersCount: room.currentQuestion.choices,
+    });
   }
 }
