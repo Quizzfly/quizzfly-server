@@ -26,6 +26,7 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { KickPlayerReqDto } from '@libs/socket/payload/request/kick-player.req';
 
 @UseFilters(WsExceptionFilter)
 @WebSocketGateway({
@@ -196,32 +197,32 @@ export class SocketGateway
     }
   }
 
-  @SubscribeMessage('kickMember')
-  handleKickMemberInRoom(@MessageBody() payload: { roomPin: string, socketId: string}, @ConnectedSocket() client: Socket) {
+  @SubscribeMessage('kickPlayer')
+  handleKickPlayerInRoom(@MessageBody() payload: KickPlayerReqDto, @ConnectedSocket() client: Socket) {
     const room = this.rooms[payload.roomPin];
-    if(room == null) {
+    if(room === null) {
       throw new WsException('Room not found');
     }
-
     const user = this.users[client.id];
     if(user.role !== RoleInRoom.HOST) {
-      throw new WsException('Only the host can kick member in room');
+      throw new WsException('Only the host can kick player in room');
     }
+
     const socket = this.clients.get(payload.socketId);
     if(socket) {
-      const player = this.users[client.id];
+      const player = this.users[payload.socketId];
       if (!player) {
         throw new WsException('Player not found');
       }
 
       socket.leave(payload.roomPin);
-      room.players.delete(client.id);
+      room.players.delete(payload.socketId);
       delete this.users[payload.socketId];
 
-      this.server.to(payload.roomPin).emit('kickMember', {
+      this.server.to(payload.roomPin).emit('kickPlayer', convertCamelToSnake({
         playerLeft: player,
         totalPlayer: room.players.size - 1,
-      });
+      }));
     }
   }
 
