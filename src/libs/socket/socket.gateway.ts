@@ -1,6 +1,8 @@
 import { Uuid } from '@common/types/common.type';
 import { EventService } from '@core/events/event.service';
 import { WsExceptionFilter } from '@core/filters/ws-exception.filter';
+import { convertCamelToSnake } from '@core/helpers';
+import { WsResponseInterceptor } from '@core/interceptors/ws-response.interceptor';
 import { Optional } from '@core/utils/optional';
 import { RoleInRoom } from '@libs/socket/enums/role-in-room.enum';
 import { RoomModel } from '@libs/socket/model/room.model';
@@ -11,7 +13,7 @@ import { StartQuizReqDto } from '@libs/socket/payload/request/start-quiz.req.dto
 import { CalculateScoreUtil } from '@libs/socket/utils/calculate-score.util';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { GetQuestionsEvent } from '@modules/quizzfly/events/quizzfly.event';
-import { Logger, UseFilters } from '@nestjs/common';
+import { Logger, UseFilters, UseInterceptors } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -57,6 +59,7 @@ export class SocketGateway
     this.logger.log(`Connected ${client.id}`);
   }
 
+  @UseInterceptors(new WsResponseInterceptor())
   @SubscribeMessage('createRoom')
   handleCreateRoom(
     @MessageBody() message: CreateRoomMessageReqDto,
@@ -87,7 +90,11 @@ export class SocketGateway
     const room = this.rooms[message.roomPin];
     room.players.add(client.id);
     client.join(message.roomPin);
-    client.emit('roomCreated', { ...room, players: undefined });
+    client.emit(
+      'roomCreated',
+      convertCamelToSnake({ ...room, players: undefined }),
+    );
+    return room;
   }
 
   getRoomMembersCount(roomPin: string): number {
@@ -100,6 +107,7 @@ export class SocketGateway
     @ConnectedSocket() client: Socket,
   ) {
     const room = this.rooms[message.roomPin];
+    console.log(room);
     if (room) {
       if (room.locked) {
         this.logger.log(
@@ -123,10 +131,13 @@ export class SocketGateway
           `Player [${player.socketId} - ${player.userId} - ${player.name}] joined room ${message.roomPin}`,
         );
 
-        this.server.to(message.roomPin).emit('playerJoined', {
-          newPlayer: player,
-          totalPlayer: room.players.size - 1,
-        });
+        this.server.to(message.roomPin).emit(
+          'playerJoined',
+          convertCamelToSnake({
+            newPlayer: player,
+            totalPlayer: room.players.size - 1,
+          }),
+        );
       }
     } else {
       throw new WsException('Room not found');
@@ -152,10 +163,13 @@ export class SocketGateway
         `Player [${player.socketId} - ${player.userId} - ${player.name}] leaved room ${roomPin}`,
       );
 
-      this.server.to(roomPin).emit('playerLeft', {
-        playerLeft: player,
-        totalPlayer: room.players.size - 1,
-      });
+      this.server.to(roomPin).emit(
+        'playerLeft',
+        convertCamelToSnake({
+          playerLeft: player,
+          totalPlayer: room.players.size - 1,
+        }),
+      );
       this.users[client.id] = undefined;
     } else {
       throw new WsException('Room not found');
@@ -173,7 +187,9 @@ export class SocketGateway
     if (room) {
       if (host && host.role === RoleInRoom.HOST) {
         room.locked = true;
-        this.server.to(message.roomPin).emit('roomLocked', { locked: true });
+        this.server
+          .to(message.roomPin)
+          .emit('roomLocked', convertCamelToSnake({ locked: true }));
         this.logger.log(`Room with pin: ${message.roomPin} is now locked`);
       } else {
         throw new WsException('Only the host can lock the room.');
@@ -248,12 +264,15 @@ export class SocketGateway
         });
       }
 
-      this.server.to(roomPin).emit('quizStarted', {
-        roomPin,
-        startTime: room.startTime,
-        question: room.currentQuestion,
-        questions,
-      });
+      this.server.to(roomPin).emit(
+        'quizStarted',
+        convertCamelToSnake({
+          roomPin,
+          startTime: room.startTime,
+          question: room.currentQuestion,
+          questions,
+        }),
+      );
       this.logger.log(`Quiz started in room: ${roomPin}`);
     } else {
       throw new WsException('Only the host can start the quiz.');
@@ -297,11 +316,14 @@ export class SocketGateway
         });
       }
 
-      this.server.to(payload.roomPin).emit('nextQuestion', {
-        roomPin: payload.roomPin,
-        startTime: Date.now(),
-        question: question,
-      });
+      this.server.to(payload.roomPin).emit(
+        'nextQuestion',
+        convertCamelToSnake({
+          roomPin: payload.roomPin,
+          startTime: Date.now(),
+          question: question,
+        }),
+      );
     } else {
       throw new WsException('Only the host can get next question.');
     }
@@ -377,23 +399,29 @@ export class SocketGateway
       const player = this.users[playerId];
       const client = this.clients.get(playerId);
       if (player && client && player.role === RoleInRoom.PLAYER) {
-        client.emit('resultAnswer', {
-          roomPin: payload.roomPin,
-          score: player.answers[payload.questionId].score,
-          totalScore: player.totalScore,
-          correct: player.answers[payload.questionId].isCorrect,
-          questionId: payload.questionId,
-          correctAnswerId: room.currentQuestion.correctAnswerId,
-          chosenAnswerId: player.answers[payload.questionId].chosenAnswerId,
-        });
+        client.emit(
+          'resultAnswer',
+          convertCamelToSnake({
+            roomPin: payload.roomPin,
+            score: player.answers[payload.questionId].score,
+            totalScore: player.totalScore,
+            correct: player.answers[payload.questionId].isCorrect,
+            questionId: payload.questionId,
+            correctAnswerId: room.currentQuestion.correctAnswerId,
+            chosenAnswerId: player.answers[payload.questionId].chosenAnswerId,
+          }),
+        );
       }
     });
 
-    client.emit('summaryAnswer', {
-      roomPin: payload.roomPin,
-      questionId: payload.questionId,
-      correctAnswerId: room.currentQuestion.correctAnswerId,
-      answersCount: room.currentQuestion.choices,
-    });
+    client.emit(
+      'summaryAnswer',
+      convertCamelToSnake({
+        roomPin: payload.roomPin,
+        questionId: payload.questionId,
+        correctAnswerId: room.currentQuestion.correctAnswerId,
+        answersCount: room.currentQuestion.choices,
+      }),
+    );
   }
 }
