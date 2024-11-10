@@ -5,4 +5,14 @@ export interface UserModel {
   userId?: string;
   name: string;
   role: RoleInRoom;
+  totalScore?: number;
+  answers?: Record<
+    string, // questionId
+    {
+      questionId: string;
+      chosenAnswerId: string;
+      isCorrect: boolean;
+      score: number;
+    }
+  >;
 }
