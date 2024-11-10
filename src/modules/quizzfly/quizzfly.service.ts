@@ -191,12 +191,8 @@ export class QuizzflyService {
       throw new ForbiddenException(ErrorCode.A009);
     }
 
-    let firstQuestion,
-      behindFirstQuestion,
-      secondQuestion,
-      behindSecondQuestion,
-      previousFirstQuestion,
-      previouseSecondQuestion;
+    let firstQuestion: any,
+      secondQuestion: any;
 
     if (dto.firstQuestionType === PrevElementType.QUIZ) {
       [firstQuestion] = await this.eventEmitter.emitAsync(
@@ -221,56 +217,20 @@ export class QuizzflyService {
         dto.secondQuestionId,
       );
     }
-    previousFirstQuestion = firstQuestion.prevElementId;
-    previouseSecondQuestion = secondQuestion.prevElementId;
+    const previousFirstQuestion = firstQuestion.prevElementId;
+    const previousSecondQuestion = secondQuestion.prevElementId;
 
-    behindFirstQuestion = await this.getBehindQuestion(
+    const behindFirstQuestion = await this.getBehindQuestion(
       quizzflyId,
       dto.firstQuestionId,
     );
-    behindSecondQuestion = await this.getBehindQuestion(
+    const behindSecondQuestion = await this.getBehindQuestion(
       quizzflyId,
       dto.secondQuestionId,
     );
 
-    if (firstQuestion.prevElementId === secondQuestion.id) {
-      await this.updatePrevQuestion(
-        firstQuestion.id,
-        previouseSecondQuestion,
-        dto.firstQuestionType,
-      );
-      await this.updatePrevQuestion(
-        secondQuestion.id,
-        firstQuestion.id,
-        dto.secondQuestionType,
-      );
-
-      if (behindFirstQuestion) {
-        await this.updatePrevQuestion(
-          behindFirstQuestion.id,
-          secondQuestion.id,
-          behindFirstQuestion.type,
-        );
-      }
-    } else if (secondQuestion.prevElementId === firstQuestion.id) {
-      await this.updatePrevQuestion(
-        firstQuestion.id,
-        secondQuestion.id,
-        dto.firstQuestionType,
-      );
-      await this.updatePrevQuestion(
-        secondQuestion.id,
-        previousFirstQuestion,
-        dto.secondQuestionType,
-      );
-
-      if (behindSecondQuestion) {
-        await this.updatePrevQuestion(
-          behindSecondQuestion.id,
-          firstQuestion.id,
-          behindSecondQuestion.type,
-        );
-      }
+    if (this.areAdjacent(firstQuestion, secondQuestion)) {
+      await this.swapAdjacentQuestions(firstQuestion, secondQuestion, behindFirstQuestion, behindSecondQuestion, dto);
     } else {
       if (dto.firstQuestionIndex > dto.secondQuestionIndex) {
         if (behindFirstQuestion) {
@@ -282,7 +242,7 @@ export class QuizzflyService {
         }
         await this.updatePrevQuestion(
           firstQuestion.id,
-          previouseSecondQuestion,
+          previousSecondQuestion,
           dto.firstQuestionType,
         );
         await this.updatePrevQuestion(
@@ -314,7 +274,35 @@ export class QuizzflyService {
     }
   }
 
-  async updatePrevQuestion(
+  private areAdjacent(firstQuestion: any, secondQuestion: any) {
+    return firstQuestion.prevElementId === secondQuestion.id || secondQuestion.prevElementId === firstQuestion.id;
+  }
+
+  private async swapAdjacentQuestions(
+    firstQuestion: any,
+    secondQuestion: any,
+    behindFirstQuestion: any,
+    behindSecondQuestion: any,
+    dto: ChangePositionQuestionReqDto,
+  ) {
+    if (firstQuestion.prevElementId === secondQuestion.id) {
+      await this.updatePrevQuestion(firstQuestion.id, secondQuestion.prevElementId, dto.firstQuestionType);
+      await this.updatePrevQuestion(secondQuestion.id, firstQuestion.id, dto.secondQuestionType);
+
+      if (behindFirstQuestion) {
+        await this.updatePrevQuestion(behindFirstQuestion.id, secondQuestion.id, behindFirstQuestion.type);
+      }
+    } else {
+      await this.updatePrevQuestion(firstQuestion.id, secondQuestion.id, dto.firstQuestionType);
+      await this.updatePrevQuestion(secondQuestion.id, firstQuestion.prevElementId, dto.secondQuestionType);
+
+      if (behindSecondQuestion) {
+        await this.updatePrevQuestion(behindSecondQuestion.id, firstQuestion.id, behindSecondQuestion.type);
+      }
+    }
+  }
+
+  private async updatePrevQuestion(
     questionId: any,
     newPrevElementId: string | null,
     questionType: any,
