@@ -52,6 +52,11 @@ export class SocketGateway
 
   handleDisconnect(client: Socket) {
     const user = this.users[client.id];
+    if (!user) {
+      this.logger.log(`Disconnected: ${client.id}`);
+      return;
+    }
+
     if (user.role === RoleInRoom.HOST) {
       this.server.to(user.roomPin).emit(
         'disconnectAll',
@@ -77,7 +82,6 @@ export class SocketGateway
   }
 
   handleConnection(client: Socket, ...args: any[]) {
-    this.clients.set(client.id, client);
     this.logger.log(`Connected ${client.id}`);
   }
 
@@ -127,7 +131,6 @@ export class SocketGateway
     @ConnectedSocket() client: Socket,
   ) {
     const room = this.rooms[message.roomPin];
-    console.log(room);
     if (room) {
       if (room.locked) {
         this.logger.log(
@@ -145,6 +148,7 @@ export class SocketGateway
           answers: {},
           totalScore: 0,
         };
+        this.clients.set(client.id, client);
         client.join(message.roomPin);
 
         const player = this.users[client.id];
@@ -192,6 +196,7 @@ export class SocketGateway
         }),
       );
       this.users[client.id] = undefined;
+      this.clients.delete(client.id);
     } else {
       throw new WsException('Room not found');
     }
@@ -220,7 +225,6 @@ export class SocketGateway
 
       socket.leave(payload.roomPin);
       room.players.delete(payload.socketId);
-      delete this.users[payload.socketId];
 
       this.server.to(payload.roomPin).emit(
         'kickPlayer',
@@ -229,6 +233,9 @@ export class SocketGateway
           totalPlayer: room.players.size - 1,
         }),
       );
+
+      delete this.users[payload.socketId];
+      this.clients.delete(client.id);
     }
   }
 
