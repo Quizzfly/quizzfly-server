@@ -9,6 +9,7 @@ import { RoomModel } from '@libs/socket/model/room.model';
 import { UserModel } from '@libs/socket/model/user.model';
 import { CreateRoomMessageReqDto } from '@libs/socket/payload/request/create-room.req';
 import { JoinRoomReqDto } from '@libs/socket/payload/request/join-room.req';
+import { KickPlayerReqDto } from '@libs/socket/payload/request/kick-player.req';
 import { StartQuizReqDto } from '@libs/socket/payload/request/start-quiz.req.dto';
 import { CalculateScoreUtil } from '@libs/socket/utils/calculate-score.util';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
@@ -26,7 +27,6 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { KickPlayerReqDto } from '@libs/socket/payload/request/kick-player.req';
 
 @UseFilters(WsExceptionFilter)
 @WebSocketGateway({
@@ -52,7 +52,7 @@ export class SocketGateway
 
   handleDisconnect(client: Socket) {
     const user = this.users[client.id];
-    if(user.role === RoleInRoom.HOST) {
+    if (user.role === RoleInRoom.HOST) {
       this.server.to(user.roomPin).emit(
         'disconnectAll',
         convertCamelToSnake({
@@ -198,18 +198,21 @@ export class SocketGateway
   }
 
   @SubscribeMessage('kickPlayer')
-  handleKickPlayerInRoom(@MessageBody() payload: KickPlayerReqDto, @ConnectedSocket() client: Socket) {
+  handleKickPlayerInRoom(
+    @MessageBody() payload: KickPlayerReqDto,
+    @ConnectedSocket() client: Socket,
+  ) {
     const room = this.rooms[payload.roomPin];
-    if(room === null) {
+    if (room === null) {
       throw new WsException('Room not found');
     }
     const user = this.users[client.id];
-    if(user.role !== RoleInRoom.HOST) {
+    if (user.role !== RoleInRoom.HOST) {
       throw new WsException('Only the host can kick player in room');
     }
 
     const socket = this.clients.get(payload.socketId);
-    if(socket) {
+    if (socket) {
       const player = this.users[payload.socketId];
       if (!player) {
         throw new WsException('Player not found');
@@ -219,10 +222,13 @@ export class SocketGateway
       room.players.delete(payload.socketId);
       delete this.users[payload.socketId];
 
-      this.server.to(payload.roomPin).emit('kickPlayer', convertCamelToSnake({
-        playerLeft: player,
-        totalPlayer: room.players.size - 1,
-      }));
+      this.server.to(payload.roomPin).emit(
+        'kickPlayer',
+        convertCamelToSnake({
+          playerLeft: player,
+          totalPlayer: room.players.size - 1,
+        }),
+      );
     }
   }
 
