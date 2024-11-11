@@ -26,6 +26,7 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { KickPlayerReqDto } from '@libs/socket/payload/request/kick-player.req';
 
 @UseFilters(WsExceptionFilter)
 @WebSocketGateway({
@@ -50,6 +51,27 @@ export class SocketGateway
   }
 
   handleDisconnect(client: Socket) {
+    const user = this.users[client.id];
+    if(user.role === RoleInRoom.HOST) {
+      this.server.to(user.roomPin).emit(
+        'disconnectAll',
+        convertCamelToSnake({
+          disconnectRoom: true,
+        }),
+      );
+      this.server.in(user.roomPin).socketsLeave(user.roomPin);
+    } else {
+      const host = this.rooms[user.roomPin].host;
+      const socketClient = this.clients.get(client.id);
+      this.server.to(host.socketId).emit(
+        'disconnect',
+        convertCamelToSnake({
+          disconnectRoom: true,
+          player: user,
+        }),
+      );
+      socketClient.leave(user.roomPin);
+    }
     this.clients.delete(client.id);
     this.logger.log(`Disconnected: ${client.id}`);
   }
@@ -71,6 +93,7 @@ export class SocketGateway
         locked: false,
         roomPin: message.roomPin,
         host: {
+          roomPin: message.roomPin,
           socketId: client.id,
           userId: message.userId,
           name: message.name,
@@ -83,6 +106,7 @@ export class SocketGateway
     this.users[client.id] = {
       socketId: client.id,
       userId: message.userId,
+      roomPin: message.roomPin,
       name: message.name,
       role: RoleInRoom.HOST,
     };
@@ -95,10 +119,6 @@ export class SocketGateway
       convertCamelToSnake({ ...room, players: undefined }),
     );
     return room;
-  }
-
-  getRoomMembersCount(roomPin: string): number {
-    return this.rooms[roomPin] ? this.rooms[roomPin].players.size - 1 : 0;
   }
 
   @SubscribeMessage('joinRoom')
@@ -120,6 +140,7 @@ export class SocketGateway
           socketId: client.id,
           userId: message.userId,
           name: message.name,
+          roomPin: message.roomPin,
           role: RoleInRoom.PLAYER,
           answers: {},
           totalScore: 0,
@@ -173,6 +194,35 @@ export class SocketGateway
       this.users[client.id] = undefined;
     } else {
       throw new WsException('Room not found');
+    }
+  }
+
+  @SubscribeMessage('kickPlayer')
+  handleKickPlayerInRoom(@MessageBody() payload: KickPlayerReqDto, @ConnectedSocket() client: Socket) {
+    const room = this.rooms[payload.roomPin];
+    if(room === null) {
+      throw new WsException('Room not found');
+    }
+    const user = this.users[client.id];
+    if(user.role !== RoleInRoom.HOST) {
+      throw new WsException('Only the host can kick player in room');
+    }
+
+    const socket = this.clients.get(payload.socketId);
+    if(socket) {
+      const player = this.users[payload.socketId];
+      if (!player) {
+        throw new WsException('Player not found');
+      }
+
+      socket.leave(payload.roomPin);
+      room.players.delete(payload.socketId);
+      delete this.users[payload.socketId];
+
+      this.server.to(payload.roomPin).emit('kickPlayer', convertCamelToSnake({
+        playerLeft: player,
+        totalPlayer: room.players.size - 1,
+      }));
     }
   }
 

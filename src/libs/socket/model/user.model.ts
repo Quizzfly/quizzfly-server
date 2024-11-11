@@ -5,6 +5,7 @@ export interface UserModel {
   userId?: string;
   name: string;
   role: RoleInRoom;
+  roomPin: string;
   totalScore?: number;
   answers?: Record<
     string, // questionId
