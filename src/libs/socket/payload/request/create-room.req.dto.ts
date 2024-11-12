@@ -1,12 +1,12 @@
 import { StringField, UUIDField } from '@core/decorators/field.decorators';
 
-export class StartQuizReqDto {
+export class CreateRoomReqDto {
   @StringField()
   roomPin: string;
 
   @UUIDField()
-  quizzflyId: string;
+  userId: string;
 
-  @UUIDField()
-  hostId?: string;
+  @StringField()
+  name: string;
 }

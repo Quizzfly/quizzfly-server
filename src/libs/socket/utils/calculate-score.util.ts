@@ -7,7 +7,6 @@ export class CalculateScoreUtil {
   pointMultiplier: number;
 
   constructor(data: Partial<CalculateScoreUtil>) {
-    console.log(data);
     Object.assign(this, data);
   }
 

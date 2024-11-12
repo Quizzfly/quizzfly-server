@@ -1,9 +1,6 @@
 import { StringField } from '@core/decorators/field.decorators';
 
-export class KickPlayerReqDto {
+export class RoomPinDto {
   @StringField()
   roomPin: string;
-
-  @StringField()
-  socketId: string;
 }
