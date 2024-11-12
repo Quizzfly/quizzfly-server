@@ -2,19 +2,24 @@ import { Uuid } from '@common/types/common.type';
 import { EventService } from '@core/events/event.service';
 import { WsExceptionFilter } from '@core/filters/ws-exception.filter';
 import { convertCamelToSnake } from '@core/helpers';
-import { WsResponseInterceptor } from '@core/interceptors/ws-response.interceptor';
+import { WsValidationPipe } from '@core/pipes/ws-validation.pipe';
 import { Optional } from '@core/utils/optional';
 import { RoleInRoom } from '@libs/socket/enums/role-in-room.enum';
+import { updateRank } from '@libs/socket/helpers/update-leader-board.helper';
 import { RoomModel } from '@libs/socket/model/room.model';
 import { UserModel } from '@libs/socket/model/user.model';
-import { CreateRoomMessageReqDto } from '@libs/socket/payload/request/create-room.req';
-import { JoinRoomReqDto } from '@libs/socket/payload/request/join-room.req';
+import { AnswerQuestionReqDto } from '@libs/socket/payload/request/answer-question.req.dto';
+import { CreateRoomReqDto } from '@libs/socket/payload/request/create-room.req.dto';
+import { FinishQuestionReqDto } from '@libs/socket/payload/request/finish-question.req.dto';
+import { JoinRoomReqDto } from '@libs/socket/payload/request/join-room.req.dto';
 import { KickPlayerReqDto } from '@libs/socket/payload/request/kick-player.req';
 import { StartQuizReqDto } from '@libs/socket/payload/request/start-quiz.req.dto';
+import { UpdateLeaderBoardReqDto } from '@libs/socket/payload/request/update-leader-board.req.dto';
+import { RoomPinDto } from '@libs/socket/payload/room-pin.dto';
 import { CalculateScoreUtil } from '@libs/socket/utils/calculate-score.util';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { GetQuestionsEvent } from '@modules/quizzfly/events/quizzfly.event';
-import { Logger, UseFilters, UseInterceptors } from '@nestjs/common';
+import { Logger, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -85,10 +90,9 @@ export class SocketGateway
     this.logger.log(`Connected ${client.id}`);
   }
 
-  @UseInterceptors(new WsResponseInterceptor())
   @SubscribeMessage('createRoom')
   handleCreateRoom(
-    @MessageBody() message: CreateRoomMessageReqDto,
+    @MessageBody(new WsValidationPipe()) message: CreateRoomReqDto,
     @ConnectedSocket() client: Socket,
   ) {
     if (!this.rooms[message.roomPin]) {
@@ -127,7 +131,7 @@ export class SocketGateway
 
   @SubscribeMessage('joinRoom')
   handleJoinRoom(
-    @MessageBody() message: JoinRoomReqDto,
+    @MessageBody(new WsValidationPipe()) message: JoinRoomReqDto,
     @ConnectedSocket() client: Socket,
   ) {
     const room = this.rooms[message.roomPin];
@@ -204,7 +208,7 @@ export class SocketGateway
 
   @SubscribeMessage('kickPlayer')
   handleKickPlayerInRoom(
-    @MessageBody() payload: KickPlayerReqDto,
+    @MessageBody(new WsValidationPipe()) payload: KickPlayerReqDto,
     @ConnectedSocket() client: Socket,
   ) {
     const room = this.rooms[payload.roomPin];
@@ -241,7 +245,7 @@ export class SocketGateway
 
   @SubscribeMessage('lockRoom')
   handleLockRoom(
-    @MessageBody() message: { roomPin: string },
+    @MessageBody(new WsValidationPipe()) message: RoomPinDto,
     @ConnectedSocket() client: Socket,
   ) {
     const room = this.rooms[message.roomPin];
@@ -264,7 +268,7 @@ export class SocketGateway
 
   @SubscribeMessage('unlockRoom')
   handleUnlockRoom(
-    @MessageBody() message: { roomPin: string },
+    @MessageBody(new WsValidationPipe()) message: RoomPinDto,
     @ConnectedSocket() client: Socket,
   ) {
     const room = this.rooms[message.roomPin];
@@ -285,7 +289,7 @@ export class SocketGateway
 
   @SubscribeMessage('startQuiz')
   async handleStartQuiz(
-    @MessageBody() data: StartQuizReqDto,
+    @MessageBody(new WsValidationPipe()) data: StartQuizReqDto,
     @ConnectedSocket() client: Socket,
   ) {
     const { roomPin, hostId, quizzflyId } = data;
@@ -345,7 +349,7 @@ export class SocketGateway
   @SubscribeMessage('nextQuestion')
   handleNextQuestion(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { roomPin: string },
+    @MessageBody(new WsValidationPipe()) payload: RoomPinDto,
   ) {
     const user = this.users[client.id];
     const room = this.rooms[payload.roomPin];
@@ -395,8 +399,7 @@ export class SocketGateway
   @SubscribeMessage('answerQuestion')
   handleAnswerQuestion(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    payload: { roomPin: string; questionId: string; answerId: string },
+    @MessageBody(new WsValidationPipe()) payload: AnswerQuestionReqDto,
   ) {
     const room = Optional.of(this.rooms[payload.roomPin])
       .throwIfNotPresent(new WsException('Room not found'))
@@ -408,12 +411,6 @@ export class SocketGateway
     const question = room.currentQuestion;
     if (question.type !== 'QUIZ') {
       throw new WsException('Not allowed');
-    }
-
-    if (!question.choices[payload.answerId]) {
-      question.choices[payload.answerId] = 1;
-    } else {
-      question.choices[payload.answerId] += 1;
     }
 
     const calculateScore = new CalculateScoreUtil({
@@ -433,6 +430,14 @@ export class SocketGateway
         isCorrect: question.correctAnswerId === payload.answerId,
         score,
       };
+    } else {
+      throw new WsException('you have answered this question');
+    }
+
+    if (!question.choices[payload.answerId]) {
+      question.choices[payload.answerId] = 1;
+    } else {
+      question.choices[payload.answerId] += 1;
     }
 
     player.totalScore = player.totalScore ? player.totalScore + score : score;
@@ -442,11 +447,7 @@ export class SocketGateway
   @SubscribeMessage('finishQuestion')
   handleQuestionFinish(
     @ConnectedSocket() client: Socket,
-    @MessageBody()
-    payload: {
-      roomPin: string;
-      questionId: string;
-    },
+    @MessageBody(new WsValidationPipe()) payload: FinishQuestionReqDto,
   ) {
     const room: RoomModel = Optional.of(this.rooms[payload.roomPin])
       .throwIfNotPresent(new WsException('Room not found'))
@@ -458,6 +459,11 @@ export class SocketGateway
       );
     }
 
+    if (room.currentQuestion.done) {
+      throw new WsException('Question is over.');
+    }
+
+    room.currentQuestion.done = true;
     Array.from(room.players).forEach((playerId: string) => {
       const player = this.users[playerId];
       const client = this.clients.get(playerId);
@@ -484,6 +490,53 @@ export class SocketGateway
         questionId: payload.questionId,
         correctAnswerId: room.currentQuestion.correctAnswerId,
         answersCount: room.currentQuestion.choices,
+      }),
+    );
+  }
+
+  @SubscribeMessage('updateLeaderboard')
+  handleUpdateLeaderBoard(
+    @MessageBody(new WsValidationPipe()) payload: UpdateLeaderBoardReqDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const room: RoomModel = this.rooms[payload.roomPin];
+    if (!room) {
+      throw new WsException('Room not found');
+    }
+
+    const user: UserModel = this.users[client.id];
+    if (!user || user.role !== RoleInRoom.HOST) {
+      throw new WsException(
+        'Only the room owner is allowed to perform this action.',
+      );
+    }
+
+    const question = room.currentQuestion;
+    if (!question.done) {
+      throw new WsException('Unfinished question');
+    }
+
+    const leaderBoard = [];
+    Array.from(room.players).forEach((playerId: string) => {
+      const player = this.users[playerId];
+      if (player && player.role !== RoleInRoom.HOST) {
+        leaderBoard.push({
+          userId: player.userId,
+          socketId: player.socketId,
+          name: player.name,
+          role: RoleInRoom.PLAYER,
+          score: player.answers[payload.questionId].score ?? 0,
+          totalScore: player.totalScore,
+          rank: 1,
+        });
+      }
+    });
+
+    this.server.to(payload.roomPin).emit(
+      'updateLeaderBoard',
+      convertCamelToSnake({
+        roomPin: payload.roomPin,
+        leaderBoard: updateRank(leaderBoard),
       }),
     );
   }

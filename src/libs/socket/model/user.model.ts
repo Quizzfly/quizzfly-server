@@ -7,6 +7,7 @@ export interface UserModel {
   role: RoleInRoom;
   roomPin: string;
   totalScore?: number;
+  rank?: number;
   answers?: Record<
     string, // questionId
     {
