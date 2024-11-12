@@ -51,33 +51,33 @@ export class SocketGateway
   }
 
   handleDisconnect(client: Socket) {
-    const user = this.users[client.id];
-    if (!user) {
-      this.logger.log(`Disconnected: ${client.id}`);
-      return;
-    }
-
-    if (user.role === RoleInRoom.HOST) {
-      this.server.to(user.roomPin).emit(
-        'disconnectAll',
-        convertCamelToSnake({
-          disconnectRoom: true,
-        }),
-      );
-      this.server.in(user.roomPin).socketsLeave(user.roomPin);
-    } else {
-      const host = this.rooms[user.roomPin].host;
-      const socketClient = this.clients.get(client.id);
-      this.server.to(host.socketId).emit(
-        'disconnect',
-        convertCamelToSnake({
-          disconnectRoom: true,
-          player: user,
-        }),
-      );
-      socketClient.leave(user.roomPin);
-    }
-    this.clients.delete(client.id);
+    // const user = this.users[client.id];
+    // if (!user) {
+    //   this.logger.log(`Disconnected: ${client.id}`);
+    //   return;
+    // }
+    //
+    // if (user.role === RoleInRoom.HOST) {
+    //   this.server.to(user.roomPin).emit(
+    //     'disconnectAll',
+    //     convertCamelToSnake({
+    //       disconnectRoom: true,
+    //     }),
+    //   );
+    //   this.server.in(user.roomPin).socketsLeave(user.roomPin);
+    // } else {
+    //   const host = this.rooms[user.roomPin].host;
+    //   const socketClient = this.clients.get(client.id);
+    //   this.server.to(host.socketId).emit(
+    //     'disconnect',
+    //     convertCamelToSnake({
+    //       disconnectRoom: true,
+    //       player: user,
+    //     }),
+    //   );
+    //   socketClient.leave(user.roomPin);
+    // }
+    // this.clients.delete(client.id);
     this.logger.log(`Disconnected: ${client.id}`);
   }
 
