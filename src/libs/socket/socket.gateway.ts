@@ -555,7 +555,7 @@ export class SocketGateway
 
   handleHostDisconnect(host: UserModel, room: RoomModel) {
     this.server.to(host.roomPin).emit(
-      'roomCanceled ',
+      'roomCanceled',
       convertCamelToSnake({
         disconnectRoom: true,
         message: 'The host has disconnected. Please wait or rejoin later.',
