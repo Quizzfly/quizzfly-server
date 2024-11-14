@@ -25,10 +25,13 @@ export class QuizzflyRepository extends Repository<QuizzflyEntity> {
   }
 
   async getQuestionsByQuizzflyId(quizzflyId: Uuid) {
-    const quizzfly = await this.findOne({
-      where: { id: quizzflyId },
-      relations: ['slides', 'quizzes', 'quizzes.answers'],
-    });
+    const quizzfly = await this.createQueryBuilder('quizzfly')
+      .leftJoinAndSelect('quizzfly.slides', 'slides')
+      .leftJoinAndSelect('quizzfly.quizzes', 'quizzes')
+      .leftJoinAndSelect('quizzes.answers', 'answers')
+      .where('quizzfly.id = :quizzflyId', { quizzflyId })
+      .orderBy('answers.createdAt', 'ASC')
+      .getOne();
 
     const slides = quizzfly.slides.map((slide) => {
       return Object.assign({}, slide, { type: 'SLIDE' });
