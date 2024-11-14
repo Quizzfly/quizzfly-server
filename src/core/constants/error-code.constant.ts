@@ -16,6 +16,7 @@ export enum ErrorCode {
   E006 = 'user.error.request_delete_account_is_invalid',
   E007 = 'user.error.code_is_incorrect',
   E008 = 'room.error.not_found',
+  E009 = 'group.error.not_found',
 
   // Authentication Errors
   A001 = 'auth.error.invalid_credentials',
@@ -31,4 +32,5 @@ export enum ErrorCode {
   A011 = 'auth.error.account_already_activated',
   A012 = 'auth.error.account_not_registered',
   A013 = 'auth.error.old_password_is_incorrect',
+  A014 = 'group.error.user_is_already_in_group',
 }

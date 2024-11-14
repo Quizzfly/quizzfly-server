@@ -1,3 +1,4 @@
+import { Uuid } from '@common/types/common.type';
 import { AllConfigType } from '@config/config.type';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
@@ -59,6 +60,25 @@ export class MailService {
         context: {
           name: email.split('@')[0],
           code: code,
+        },
+      })
+      .catch((err) => {
+        this.logger.error('Error sending email request delete account');
+        this.logger.error(err);
+      });
+  }
+
+  async inviteMemberToGroup(email: string, groupId: Uuid, groupName: string) {
+    const url = `${this.configService.getOrThrow('app.clientUrl', { infer: true })}/groups/joined?idGroup=${groupId}`;
+    await this.mailerService
+      .sendMail({
+        to: email,
+        subject: 'Invitation to Join Our Group',
+        template: 'invite-member',
+        context: {
+          name: email.split('@')[0],
+          groupName: groupName,
+          invitationLink: url,
         },
       })
       .catch((err) => {

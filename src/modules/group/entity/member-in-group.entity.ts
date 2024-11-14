@@ -1,10 +1,16 @@
-import { AbstractEntity } from '@database/entities/abstract.entity';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Relation } from 'typeorm';
 import { Uuid } from '@common/types/common.type';
+import { AbstractEntity } from '@database/entities/abstract.entity';
 import { GroupEntity } from '@modules/group/entity/group.entity';
 import { RoleInGroup } from '@modules/group/enums/role-in-group.enum';
 import { UserEntity } from '@modules/user/entities/user.entity';
-
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Relation,
+} from 'typeorm';
 
 @Entity('member_in_group', { schema: 'public' })
 export class MemberInGroupEntity extends AbstractEntity {
@@ -18,7 +24,7 @@ export class MemberInGroupEntity extends AbstractEntity {
   })
   id!: Uuid;
 
-  @Column({ type: 'enum', name: 'role', enum: RoleInGroup})
+  @Column({ type: 'enum', name: 'role', enum: RoleInGroup })
   role?: RoleInGroup;
 
   @Column({
