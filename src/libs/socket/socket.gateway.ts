@@ -55,39 +55,27 @@ export class SocketGateway
     this.logger.log(server);
   }
 
-  handleDisconnect(client: Socket) {
-    // const user = this.users[client.id];
-    // if (!user) {
-    //   this.logger.log(`Disconnected: ${client.id}`);
-    //   return;
-    // }
-    //
-    // if (user.role === RoleInRoom.HOST) {
-    //   this.server.to(user.roomPin).emit(
-    //     'disconnectAll',
-    //     convertCamelToSnake({
-    //       disconnectRoom: true,
-    //     }),
-    //   );
-    //   this.server.in(user.roomPin).socketsLeave(user.roomPin);
-    // } else {
-    //   const host = this.rooms[user.roomPin].host;
-    //   const socketClient = this.clients.get(client.id);
-    //   this.server.to(host.socketId).emit(
-    //     'disconnect',
-    //     convertCamelToSnake({
-    //       disconnectRoom: true,
-    //       player: user,
-    //     }),
-    //   );
-    //   socketClient.leave(user.roomPin);
-    // }
-    // this.clients.delete(client.id);
-    this.logger.log(`Disconnected: ${client.id}`);
-  }
-
   handleConnection(client: Socket, ...args: any[]) {
     this.logger.log(`Connected ${client.id}`);
+  }
+
+  handleDisconnect(client: Socket) {
+    this.logger.log(`Disconnected: ${client.id}`);
+    const user = this.users[client.id];
+    if (!user) {
+      return;
+    }
+
+    const room = this.rooms[user.roomPin];
+    if (!room) {
+      throw new WsException('Room not found.');
+    }
+
+    if (user.role === RoleInRoom.HOST) {
+      this.handleHostDisconnect(user, room);
+    } else {
+      this.handlePlayerDisconnect(user, room);
+    }
   }
 
   @SubscribeMessage('createRoom')
@@ -222,13 +210,17 @@ export class SocketGateway
     }
 
     const socket = this.clients.get(payload.socketId);
+    if (!socket) {
+      throw new WsException(
+        `No player with socketId: ${payload.socketId} exists in room ${payload.roomPin}`,
+      );
+    }
+
     if (socket) {
       const player = this.users[payload.socketId];
       if (!player) {
         throw new WsException('Player not found');
       }
-
-      socket.leave(payload.roomPin);
       room.players.delete(payload.socketId);
 
       this.server.to(payload.roomPin).emit(
@@ -239,6 +231,10 @@ export class SocketGateway
         }),
       );
 
+      socket.emit('playerKicked', {
+        reason: 'You were removed from the room by the host.',
+      });
+      socket.leave(payload.roomPin);
       delete this.users[payload.socketId];
       this.clients.delete(client.id);
     }
@@ -368,7 +364,9 @@ export class SocketGateway
       const question = room.questions[room.currentQuestionId];
       if (!question) {
         room.endTime = Date.now();
-        throw new WsException('The quiz has run out of questions.');
+        client.emit('noMoreQuestions', {
+          message: 'The quiz has run out of questions.',
+        });
       }
 
       room.currentQuestion = question;
@@ -553,5 +551,50 @@ export class SocketGateway
         leaderBoard: updateRank(leaderBoard),
       }),
     );
+  }
+
+  handleHostDisconnect(host: UserModel, room: RoomModel) {
+    this.server.to(host.roomPin).emit(
+      'roomCanceled ',
+      convertCamelToSnake({
+        disconnectRoom: true,
+        message: 'The host has disconnected. Please wait or rejoin later.',
+      }),
+    );
+
+    Array.from(room.players).forEach((playerId: string) => {
+      const player = this.users[playerId];
+      if (player) {
+        delete this.users[playerId];
+      }
+
+      const socketPlayer = this.clients[playerId];
+      if (socketPlayer) {
+        this.clients.delete(playerId);
+      }
+    });
+
+    this.server.in(host.roomPin).socketsLeave(host.roomPin);
+    delete this.rooms[host.roomPin];
+    delete this.users[host.socketId];
+    this.clients.delete(host.socketId);
+  }
+
+  handlePlayerDisconnect(player: UserModel, room: RoomModel) {
+    room.players.delete(player.socketId);
+
+    const socketClient = this.clients.get(player.socketId);
+    socketClient.leave(room.roomPin);
+
+    this.server.to(room.roomPin).emit(
+      'playerLeft',
+      convertCamelToSnake({
+        playerLeft: player,
+        totalPlayer: room.players.size - 1,
+      }),
+    );
+
+    delete this.users[player.socketId];
+    this.clients.delete(player.socketId);
   }
 }

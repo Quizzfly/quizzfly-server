@@ -1,7 +1,9 @@
-import { StringField, StringFieldOptional } from '@core/decorators/field.decorators';
+import {
+  StringField,
+  StringFieldOptional,
+} from '@core/decorators/field.decorators';
 
 export class CreateGroupReqDto {
-
   @StringField()
   name: string;
 
