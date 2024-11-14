@@ -367,9 +367,7 @@ export class SocketGateway
       const question = room.questions[room.currentQuestionId];
       if (!question) {
         room.endTime = Date.now();
-        client.emit('noMoreQuestions', {
-          message: 'The quiz has run out of questions.',
-        });
+        throw new WsException('The quiz has run out of questions.');
       }
 
       room.currentQuestion = question;
