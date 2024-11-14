@@ -13,6 +13,7 @@ import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import generateModulesSet from '@shared/modules-set';
 import { SharedModule } from '@shared/shared.module';
+import { GroupModule } from '@modules/group/group.module';
 
 const modulesGenerate = generateModulesSet();
 
@@ -32,6 +33,7 @@ const modulesGenerate = generateModulesSet();
     AnswerModule,
     RoomModule,
     SocketGateway,
+    GroupModule
   ],
 })
 export class AppModule {}

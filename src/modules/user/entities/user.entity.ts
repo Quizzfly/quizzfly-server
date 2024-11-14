@@ -16,6 +16,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserInfoEntity } from './user-info.entity';
+import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
 
 @Entity('user', { schema: 'public' })
 export class UserEntity extends AbstractEntity {
@@ -51,6 +52,9 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany('RoomEntity', 'user')
   rooms?: RoomEntity[];
+
+  @OneToMany(() => MemberInGroupEntity, (member) => member.member)
+  memberInGroups?: MemberInGroupEntity[];
 
   @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
   userInfo?: UserInfoEntity;
