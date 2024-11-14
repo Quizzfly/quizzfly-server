@@ -1,6 +1,6 @@
 export class CalculateScoreUtil {
   isCorrect: boolean;
-  baseScore: number = 100;
+  baseScore: number = 1000;
   startTime: number; // timestamp
   timeLimit: number; // unit of seconds
   responseTime: number; // timestamp
