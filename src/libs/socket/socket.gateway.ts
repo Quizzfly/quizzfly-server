@@ -83,7 +83,11 @@ export class SocketGateway
     @MessageBody(new WsValidationPipe()) message: CreateRoomReqDto,
     @ConnectedSocket() client: Socket,
   ) {
-    if (!this.rooms[message.roomPin]) {
+    if (this.rooms[message.roomPin]) {
+      throw new WsException(
+        'The room PIN you entered already exists. Please choose a different one.',
+      );
+    } else {
       this.rooms[message.roomPin] = {
         players: new Set(),
         locked: false,
@@ -115,7 +119,6 @@ export class SocketGateway
       'roomCreated',
       convertCamelToSnake({ ...room, players: undefined }),
     );
-    return room;
   }
 
   @SubscribeMessage('joinRoom')
@@ -450,9 +453,12 @@ export class SocketGateway
     client.emit('answerQuestion', { message: 'Waiting...' });
 
     const host = this.clients.get(room.host.socketId);
-    host.emit('answerQuestion', {
-      noPlayerAnswered: question.noPlayerAnswered,
-    });
+    host.emit(
+      'answerQuestion',
+      convertCamelToSnake({
+        noPlayerAnswered: question.noPlayerAnswered,
+      }),
+    );
   }
 
   @SubscribeMessage('finishQuestion')
