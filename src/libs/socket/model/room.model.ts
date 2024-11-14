@@ -11,6 +11,7 @@ export interface QuestionType {
 export interface CorrectAnswer {
   correctAnswerId?: string;
   choices?: Record<string, number>;
+  noPlayerAnswered?: number;
 }
 
 export type Question =

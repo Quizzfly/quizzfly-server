@@ -118,6 +118,7 @@ export class SocketGateway
       name: message.name,
       role: RoleInRoom.HOST,
     };
+    this.clients.set(client.id, client);
 
     const room = this.rooms[message.roomPin];
     room.players.add(client.id);
@@ -320,6 +321,7 @@ export class SocketGateway
       room.currentQuestion = questions[0];
       room.currentQuestion.startTime = Date.now();
       room.currentQuestionId = room.currentQuestion.id;
+      room.currentQuestion.noPlayerAnswered = 0;
       const question = room.currentQuestion;
       if (question.type === 'QUIZ') {
         question.choices = {};
@@ -374,6 +376,7 @@ export class SocketGateway
       room.currentQuestionId = question.id;
 
       if (room.currentQuestion.type === 'QUIZ') {
+        room.currentQuestion.noPlayerAnswered = 0;
         room.currentQuestion.choices = {};
         room.currentQuestion.answers.forEach((answer: AnswerEntity) => {
           room.currentQuestion.choices[answer.id] = 0;
@@ -413,8 +416,13 @@ export class SocketGateway
       throw new WsException('Not allowed');
     }
 
+    if (question.done) {
+      throw new WsException('Question is over.');
+    }
+    question.noPlayerAnswered += 1;
+
     const calculateScore = new CalculateScoreUtil({
-      baseScore: 100,
+      baseScore: 1000,
       startTime: question.startTime,
       timeLimit: question.timeLimit,
       responseTime: Date.now(),
@@ -431,7 +439,7 @@ export class SocketGateway
         score,
       };
     } else {
-      throw new WsException('you have answered this question');
+      throw new WsException('You have answered this question');
     }
 
     if (!question.choices[payload.answerId]) {
@@ -442,6 +450,11 @@ export class SocketGateway
 
     player.totalScore = player.totalScore ? player.totalScore + score : score;
     client.emit('answerQuestion', { message: 'Waiting...' });
+
+    const host = this.clients.get(room.host.socketId);
+    host.emit('answerQuestion', {
+      noPlayerAnswered: question.noPlayerAnswered,
+    });
   }
 
   @SubscribeMessage('finishQuestion')
@@ -468,16 +481,17 @@ export class SocketGateway
       const player = this.users[playerId];
       const client = this.clients.get(playerId);
       if (player && client && player.role === RoleInRoom.PLAYER) {
+        const answerOfPlayerWithQuestion = player.answers[payload.questionId];
         client.emit(
           'resultAnswer',
           convertCamelToSnake({
             roomPin: payload.roomPin,
-            score: player.answers[payload.questionId].score,
-            totalScore: player.totalScore,
-            correct: player.answers[payload.questionId].isCorrect,
+            score: answerOfPlayerWithQuestion?.score ?? 0,
+            totalScore: player?.totalScore ?? 0,
+            correct: answerOfPlayerWithQuestion?.isCorrect ?? false,
             questionId: payload.questionId,
-            correctAnswerId: room.currentQuestion.correctAnswerId,
-            chosenAnswerId: player.answers[payload.questionId].chosenAnswerId,
+            correctAnswerId: room.currentQuestion?.correctAnswerId ?? null,
+            chosenAnswerId: answerOfPlayerWithQuestion?.chosenAnswerId ?? null,
           }),
         );
       }
@@ -488,8 +502,8 @@ export class SocketGateway
       convertCamelToSnake({
         roomPin: payload.roomPin,
         questionId: payload.questionId,
-        correctAnswerId: room.currentQuestion.correctAnswerId,
-        answersCount: room.currentQuestion.choices,
+        correctAnswerId: room.currentQuestion?.correctAnswerId ?? null,
+        answersCount: room.currentQuestion?.choices ?? null,
       }),
     );
   }
@@ -525,15 +539,15 @@ export class SocketGateway
           socketId: player.socketId,
           name: player.name,
           role: RoleInRoom.PLAYER,
-          score: player.answers[payload.questionId].score ?? 0,
-          totalScore: player.totalScore,
+          score: player.answers[payload.questionId]?.score ?? 0,
+          totalScore: player?.totalScore ?? 0,
           rank: 1,
         });
       }
     });
 
     this.server.to(payload.roomPin).emit(
-      'updateLeaderBoard',
+      'updateLeaderboard',
       convertCamelToSnake({
         roomPin: payload.roomPin,
         leaderBoard: updateRank(leaderBoard),
