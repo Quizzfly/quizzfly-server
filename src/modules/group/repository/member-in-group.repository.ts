@@ -1,18 +1,19 @@
-import { DataSource, Repository } from 'typeorm';
-import { Injectable } from '@nestjs/common';
-import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
-import { Uuid } from '@common/types/common.type';
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
+import { Uuid } from '@common/types/common.type';
+import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
+import { Injectable } from '@nestjs/common';
+import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
 export class MemberInGroupRepository extends Repository<MemberInGroupEntity> {
-
   constructor(private readonly dataSource: DataSource) {
     super(MemberInGroupEntity, dataSource.createEntityManager());
   }
 
   async getMyGroup(userId: Uuid, filterOptions: PageOptionsDto) {
-    const skip = filterOptions.page ? (filterOptions.page - 1) * filterOptions.limit : 0;
+    const skip = filterOptions.page
+      ? (filterOptions.page - 1) * filterOptions.limit
+      : 0;
 
     const query = this.createQueryBuilder('memberInGroup')
       .leftJoinAndSelect('memberInGroup.group', 'group')

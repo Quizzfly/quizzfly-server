@@ -2,6 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { ROLE } from '@core/constants/entity.enum';
 import { hashPassword as hashPass } from '@core/utils/password.util';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { RoomEntity } from '@modules/room/entity/room.entity';
 import { SessionEntity } from '@modules/session/entities/session.entity';
@@ -16,7 +17,6 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserInfoEntity } from './user-info.entity';
-import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
 
 @Entity('user', { schema: 'public' })
 export class UserEntity extends AbstractEntity {

@@ -2,6 +2,7 @@ import { SocketGateway } from '@libs/socket/socket.gateway';
 import { AuthModule } from '@modules//auth/auth.module';
 import { AnswerModule } from '@modules/answer/answer.module';
 import { FileModule } from '@modules/file/file.module';
+import { GroupModule } from '@modules/group/group.module';
 import { HealthModule } from '@modules/health/health.module';
 import { QuizModule } from '@modules/quiz/quiz.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
@@ -13,7 +14,6 @@ import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import generateModulesSet from '@shared/modules-set';
 import { SharedModule } from '@shared/shared.module';
-import { GroupModule } from '@modules/group/group.module';
 
 const modulesGenerate = generateModulesSet();
 
@@ -33,7 +33,7 @@ const modulesGenerate = generateModulesSet();
     AnswerModule,
     RoomModule,
     SocketGateway,
-    GroupModule
+    GroupModule,
   ],
 })
 export class AppModule {}
