@@ -16,7 +16,7 @@ export class MemberInGroupRepository extends Repository<MemberInGroupEntity> {
       : 0;
 
     const query = this.createQueryBuilder('memberInGroup')
-      .leftJoinAndSelect('memberInGroup.group', 'group')
+      .innerJoinAndSelect('memberInGroup.group', 'group')
       .select([
         'group.id',
         'group.createdAt',
@@ -33,5 +33,32 @@ export class MemberInGroupRepository extends Repository<MemberInGroupEntity> {
       .limit(filterOptions.limit);
 
     return query.getMany();
+  }
+
+  async findByMemberIdAndGroupId(memberId: Uuid, groupId: Uuid) {
+    return this.findOne({
+      where: {
+        memberId: memberId,
+        groupId: groupId,
+      },
+    });
+  }
+
+  async getMemberInGroup(groupId: Uuid) {
+    const query = this.createQueryBuilder('memberInGroup')
+      .innerJoinAndSelect('memberInGroup.member', 'member')
+      .innerJoinAndSelect('member.userInfo', 'userInfo')
+      .select([
+        'member.id AS id',
+        'member.email AS email',
+        'userInfo.username AS username',
+        'userInfo.name AS name',
+        'userInfo.avatar AS avatar',
+        'memberInGroup.role AS role_in_group',
+      ])
+      .where('memberInGroup.groupId = :groupId', { groupId })
+      .andWhere('memberInGroup.deletedAt IS NULL');
+
+    return await query.getRawMany();
   }
 }

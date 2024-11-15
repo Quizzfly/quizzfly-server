@@ -2,10 +2,18 @@ import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
 import { CreateGroupReqDto } from '@modules/group/dto/request/create-group.req.dto';
 import { GroupRepository } from '@modules/group/repository/group.repository';
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
+import { ErrorCode } from '@core/constants/error-code.constant';
+import { Optional } from '@core/utils/optional';
+import { MailService } from '@mail/mail.service';
+import { InviteMemberToGroupReqDto } from '@modules/group/dto/request/invite-member-to-group.req.dto';
 import { InfoDetailGroupResDto } from '@modules/group/dto/response/info-detail-group.res.dto';
 import { InfoGroupResDto } from '@modules/group/dto/response/info-group.res.dto';
 import { GroupEntity } from '@modules/group/entity/group.entity';
@@ -20,6 +28,7 @@ export class GroupService {
     private readonly groupRepository: GroupRepository,
     private readonly memberInGroupRepository: MemberInGroupRepository,
     private readonly memberInGroupService: MemberInGroupService,
+    private readonly mailService: MailService,
   ) {}
 
   @Transactional()
@@ -54,5 +63,53 @@ export class GroupService {
     );
 
     return new OffsetPaginatedDto(responseData, meta);
+  }
+
+  async inviteMemberToGroup(
+    userId: Uuid,
+    groupId: Uuid,
+    dto: InviteMemberToGroupReqDto,
+  ) {
+    const isUserHasRoleHostInGroup =
+      await this.memberInGroupService.isUserHasRoleHostInGroup(userId, groupId);
+    if (!isUserHasRoleHostInGroup) {
+      throw new ForbiddenException(ErrorCode.A009);
+    }
+    const group = await this.findById(groupId);
+    await Promise.all(
+      dto.email.map((email) =>
+        this.mailService.inviteMemberToGroup(email, group.id, group.name),
+      ),
+    );
+  }
+
+  async joinGroup(userId: Uuid, groupId: Uuid) {
+    const group = await this.findById(groupId);
+    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
+      userId,
+      groupId,
+    );
+    if (isUserInGroup) {
+      throw new ForbiddenException(ErrorCode.A014);
+    }
+    await this.memberInGroupService.addMemberToGroup(
+      userId,
+      RoleInGroup.MEMBER,
+      group,
+    );
+  }
+
+  async findById(id: Uuid) {
+    return Optional.of(
+      await this.groupRepository.findOne({
+        where: { id },
+      }),
+    )
+      .throwIfNotPresent(new NotFoundException(ErrorCode.E009))
+      .get();
+  }
+
+  async getMemberInGroup(groupId: Uuid, userId: Uuid) {
+    return await this.memberInGroupRepository.getMemberInGroup(groupId);
   }
 }

@@ -23,4 +23,26 @@ export class MemberInGroupService {
     });
     await this.memberInGroupRepository.save(memberInGroup);
   }
+
+  async isUserHasRoleHostInGroup(userId: Uuid, groupId: Uuid) {
+    const memberInGroup =
+      await this.memberInGroupRepository.findByMemberIdAndGroupId(
+        userId,
+        groupId,
+      );
+    return memberInGroup && memberInGroup.role === RoleInGroup.HOST;
+  }
+
+  async isUserInGroup(userId: Uuid, groupId: Uuid) {
+    const memberInGroup =
+      await this.memberInGroupRepository.findByMemberIdAndGroupId(
+        userId,
+        groupId,
+      );
+    if (!memberInGroup) {
+      return false;
+    }
+
+    return true;
+  }
 }
