@@ -76,12 +76,14 @@ export class GroupService {
       throw new ForbiddenException(ErrorCode.A009);
     }
     const group = await this.findById(groupId);
-    for (const email of dto.email) {
-      await this.mailService.inviteMemberToGroup(email, group.id, group.name);
-    }
+    await Promise.all(
+      dto.email.map((email) =>
+        this.mailService.inviteMemberToGroup(email, group.id, group.name),
+      ),
+    );
   }
 
-  async joinRoom(userId: Uuid, groupId: Uuid) {
+  async joinGroup(userId: Uuid, groupId: Uuid) {
     const group = await this.findById(groupId);
     const isUserInGroup = await this.memberInGroupService.isUserInGroup(
       userId,

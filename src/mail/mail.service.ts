@@ -82,7 +82,7 @@ export class MailService {
         },
       })
       .catch((err) => {
-        this.logger.error('Error sending email request delete account');
+        this.logger.error('Error sending email invite member to group');
         this.logger.error(err);
       });
   }

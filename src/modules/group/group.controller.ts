@@ -92,10 +92,10 @@ export class GroupController {
     type: 'string',
   })
   @Post('group/:groupId/members/joins')
-  async joinRoom(
+  async joinGroup(
     @CurrentUser('id') userId: Uuid,
     @Param('groupId', ValidateUuid) groupId: Uuid,
   ) {
-    return this.groupService.joinRoom(userId, groupId);
+    return this.groupService.joinGroup(userId, groupId);
   }
 }
