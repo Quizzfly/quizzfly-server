@@ -6,10 +6,11 @@ import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
 import { CreateGroupReqDto } from '@modules/group/dto/request/create-group.req.dto';
 import { InviteMemberToGroupReqDto } from '@modules/group/dto/request/invite-member-to-group.req.dto';
 import { InfoGroupResDto } from '@modules/group/dto/response/info-group.res.dto';
-import { GroupService } from '@modules/group/group.service';
+import { GroupService } from '@modules/group/service/group.service';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -91,11 +92,43 @@ export class GroupController {
     description: 'The UUID of the Group',
     type: 'string',
   })
-  @Post('group/:groupId/members/joins')
+  @Post('groups/:groupId/members/joins')
   async joinGroup(
     @CurrentUser('id') userId: Uuid,
     @Param('groupId', ValidateUuid) groupId: Uuid,
   ) {
     return this.groupService.joinGroup(userId, groupId);
+  }
+
+  @ApiAuth({
+    summary: 'Get info detail group',
+  })
+  @ApiParam({
+    name: 'groupId',
+    description: 'The UUID of the Group',
+    type: 'string',
+  })
+  @Get('groups/:groupId')
+  async getDetailGroup(
+    @CurrentUser('id') userId: Uuid,
+    @Param('groupId', ValidateUuid) groupId: Uuid,
+  ) {
+    return this.groupService.getInfoDetailGroup(groupId, userId);
+  }
+
+  @ApiAuth({
+    summary: 'Delete group',
+  })
+  @ApiParam({
+    name: 'groupId',
+    description: 'The UUID of the Group',
+    type: 'string',
+  })
+  @Delete('groups/:groupId')
+  async deleteGroup(
+    @CurrentUser('id') userId: Uuid,
+    @Param('groupId', ValidateUuid) groupId: Uuid,
+  ) {
+    return this.groupService.deleteGroup(groupId, userId);
   }
 }

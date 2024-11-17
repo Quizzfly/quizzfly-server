@@ -18,8 +18,8 @@ import { InfoDetailGroupResDto } from '@modules/group/dto/response/info-detail-g
 import { InfoGroupResDto } from '@modules/group/dto/response/info-group.res.dto';
 import { GroupEntity } from '@modules/group/entity/group.entity';
 import { RoleInGroup } from '@modules/group/enums/role-in-group.enum';
-import { MemberInGroupService } from '@modules/group/member-in-group.service';
 import { MemberInGroupRepository } from '@modules/group/repository/member-in-group.repository';
+import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -76,10 +76,9 @@ export class GroupService {
       throw new ForbiddenException(ErrorCode.A009);
     }
     const group = await this.findById(groupId);
-    await Promise.all(
-      dto.email.map((email) =>
-        this.mailService.inviteMemberToGroup(email, group.id, group.name),
-      ),
+    dto.emails.map(
+      async (email) =>
+        await this.mailService.inviteMemberToGroup(email, group.id, group.name),
     );
   }
 
@@ -89,9 +88,11 @@ export class GroupService {
       userId,
       groupId,
     );
+
     if (isUserInGroup) {
       throw new ForbiddenException(ErrorCode.A014);
     }
+
     await this.memberInGroupService.addMemberToGroup(
       userId,
       RoleInGroup.MEMBER,
@@ -110,6 +111,39 @@ export class GroupService {
   }
 
   async getMemberInGroup(groupId: Uuid, userId: Uuid) {
+    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
+      userId,
+      groupId,
+    );
+
+    if (!isUserInGroup) {
+      throw new ForbiddenException(ErrorCode.A014);
+    }
+
     return await this.memberInGroupRepository.getMemberInGroup(groupId);
+  }
+
+  async getInfoDetailGroup(groupId: Uuid, userId: Uuid) {
+    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
+      userId,
+      groupId,
+    );
+
+    if (!isUserInGroup) {
+      throw new ForbiddenException(ErrorCode.A014);
+    }
+
+    const group = await this.findById(groupId);
+    return group.toDto(InfoGroupResDto);
+  }
+
+  async deleteGroup(groupId: Uuid, userId: Uuid) {
+    const isUserHasRoleHostInGroup =
+      await this.memberInGroupService.isUserHasRoleHostInGroup(userId, groupId);
+
+    if (!isUserHasRoleHostInGroup) {
+      throw new ForbiddenException(ErrorCode.A009);
+    }
+    await this.groupRepository.softDelete({ id: groupId });
   }
 }
