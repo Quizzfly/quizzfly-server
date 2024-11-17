@@ -6,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 export class EventService {
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
-  async emit(event: IEvent<Record<string, any>>) {
+  emit(event: IEvent<Record<string, any>>) {
     return this.eventEmitter.emit(
       `${event.scope}.${event.name}`,
       event.payload,

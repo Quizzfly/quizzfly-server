@@ -37,6 +37,11 @@ export type I18nTranslations = {
             "user_is_already_in_group": string;
         };
     };
+    "quiz": {
+        "error": {
+            "not_found": string;
+        };
+    };
     "quizzfly": {
         "error": {
             "not_found": string;

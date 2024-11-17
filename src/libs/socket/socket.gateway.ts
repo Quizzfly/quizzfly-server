@@ -100,7 +100,7 @@ export class SocketGateway
           role: RoleInRoom.HOST,
         },
       };
-      this.logger.log(`Room created with pin: ${message.roomPin}`);
+      this.logger.log(`Room created with pin: ${message.roomPin}.`);
     }
 
     this.users[client.id] = {
@@ -130,9 +130,9 @@ export class SocketGateway
     if (room) {
       if (room.locked) {
         this.logger.log(
-          `User ${client.id} attempted to join a locked room: ${message.roomPin}`,
+          `User ${client.id} attempted to join a locked room: ${message.roomPin}.`,
         );
-        throw new WsException('Room is locked');
+        throw new WsException('Room is locked.');
       } else {
         room.players.add(client.id);
         this.users[client.id] = {
@@ -149,7 +149,7 @@ export class SocketGateway
 
         const player = this.users[client.id];
         this.logger.log(
-          `Player [${player.socketId} - ${player.userId} - ${player.name}] joined room ${message.roomPin}`,
+          `Player [${player.socketId} - ${player.userId} - ${player.name}] joined room ${message.roomPin}.`,
         );
 
         this.server.to(message.roomPin).emit(
@@ -161,7 +161,7 @@ export class SocketGateway
         );
       }
     } else {
-      throw new WsException('Room not found');
+      throw new WsException('Room not found.');
     }
   }
 
@@ -178,10 +178,10 @@ export class SocketGateway
 
       const player = this.users[client.id];
       if (!player) {
-        throw new WsException('Player not found');
+        throw new WsException('Player not found.');
       }
       this.logger.log(
-        `Player [${player.socketId} - ${player.userId} - ${player.name}] leaved room ${roomPin}`,
+        `Player [${player.socketId} - ${player.userId} - ${player.name}] leaved room ${roomPin}.`,
       );
 
       this.server.to(roomPin).emit(
@@ -194,7 +194,7 @@ export class SocketGateway
       this.users[client.id] = undefined;
       this.clients.delete(client.id);
     } else {
-      throw new WsException('Room not found');
+      throw new WsException('Room not found.');
     }
   }
 
@@ -205,24 +205,24 @@ export class SocketGateway
   ) {
     const room = this.rooms[payload.roomPin];
     if (room === null) {
-      throw new WsException('Room not found');
+      throw new WsException('Room not found.');
     }
     const user = this.users[client.id];
     if (user.role !== RoleInRoom.HOST) {
-      throw new WsException('Only the host can kick player in room');
+      throw new WsException('Only the host can kick player in room.');
     }
 
     const socket = this.clients.get(payload.socketId);
     if (!socket) {
       throw new WsException(
-        `No player with socketId: ${payload.socketId} exists in room ${payload.roomPin}`,
+        `No player with socketId: ${payload.socketId} exists in room ${payload.roomPin}.`,
       );
     }
 
     if (socket) {
       const player = this.users[payload.socketId];
       if (!player) {
-        throw new WsException('Player not found');
+        throw new WsException('Player not found.');
       }
       room.players.delete(payload.socketId);
 
@@ -257,12 +257,12 @@ export class SocketGateway
         this.server
           .to(message.roomPin)
           .emit('roomLocked', convertCamelToSnake({ locked: true }));
-        this.logger.log(`Room with pin: ${message.roomPin} is now locked`);
+        this.logger.log(`Room with pin: ${message.roomPin} is now locked.`);
       } else {
         throw new WsException('Only the host can lock the room.');
       }
     } else {
-      throw new WsException('Room not found');
+      throw new WsException('Room not found.');
     }
   }
 
@@ -283,7 +283,7 @@ export class SocketGateway
         throw new WsException('Only the host can unlock the room.');
       }
     } else {
-      throw new WsException('Room not found');
+      throw new WsException('Room not found.');
     }
   }
 
@@ -296,12 +296,12 @@ export class SocketGateway
     const user = this.users[client.id];
     const room = this.rooms[roomPin];
     if (!room) {
-      throw new WsException('Room not found');
+      throw new WsException('Room not found.');
     }
 
     if (user && user.role === RoleInRoom.HOST) {
       if (room.startTime) {
-        throw new WsException('Quiz has been started');
+        throw new WsException('Quiz has been started.');
       }
       const questions = await this.eventService.emitAsync(
         new GetQuestionsEvent({
@@ -309,6 +309,13 @@ export class SocketGateway
           quizzflyId: quizzflyId as Uuid,
         }),
       );
+
+      if (!questions || questions.length === 0) {
+        throw new WsException(
+          'Question set not found. Please check the ID and try again.',
+        );
+      }
+
       room.questions = {};
       questions.forEach((question: any) => {
         if (!room.questions[question.prevElementId]) {
@@ -341,7 +348,7 @@ export class SocketGateway
           questions,
         }),
       );
-      this.logger.log(`Quiz started in room: ${roomPin}`);
+      this.logger.log(`Quiz started in room: ${roomPin}.`);
     } else {
       throw new WsException('Only the host can start the quiz.');
     }
@@ -355,12 +362,12 @@ export class SocketGateway
     const user = this.users[client.id];
     const room = this.rooms[payload.roomPin];
     if (!room) {
-      throw new WsException('Room not found');
+      throw new WsException('Room not found.');
     }
 
     if (user && user.role === RoleInRoom.HOST) {
       if (!room.startTime) {
-        throw new WsException('Quiz has not started');
+        throw new WsException('Quiz has not started.');
       }
 
       room.currentQuestion.done = true;
@@ -404,15 +411,15 @@ export class SocketGateway
     @MessageBody(new WsValidationPipe()) payload: AnswerQuestionReqDto,
   ) {
     const room = Optional.of(this.rooms[payload.roomPin])
-      .throwIfNotPresent(new WsException('Room not found'))
+      .throwIfNotPresent(new WsException('Room not found.'))
       .get();
 
     const player: UserModel = Optional.of(this.users[client.id])
-      .throwIfNotPresent(new WsException('Player invalid'))
+      .throwIfNotPresent(new WsException('Player invalid.'))
       .get();
     const question = room.currentQuestion;
     if (question.type !== 'QUIZ') {
-      throw new WsException('Not allowed');
+      throw new WsException('Not allowed.');
     }
 
     if (question.done) {
@@ -438,7 +445,7 @@ export class SocketGateway
         score,
       };
     } else {
-      throw new WsException('You have answered this question');
+      throw new WsException('You have answered this question.');
     }
 
     if (!question.choices[payload.answerId]) {
@@ -465,7 +472,7 @@ export class SocketGateway
     @MessageBody(new WsValidationPipe()) payload: FinishQuestionReqDto,
   ) {
     const room: RoomModel = Optional.of(this.rooms[payload.roomPin])
-      .throwIfNotPresent(new WsException('Room not found'))
+      .throwIfNotPresent(new WsException('Room not found.'))
       .get();
     const user = this.users[client.id];
     if (!user || user.role !== RoleInRoom.HOST) {
@@ -517,7 +524,7 @@ export class SocketGateway
   ) {
     const room: RoomModel = this.rooms[payload.roomPin];
     if (!room) {
-      throw new WsException('Room not found');
+      throw new WsException('Room not found.');
     }
 
     const user: UserModel = this.users[client.id];
@@ -529,7 +536,7 @@ export class SocketGateway
 
     const question = room.currentQuestion;
     if (!question.done) {
-      throw new WsException('Unfinished question');
+      throw new WsException('Unfinished question.');
     }
 
     const leaderBoard = [];

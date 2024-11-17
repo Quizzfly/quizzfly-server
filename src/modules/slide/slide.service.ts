@@ -1,18 +1,25 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
+import { EventService } from '@core/events/event.service';
 import { Optional } from '@core/utils/optional';
+import { UpdatePositionQuizEvent } from '@modules/quiz/events';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
 import { InfoSlideResDto } from '@modules/slide/dto/response/info-slide.res';
 import { SlideEntity } from '@modules/slide/entity/slide.entity';
+import {
+  SlideAction,
+  SlideScope,
+  UpdatePositionSlidePayLoad,
+} from '@modules/slide/events';
 import { SlideRepository } from '@modules/slide/repository/slide.repository';
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -20,7 +27,7 @@ export class SlideService {
   constructor(
     private readonly slideRepository: SlideRepository,
     private readonly quizzflyService: QuizzflyService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventService: EventService,
   ) {}
 
   @Transactional()
@@ -41,7 +48,7 @@ export class SlideService {
     return slide.toDto(InfoSlideResDto);
   }
 
-  @OnEvent('get.slide.entity')
+  @OnEvent(`${SlideScope}.${SlideAction.getSlideEntity}`)
   async findById(id: Uuid) {
     return Optional.of(
       await this.slideRepository.findOne({
@@ -72,10 +79,12 @@ export class SlideService {
           prevElementId: slide.prevElementId,
         });
       } else {
-        this.eventEmitter.emit('update.quiz.position', {
-          quizId: behindQuestion.id,
-          prevElementId: slide.prevElementId,
-        });
+        await this.eventService.emitAsync(
+          new UpdatePositionQuizEvent({
+            quizId: behindQuestion.id,
+            prevElementId: slide.prevElementId,
+          }),
+        );
       }
     }
   }
@@ -88,7 +97,7 @@ export class SlideService {
   ) {
     const slide = await this.findById(slideId);
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
-      throw new ForbiddenException(ErrorCode.ACCESS_DENIED);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     Object.assign(slide, dto);
 
@@ -99,7 +108,7 @@ export class SlideService {
   async duplicateSlide(quizzflyId: Uuid, slideId: Uuid, userId: Uuid) {
     const slide = await this.findById(slideId);
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
-      throw new ForbiddenException(ErrorCode.ACCESS_DENIED);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     const behindQuestion = await this.quizzflyService.getBehindQuestion(
       quizzflyId,
@@ -122,26 +131,22 @@ export class SlideService {
           prevElementId: duplicateSlide.id,
         });
       } else {
-        this.eventEmitter.emit('update.quiz.position', {
-          quizId: behindQuestion.id,
-          prevElementId: duplicateSlide.id,
-        });
+        await this.eventService.emitAsync(
+          new UpdatePositionQuizEvent({
+            quizId: behindQuestion.id,
+            prevElementId: duplicateSlide.id,
+          }),
+        );
       }
     }
 
     return duplicateSlide.toDto(InfoSlideResDto);
   }
 
-  @OnEvent('update.slide.position')
-  async changePrevPointerSlide({
-    slideId,
-    prevElementId,
-  }: {
-    slideId: Uuid;
-    prevElementId: Uuid;
-  }) {
-    const slide = await this.findById(slideId);
-    slide.prevElementId = prevElementId;
+  @OnEvent(`${SlideScope}.${SlideAction.updatePosition}`)
+  async changePrevPointerSlide(payload: UpdatePositionSlidePayLoad) {
+    const slide = await this.findById(payload.slideId);
+    slide.prevElementId = payload.prevElementId;
     await this.slideRepository.save(slide);
   }
 }
