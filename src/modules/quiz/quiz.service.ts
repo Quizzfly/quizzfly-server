@@ -1,6 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { defaultInstanceEntity } from '@core/constants/app.constant';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto';
 import { QuizResDto } from '@modules/quiz/dto/response/quiz.res.dto';
@@ -30,7 +30,7 @@ export class QuizService {
   async create(userId: Uuid, quizzflyId: Uuid, dto: CreateQuizReqDto) {
     const quizzfly = await this.quizzflyService.findById(quizzflyId);
     if (quizzfly.userId !== userId) {
-      throw new ForbiddenException(ErrorCode.E004);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     const currentLastQuestion =
       await this.quizzflyService.getLastQuestion(quizzflyId);

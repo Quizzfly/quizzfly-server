@@ -10,7 +10,9 @@
     "username_or_email_exists": "Username or email already exists",
     "email_exists": "Account with this email already exists",
     "not_found": "User not found",
+    "code_is_incorrect": "The code you entered is incorrect.",
     "invalid_password": "Invalid password",
-    "invalid_token": "Invalid token"
+    "invalid_token": "Invalid token",
+    "request_delete_account_is_invalid": "The request to delete the account is invalid."
   }
 }

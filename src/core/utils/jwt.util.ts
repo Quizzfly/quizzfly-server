@@ -1,11 +1,11 @@
 import { AllConfigType } from '@config/config.type';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
 import { JwtRefreshPayloadType } from '@modules/auth/types/jwt-refresh-payload.type';
 import { Token } from '@modules/auth/types/token.type';
 import { Global, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import ms from 'ms';
 
 @Global()
@@ -21,8 +21,11 @@ export class JwtUtil {
         secret: this.configService.getOrThrow('auth.secret', { infer: true }),
       });
       return payload;
-    } catch {
-      throw new UnauthorizedException(ErrorCode.A004);
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        throw new UnauthorizedException(ErrorCode.TOKEN_EXPIRED);
+      } else if (err instanceof JsonWebTokenError)
+        throw new UnauthorizedException(ErrorCode.TOKEN_INVALID);
     }
   }
 
@@ -33,8 +36,11 @@ export class JwtUtil {
           infer: true,
         }),
       });
-    } catch {
-      throw new UnauthorizedException(ErrorCode.A006);
+    } catch (err) {
+      if (err instanceof TokenExpiredError) {
+        throw new UnauthorizedException(ErrorCode.TOKEN_EXPIRED);
+      } else if (err instanceof JsonWebTokenError)
+        throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_INVALID);
     }
   }
 
@@ -123,7 +129,7 @@ export class JwtUtil {
         }),
       });
     } catch {
-      throw new UnauthorizedException(ErrorCode.A006);
+      throw new UnauthorizedException(ErrorCode.TOKEN_INVALID);
     }
   }
 
@@ -135,7 +141,7 @@ export class JwtUtil {
         }),
       });
     } catch {
-      throw new UnauthorizedException(ErrorCode.A006);
+      throw new UnauthorizedException(ErrorCode.TOKEN_INVALID);
     }
   }
 }

@@ -10,7 +10,6 @@ import {
 
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
-import { ErrorCode } from '@core/constants/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { MailService } from '@mail/mail.service';
 import { InviteMemberToGroupReqDto } from '@modules/group/dto/request/invite-member-to-group.req.dto';
@@ -21,6 +20,7 @@ import { RoleInGroup } from '@modules/group/enums/role-in-group.enum';
 import { MemberInGroupRepository } from '@modules/group/repository/member-in-group.repository';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { Transactional } from 'typeorm-transactional';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 
 @Injectable()
 export class GroupService {
@@ -73,7 +73,7 @@ export class GroupService {
     const isUserHasRoleHostInGroup =
       await this.memberInGroupService.isUserHasRoleHostInGroup(userId, groupId);
     if (!isUserHasRoleHostInGroup) {
-      throw new ForbiddenException(ErrorCode.A009);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     const group = await this.findById(groupId);
     dto.emails.map(
@@ -90,7 +90,7 @@ export class GroupService {
     );
 
     if (isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.A014);
+      throw new ForbiddenException(ErrorCode.USER_IS_ALREADY_IN_GROUP);
     }
 
     await this.memberInGroupService.addMemberToGroup(
@@ -106,7 +106,7 @@ export class GroupService {
         where: { id },
       }),
     )
-      .throwIfNotPresent(new NotFoundException(ErrorCode.E009))
+      .throwIfNotPresent(new NotFoundException(ErrorCode.GROUP_NOT_FOUND))
       .get();
   }
 
@@ -117,7 +117,7 @@ export class GroupService {
     );
 
     if (!isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.A014);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     return await this.memberInGroupRepository.getMemberInGroup(groupId);
@@ -130,7 +130,7 @@ export class GroupService {
     );
 
     if (!isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.A014);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     const group = await this.findById(groupId);
@@ -142,7 +142,7 @@ export class GroupService {
       await this.memberInGroupService.isUserHasRoleHostInGroup(userId, groupId);
 
     if (!isUserHasRoleHostInGroup) {
-      throw new ForbiddenException(ErrorCode.A009);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     await this.groupRepository.softDelete({ id: groupId });
   }
