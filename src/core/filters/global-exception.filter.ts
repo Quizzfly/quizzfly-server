@@ -125,12 +125,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
    */
   private handleHttpException(exception: HttpException): ErrorDto {
     const statusCode = exception.getStatus();
-    const message =
-      this.i18n.t(
-        ErrorCodeDetails[
-          exception.message
-        ] as unknown as keyof I18nTranslations,
-      ) || exception.message;
+    const message = ErrorCodeDetails[exception.message]
+      ? this.i18n.t(
+          ErrorCodeDetails[
+            exception.message
+          ] as unknown as keyof I18nTranslations,
+        )
+      : exception.message;
     const errorRes = {
       timestamp: new Date().toISOString(),
       statusCode,
