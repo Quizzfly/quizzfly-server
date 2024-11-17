@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { ErrorDetailDto } from './error-detail.dto';
 
 export class ErrorDto {
@@ -11,7 +12,8 @@ export class ErrorDto {
   @ApiProperty()
   error: string;
 
-  @ApiPropertyOptional({ name: 'error_code' })
+  @ApiPropertyOptional()
+  @Expose()
   errorCode?: string;
 
   @ApiProperty()

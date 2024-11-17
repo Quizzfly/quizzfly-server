@@ -3,6 +3,7 @@ import { Uuid } from '@common/types/common.type';
 import { CreateGroupReqDto } from '@modules/group/dto/request/create-group.req.dto';
 import { GroupRepository } from '@modules/group/repository/group.repository';
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -10,7 +11,7 @@ import {
 
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { MailService } from '@mail/mail.service';
 import { InviteMemberToGroupReqDto } from '@modules/group/dto/request/invite-member-to-group.req.dto';
@@ -73,7 +74,7 @@ export class GroupService {
     const isUserHasRoleHostInGroup =
       await this.memberInGroupService.isUserHasRoleHostInGroup(userId, groupId);
     if (!isUserHasRoleHostInGroup) {
-      throw new ForbiddenException(ErrorCode.A009);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     const group = await this.findById(groupId);
     await Promise.all(
@@ -90,7 +91,7 @@ export class GroupService {
       groupId,
     );
     if (isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.A014);
+      throw new ConflictException(ErrorCode.USER_IS_ALREADY_IN_GROUP);
     }
     await this.memberInGroupService.addMemberToGroup(
       userId,
@@ -105,7 +106,7 @@ export class GroupService {
         where: { id },
       }),
     )
-      .throwIfNotPresent(new NotFoundException(ErrorCode.E009))
+      .throwIfNotPresent(new NotFoundException(ErrorCode.GROUP_NOT_FOUND))
       .get();
   }
 

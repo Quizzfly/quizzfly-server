@@ -1,7 +1,7 @@
 import { CommonFunction } from '@common/common.function';
 import { Uuid } from '@common/types/common.type';
 import { CacheKey } from '@core/constants/cache.constant';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
 import { CacheTTL } from '@libs/redis/utils/cache-ttl.utils';
@@ -93,7 +93,7 @@ export class UserService {
         relations: ['userInfo'],
       }),
     )
-      .throwIfNotPresent(new NotFoundException(ErrorCode.E002))
+      .throwIfNotPresent(new NotFoundException(ErrorCode.USER_NOT_FOUND))
       .get();
   }
 
@@ -121,7 +121,7 @@ export class UserService {
   async changePassword(dto: ChangePasswordReqDto, userId: Uuid) {
     const user = await this.findByUserId(userId);
     if ((await verifyPassword(dto.old_password, user.password)) === false) {
-      throw new BadRequestException(ErrorCode.A013);
+      throw new BadRequestException(ErrorCode.OLD_PASSWORD_INCORRECT);
     }
 
     user.password = dto.new_password;
@@ -133,7 +133,7 @@ export class UserService {
       CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
     );
     if (isExistRequest) {
-      throw new BadRequestException(ErrorCode.E006);
+      throw new BadRequestException(ErrorCode.REQUEST_DELETE_ACCOUNT_INVALID);
     }
     const user = await this.findByUserId(userId);
     const code = await CommonFunction.generateCode();
@@ -150,7 +150,7 @@ export class UserService {
       CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
     );
     if (code !== codeInRedis || codeInRedis === null) {
-      throw new BadRequestException(ErrorCode.E007);
+      throw new BadRequestException(ErrorCode.CODE_INCORRECT);
     }
     const user = await this.findByUserId(userId);
     user.deletedAt = new Date();

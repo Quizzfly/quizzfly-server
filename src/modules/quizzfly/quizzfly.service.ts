@@ -2,7 +2,7 @@ import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagina
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { ChangePositionQuestionReqDto } from '@modules/quizzfly/dto/request/change-position-question.req';
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
@@ -57,7 +57,7 @@ export class QuizzflyService {
     const quizzfly = await this.findById(quizzflyId);
 
     if (quizzfly.userId !== userId) {
-      throw new ForbiddenException(ErrorCode.A009);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     quizzfly.title = dto.title;
@@ -95,7 +95,7 @@ export class QuizzflyService {
         relations: ['user'],
       }),
     )
-      .throwIfNotPresent(new NotFoundException(ErrorCode.E004))
+      .throwIfNotPresent(new NotFoundException(ErrorCode.QUIZZFLY_NOT_FOUND))
       .get();
   }
 
@@ -112,7 +112,7 @@ export class QuizzflyService {
     const quizzfly = await this.findById(quizzflyId);
 
     if (quizzfly.userId !== userId) {
-      throw new ForbiddenException(ErrorCode.A009);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     quizzfly.theme = dto.theme;
@@ -125,7 +125,7 @@ export class QuizzflyService {
     const { quizzflyId, userId } = payload;
     const quizzfly = await this.findById(quizzflyId);
     if (quizzfly.userId !== userId) {
-      throw new ForbiddenException(ErrorCode.A009);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     const questions =
@@ -174,7 +174,7 @@ export class QuizzflyService {
     const quizzfly = await this.findById(quizzflyId);
 
     if (quizzfly.userId !== userId) {
-      throw new ForbiddenException(ErrorCode.A009);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     await this.quizzflyRepository.softDelete({ id: quizzflyId });
@@ -188,7 +188,7 @@ export class QuizzflyService {
   ) {
     const quizzfly = await this.findById(quizzflyId);
     if (quizzfly.userId !== userId) {
-      throw new ForbiddenException(ErrorCode.A009);
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
     let firstQuestion: any, secondQuestion: any;

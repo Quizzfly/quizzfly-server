@@ -1,9 +1,8 @@
 import { Uuid } from '@common/types/common.type';
 import { GOOGLE_URL } from '@core/constants/app.constant';
 import { ROLE } from '@core/constants/entity.enum';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { TOKEN_TYPE } from '@core/constants/token-type.enum';
-import { ValidationException } from '@core/exceptions/validation.exception';
 import { JwtUtil } from '@core/utils/jwt.util';
 import { Optional } from '@core/utils/optional';
 import { hashPassword, verifyPassword } from '@core/utils/password.util';
@@ -52,21 +51,21 @@ export class AuthService {
     const { email, password } = dto;
     const user = await this.userService.findOneByCondition({ email });
     if (!user) {
-      throw new NotFoundException(ErrorCode.A012);
+      throw new NotFoundException(ErrorCode.ACCOUNT_NOT_REGISTER);
     }
 
     if (forAdmin && user.role !== ROLE.ADMIN) {
-      throw new UnauthorizedException(ErrorCode.A005);
+      throw new UnauthorizedException(ErrorCode.ACCESS_DENIED);
     }
 
     if (!user.isActive || !user.isConfirmed) {
-      throw new BadRequestException(ErrorCode.A010);
+      throw new BadRequestException(ErrorCode.ACCOUNT_NOT_ACTIVATED);
     }
 
     const isPasswordValid = await verifyPassword(password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException(ErrorCode.A001);
+      throw new UnauthorizedException(ErrorCode.INVALID_CREDENTIALS);
     }
 
     return this.createToken(user);
@@ -98,7 +97,7 @@ export class AuthService {
     const { email, password, name } = dto;
     Optional.of(
       await this.userService.findOneByCondition({ email }),
-    ).throwIfPresent(new ValidationException(ErrorCode.E003));
+    ).throwIfPresent(new BadRequestException(ErrorCode.EMAIL_EXISTS));
 
     const user = await this.userService.create({
       email,
@@ -118,7 +117,7 @@ export class AuthService {
   async logout(sessionId: Uuid | string): Promise<void> {
     Optional.of(
       await this.sessionService.findById(sessionId as Uuid),
-    ).throwIfNotPresent(new UnauthorizedException(ErrorCode.A002));
+    ).throwIfNotPresent(new UnauthorizedException(ErrorCode.UNAUTHORIZED));
     await this.sessionService.deleteById(sessionId);
   }
 
@@ -131,12 +130,12 @@ export class AuthService {
     );
     const session = await this.sessionService.findById(sessionId);
     if (!session || session.hash !== hash) {
-      throw new UnauthorizedException(ErrorCode.A006);
+      throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_INVALID);
     }
 
     const user = await this.userService.findById(session.userId);
     if (forAdmin && user.role !== ROLE.ADMIN) {
-      throw new UnauthorizedException(ErrorCode.A005);
+      throw new UnauthorizedException(ErrorCode.ACCESS_DENIED);
     }
 
     const newHash = crypto
@@ -164,7 +163,7 @@ export class AuthService {
       });
 
       if (!user) {
-        throw new BadRequestException(ErrorCode.A012);
+        throw new BadRequestException(ErrorCode.ACCOUNT_NOT_REGISTER);
       }
     } else if (type === TOKEN_TYPE.FORGOT_PASSWORD) {
       payload = this.jwtUtil.verifyForgotPasswordToken(token);
@@ -176,11 +175,11 @@ export class AuthService {
       email: dto.email,
     });
     if (!user) {
-      throw new NotFoundException(ErrorCode.A012);
+      throw new NotFoundException(ErrorCode.ACCOUNT_NOT_REGISTER);
     }
 
     if (user.isActive) {
-      throw new BadRequestException(ErrorCode.A011);
+      throw new BadRequestException(ErrorCode.ACCOUNT_ALREADY_ACTIVATED);
     }
 
     const token = await this.jwtUtil.createVerificationToken({ id: user.id });
@@ -193,7 +192,7 @@ export class AuthService {
       email: dto.email,
     });
     if (!user) {
-      throw new NotFoundException(ErrorCode.E002);
+      throw new NotFoundException(ErrorCode.USER_NOT_FOUND);
     }
 
     const token = await this.jwtUtil.createForgotPasswordToken({ id: user.id });
@@ -206,7 +205,7 @@ export class AuthService {
     const user = await this.userService.findById(payload.id as Uuid);
 
     if (!user) {
-      throw new BadRequestException(ErrorCode.A004);
+      throw new BadRequestException(ErrorCode.TOKEN_INVALID);
     }
 
     await this.userService.updateUser(payload.id as Uuid, {

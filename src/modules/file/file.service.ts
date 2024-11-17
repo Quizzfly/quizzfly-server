@@ -1,4 +1,4 @@
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { FileInfoResDto } from '@modules/file/dto/file-info.res.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -35,7 +35,7 @@ export class FileService {
 
   async handleFileUpload(file: Express.Multer.File): Promise<FileInfoResDto> {
     if (!file) {
-      throw new BadRequestException(ErrorCode.V003);
+      throw new BadRequestException(ErrorCode.FILE_NOT_EMPTY);
     }
     const cloudinaryResponse = await this.uploadImageToCloudinary(file);
     return this.toFileInfoResponse(cloudinaryResponse as UploadApiResponse);
@@ -46,7 +46,7 @@ export class FileService {
   ): Promise<Array<FileInfoResDto>> {
     const listFileInfoResponse: Array<FileInfoResDto> = [];
     if (!files || files.length === 0) {
-      throw new BadRequestException(ErrorCode.V003);
+      throw new BadRequestException(ErrorCode.FILE_NOT_EMPTY);
     }
     for (const file of files) {
       const cloudinaryResponse = await this.uploadImageToCloudinary(file);

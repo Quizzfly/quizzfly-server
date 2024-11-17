@@ -1,0 +1,6 @@
+{
+  "error": {
+    "not_found": "The group could not be found.",
+    "user_is_already_in_group": "The user is already a member of the group."
+  }
+}
