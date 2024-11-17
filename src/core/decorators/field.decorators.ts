@@ -222,7 +222,7 @@ export function EmailField(
   options: Omit<ApiPropertyOptions, 'type'> & IStringFieldOptions = {},
 ): PropertyDecorator {
   const decorators = [
-    IsEmail(),
+    IsEmail({}, { each: options?.each }),
     StringField({ toLowerCase: true, ...options }),
   ];
 
