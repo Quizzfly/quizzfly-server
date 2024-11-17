@@ -5,10 +5,11 @@ import { CreateAnswerReqDto } from '@modules/answer/dto/request/create-answer.re
 import { UpdateAnswerReqDto } from '@modules/answer/dto/request/update-answer.req.dto';
 import { AnswerResDto } from '@modules/answer/dto/response/answer.res.dto';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
+import { AnswerAction, AnswerScope } from '@modules/answer/events';
 import { AnswerRepository } from '@modules/answer/repositories/answer.repository';
 import { QuizService } from '@modules/quiz/quiz.service';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
 import { FindOptionsWhere } from 'typeorm';
 
@@ -19,7 +20,6 @@ export class AnswerService {
   constructor(
     private readonly answerRepository: AnswerRepository,
     private readonly quizService: QuizService,
-    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async create(quizId: Uuid, dto: CreateAnswerReqDto) {
@@ -54,9 +54,16 @@ export class AnswerService {
 
   async updateOne(answerId: Uuid, dto: UpdateAnswerReqDto) {
     const answer = await this.findOneById(answerId);
+
+    if (dto.isCorrect) {
+      await this.answerRepository.update(
+        { quizId: answer.quizId as Uuid },
+        { isCorrect: false },
+      );
+    }
+
     Object.assign(answer, dto);
     await this.answerRepository.save(answer);
-
     return answer;
   }
 
@@ -66,7 +73,7 @@ export class AnswerService {
     await this.answerRepository.softDelete({ id: answerId });
   }
 
-  @OnEvent('duplicate.answers')
+  @OnEvent(`${AnswerScope}.${AnswerAction.duplicateAnswers}`)
   async addAnswerForDuplicateQuiz(dto: {
     quizId: Uuid;
     duplicateQuizId: Uuid;

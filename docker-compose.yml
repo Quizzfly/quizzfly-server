@@ -29,7 +29,6 @@ services:
   quizzfly-api:
     image: quizzfly-api
     container_name: quizzfly-api
-    restart: always
     build:
       context: .
       dockerfile: Dockerfile

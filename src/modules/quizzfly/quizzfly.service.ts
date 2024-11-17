@@ -3,7 +3,12 @@ import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
+import { EventService } from '@core/events/event.service';
 import { Optional } from '@core/utils/optional';
+import {
+  GetQuizEntityEvent,
+  UpdatePositionQuizEvent,
+} from '@modules/quiz/events';
 import { ChangePositionQuestionReqDto } from '@modules/quizzfly/dto/request/change-position-question.req';
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
 import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
@@ -18,13 +23,17 @@ import {
   QuizzflyScope,
 } from '@modules/quizzfly/events/quizzfly.event';
 import { QuizzflyRepository } from '@modules/quizzfly/repository/quizzfly.repository';
+import {
+  GetSlideEntityEvent,
+  UpdatePositionSlideEvent,
+} from '@modules/slide/events';
 import { UserService } from '@modules/user/user.service';
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -32,7 +41,7 @@ export class QuizzflyService {
   constructor(
     private readonly quizzflyRepository: QuizzflyRepository,
     private readonly userService: UserService,
-    private readonly eventEmitter: EventEmitter2,
+    private readonly eventService: EventService,
   ) {}
 
   @Transactional()
@@ -194,26 +203,22 @@ export class QuizzflyService {
     let firstQuestion: any, secondQuestion: any;
 
     if (dto.firstQuestionType === PrevElementType.QUIZ) {
-      [firstQuestion] = await this.eventEmitter.emitAsync(
-        'get.quiz.entity',
-        dto.firstQuestionId,
+      firstQuestion = await this.eventService.emitAsync(
+        new GetQuizEntityEvent(dto.firstQuestionId),
       );
     } else {
-      [firstQuestion] = await this.eventEmitter.emitAsync(
-        'get.slide.entity',
-        dto.firstQuestionId,
+      firstQuestion = await this.eventService.emitAsync(
+        new GetSlideEntityEvent(dto.firstQuestionId),
       );
     }
 
     if (dto.secondQuestionType === PrevElementType.QUIZ) {
-      [secondQuestion] = await this.eventEmitter.emitAsync(
-        'get.quiz.entity',
-        dto.secondQuestionId,
+      secondQuestion = await this.eventService.emitAsync(
+        new GetQuizEntityEvent(dto.secondQuestionId),
       );
     } else {
-      [secondQuestion] = await this.eventEmitter.emitAsync(
-        'get.slide.entity',
-        dto.secondQuestionId,
+      secondQuestion = await this.eventService.emitAsync(
+        new GetSlideEntityEvent(dto.secondQuestionId),
       );
     }
     const previousFirstQuestion = firstQuestion.prevElementId;
@@ -340,15 +345,19 @@ export class QuizzflyService {
     questionType: any,
   ) {
     if (questionType === PrevElementType.QUIZ) {
-      await this.eventEmitter.emitAsync('update.quiz.position', {
-        quizId: questionId,
-        prevElementId: newPrevElementId,
-      });
+      await this.eventService.emitAsync(
+        new UpdatePositionQuizEvent({
+          quizId: questionId,
+          prevElementId: newPrevElementId as Uuid,
+        }),
+      );
     } else {
-      await this.eventEmitter.emitAsync('update.slide.position', {
-        slideId: questionId,
-        prevElementId: newPrevElementId,
-      });
+      await this.eventService.emitAsync(
+        new UpdatePositionSlideEvent({
+          slideId: questionId,
+          prevElementId: newPrevElementId as Uuid,
+        }),
+      );
     }
   }
 }

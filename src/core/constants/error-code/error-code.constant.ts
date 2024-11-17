@@ -31,6 +31,9 @@ export enum ErrorCode {
   // Slide Errors
   SLIDE_NOT_FOUND = 'SLIDE_001',
 
+  // Quiz Errors
+  QUIZ_NOT_FOUND = 'QUIZ_001',
+
   // Room Errors
   ROOM_NOT_FOUND = 'ROOM_001',
 
