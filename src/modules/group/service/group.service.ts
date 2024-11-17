@@ -3,6 +3,7 @@ import { Uuid } from '@common/types/common.type';
 import { CreateGroupReqDto } from '@modules/group/dto/request/create-group.req.dto';
 import { GroupRepository } from '@modules/group/repository/group.repository';
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -10,6 +11,7 @@ import {
 
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { MailService } from '@mail/mail.service';
 import { InviteMemberToGroupReqDto } from '@modules/group/dto/request/invite-member-to-group.req.dto';
@@ -20,7 +22,6 @@ import { RoleInGroup } from '@modules/group/enums/role-in-group.enum';
 import { MemberInGroupRepository } from '@modules/group/repository/member-in-group.repository';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { Transactional } from 'typeorm-transactional';
-import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 
 @Injectable()
 export class GroupService {
@@ -90,7 +91,7 @@ export class GroupService {
     );
 
     if (isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.USER_IS_ALREADY_IN_GROUP);
+      throw new ConflictException(ErrorCode.USER_IS_ALREADY_IN_GROUP);
     }
 
     await this.memberInGroupService.addMemberToGroup(
@@ -120,7 +121,7 @@ export class GroupService {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
-    return await this.memberInGroupRepository.getMemberInGroup(groupId);
+    return this.memberInGroupRepository.getMemberInGroup(groupId);
   }
 
   async getInfoDetailGroup(groupId: Uuid, userId: Uuid) {
