@@ -2,8 +2,9 @@ import { ErrorDetailDto } from '@common/dto/error-detail.dto';
 import { ErrorDto } from '@common/dto/error.dto';
 import { ResponseDataApi } from '@common/dto/general/response-data-api.dto';
 import { AllConfigType } from '@config/config.type';
-import { constraintErrors } from '@core/constants/constraint-errors';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { constraintErrors } from '@core/constants/error-code/constraint-errors';
+import { ErrorCodeDetails } from '@core/constants/error-code/error-code-detail.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { ValidationException } from '@core/exceptions/validation.exception';
 import { I18nTranslations } from '@generated/i18n.generated';
 import {
@@ -100,16 +101,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message: string;
     };
     const statusCode = exception.getStatus();
+    const message =
+      r.message ||
+      this.i18n.t(r.errorCode as unknown as keyof I18nTranslations);
 
     const errorRes = {
       timestamp: new Date().toISOString(),
       statusCode,
       error: STATUS_CODES[statusCode],
-      errorCode:
-        Object.keys(ErrorCode)[Object.values(ErrorCode).indexOf(r.errorCode)],
-      message:
-        r.message ||
-        this.i18n.t(r.errorCode as unknown as keyof I18nTranslations),
+      errorCode: r.errorCode,
+      message,
     };
 
     this.logger.debug(exception);
@@ -124,12 +125,19 @@ export class GlobalExceptionFilter implements ExceptionFilter {
    */
   private handleHttpException(exception: HttpException): ErrorDto {
     const statusCode = exception.getStatus();
+    const message =
+      this.i18n.t(
+        ErrorCodeDetails[
+          exception.message
+        ] as unknown as keyof I18nTranslations,
+      ) || exception.message;
     const errorRes = {
       timestamp: new Date().toISOString(),
       statusCode,
       error: STATUS_CODES[statusCode],
-      message: exception.message,
-    };
+      errorCode: exception.message ?? undefined,
+      message,
+    } as unknown as ErrorDto;
 
     this.logger.debug(exception);
 
@@ -199,7 +207,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       statusCode,
       error: STATUS_CODES[statusCode],
-      message: error?.message || 'An unexpected error occurred',
+      message:
+        this.i18n.t('common.error.internal_server_error') ||
+        'An unexpected error occurred',
     };
 
     this.logger.error(error);

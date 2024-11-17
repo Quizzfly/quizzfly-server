@@ -1,5 +1,5 @@
 import { Uuid } from '@common/types/common.type';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
@@ -27,7 +27,7 @@ export class SlideService {
   async createSlide(userId: Uuid, quizzflyId: Uuid, dto: CreateSlideReqDto) {
     const quizzfly = await this.quizzflyService.findById(quizzflyId);
     if (quizzfly.userId !== userId) {
-      throw new ForbiddenException(ErrorCode.E004);
+      throw new ForbiddenException(ErrorCode.ACCESS_DENIED);
     }
     const currentLastQuestion =
       await this.quizzflyService.getLastQuestion(quizzflyId);
@@ -49,14 +49,14 @@ export class SlideService {
         relations: ['quizzfly'],
       }),
     )
-      .throwIfNotPresent(new NotFoundException(ErrorCode.E005))
+      .throwIfNotPresent(new NotFoundException(ErrorCode.SLIDE_NOT_FOUND))
       .get();
   }
 
   async deleteSlideById(quizzflyId: Uuid, slideId: Uuid, userId: Uuid) {
     const slide = await this.findById(slideId);
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
-      throw new ForbiddenException(ErrorCode.E004);
+      throw new ForbiddenException(ErrorCode.ACCESS_DENIED);
     }
 
     await this.slideRepository.softDelete({ id: slideId });
@@ -88,7 +88,7 @@ export class SlideService {
   ) {
     const slide = await this.findById(slideId);
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
-      throw new ForbiddenException(ErrorCode.E004);
+      throw new ForbiddenException(ErrorCode.ACCESS_DENIED);
     }
     Object.assign(slide, dto);
 
@@ -99,7 +99,7 @@ export class SlideService {
   async duplicateSlide(quizzflyId: Uuid, slideId: Uuid, userId: Uuid) {
     const slide = await this.findById(slideId);
     if (slide.quizzfly.userId !== userId || slide.quizzfly.id !== quizzflyId) {
-      throw new ForbiddenException(ErrorCode.E004);
+      throw new ForbiddenException(ErrorCode.ACCESS_DENIED);
     }
     const behindQuestion = await this.quizzflyService.getBehindQuestion(
       quizzflyId,

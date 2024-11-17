@@ -1,5 +1,5 @@
 import { IS_AUTH_OPTIONAL, IS_PUBLIC } from '@core/constants/app.constant';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { JwtUtil } from '@core/utils/jwt.util';
 import {
   CanActivate,
@@ -37,7 +37,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
     if (!accessToken) {
-      throw new UnauthorizedException(ErrorCode.A005);
+      throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
     }
 
     request['user'] = await this.jwtUtil.verifyAccessToken(accessToken);

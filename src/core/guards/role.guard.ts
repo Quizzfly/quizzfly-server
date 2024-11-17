@@ -1,5 +1,5 @@
 import { ROLE } from '@core/constants/entity.enum';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { ROLES_KEY } from '@core/decorators/role.decorator';
 import {
   CanActivate,
@@ -25,7 +25,7 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
     const isValid = requiredRoles.some((role) => user.role === role);
     if (!isValid) {
-      throw new UnauthorizedException(ErrorCode.A005);
+      throw new UnauthorizedException(ErrorCode.ACCESS_DENIED);
     }
 
     return isValid;

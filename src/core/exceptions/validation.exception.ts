@@ -1,4 +1,4 @@
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { BadRequestException } from '@nestjs/common';
 
 /**
@@ -6,7 +6,7 @@ import { BadRequestException } from '@nestjs/common';
  * ErrorCode default is V000 (Common Validation)
  */
 export class ValidationException extends BadRequestException {
-  constructor(error: ErrorCode = ErrorCode.V000, message?: string) {
+  constructor(error = ErrorCode.COMMON, message?: string) {
     super({ errorCode: error, message });
   }
 }
