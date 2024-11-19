@@ -11,7 +11,7 @@ import { QuizService } from '@modules/quiz/quiz.service';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
-import { FindOptionsWhere } from 'typeorm';
+import { FindOptionsWhere, IsNull, Not } from 'typeorm';
 
 @Injectable()
 export class AnswerService {
@@ -25,11 +25,22 @@ export class AnswerService {
   async create(quizId: Uuid, dto: CreateAnswerReqDto) {
     await this.quizService.findOneById(quizId);
 
+    const noAnswerOfQuiz = await this.answerRepository.countBy({
+      quizId,
+      index: Not(IsNull()),
+    });
+
     const answer = new AnswerEntity(dto);
     answer.quizId = quizId;
+    answer.index = noAnswerOfQuiz;
     await this.answerRepository.save(answer);
 
     return answer.toDto(AnswerResDto);
+  }
+
+  @OnEvent(`${AnswerScope}.${AnswerAction.insertMany}`)
+  async insertMany(answers: AnswerEntity[]) {
+    return this.answerRepository.save(answers);
   }
 
   async findOneById(answerId: Uuid) {
@@ -40,6 +51,10 @@ export class AnswerService {
       .get();
 
     return answer.toDto(AnswerResDto);
+  }
+
+  async findOneByCondition(filter: FindOptionsWhere<AnswerEntity> = {}) {
+    return this.answerRepository.findOneBy(filter);
   }
 
   async findAllByCondition(filter: FindOptionsWhere<AnswerEntity> = {}) {

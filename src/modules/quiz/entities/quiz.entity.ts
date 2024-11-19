@@ -24,10 +24,10 @@ export class QuizEntity extends AbstractEntity {
   @Column()
   content: string = null;
 
-  @Column({ name: 'time_limit', type: 'int' })
-  timeLimit: number;
+  @Column({ name: 'time_limit', type: 'int', default: 20 })
+  timeLimit: number = 20;
 
-  @Column({ name: 'point_multiplier' })
+  @Column({ name: 'point_multiplier', default: 1 })
   pointMultiplier: number = 1;
 
   @Column({

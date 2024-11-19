@@ -32,6 +32,9 @@ export class AnswerEntity extends AbstractEntity {
   @Column('jsonb', { default: [] })
   files?: FileResDto[];
 
+  @Column({ default: null })
+  index: number;
+
   @Column({
     name: 'quiz_id',
     type: 'uuid',
