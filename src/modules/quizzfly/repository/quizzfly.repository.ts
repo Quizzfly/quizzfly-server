@@ -30,6 +30,7 @@ export class QuizzflyRepository extends Repository<QuizzflyEntity> {
       .leftJoinAndSelect('quizzfly.quizzes', 'quizzes')
       .leftJoinAndSelect('quizzes.answers', 'answers')
       .where('quizzfly.id = :quizzflyId', { quizzflyId })
+      .orderBy('answers.index', 'ASC')
       .orderBy('answers.createdAt', 'ASC')
       .getOne();
 

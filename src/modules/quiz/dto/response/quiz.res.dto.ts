@@ -29,7 +29,11 @@ export class QuizResDto extends BaseResDto {
   })
   quizType: QuizType;
 
-  @ClassFieldOptional(() => FileResDto, { each: true, isArray: true })
+  @ClassFieldOptional(() => FileResDto, {
+    each: true,
+    isArray: true,
+    default: [],
+  })
   files?: FileResDto[];
 
   @StringFieldOptional({ name: 'background_url' })

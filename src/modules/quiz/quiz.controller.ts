@@ -2,6 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { CreateMultipleQuizGeneratedReqDto } from '@modules/quiz/dto/request/create-multiple-quiz-generated.req.dto';
 import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto';
 import { SettingQuizReqDto } from '@modules/quiz/dto/request/setting-quiz.req.dto';
 import { UpdateQuizReqDto } from '@modules/quiz/dto/request/update-quiz.req.dto';
@@ -41,6 +42,26 @@ export class QuizController {
     @Body() dto: CreateQuizReqDto,
   ) {
     return this.quizService.create(userId, quizzflyId, dto);
+  }
+
+  @ApiAuth({
+    summary: 'Create a batch quiz for a quizzfly',
+    statusCode: HttpStatus.CREATED,
+    type: QuizResDto,
+    isArray: true,
+  })
+  @ApiParam({
+    name: 'quizzflyId',
+    description: 'The UUID of the Quizzfly',
+    type: String,
+  })
+  @Post('quizzfly/:quizzflyId/quizzes/batch')
+  async createBatchQuiz(
+    @CurrentUser('id') userId: Uuid,
+    @Param('quizzflyId', ValidateUuid) quizzflyId: Uuid,
+    @Body() dto: CreateMultipleQuizGeneratedReqDto,
+  ) {
+    return this.quizService.createBatch(userId, quizzflyId, dto);
   }
 
   @ApiAuth({

@@ -3,7 +3,12 @@ import { defaultInstanceEntity } from '@core/constants/app.constant';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { EventService } from '@core/events/event.service';
 import { Optional } from '@core/utils/optional';
-import { DuplicateAnswersEvent } from '@modules/answer/events';
+import { AnswerEntity } from '@modules/answer/entities/answer.entity';
+import {
+  DuplicateAnswersEvent,
+  InsertManyAnswerEvent,
+} from '@modules/answer/events';
+import { CreateMultipleQuizGeneratedReqDto } from '@modules/quiz/dto/request/create-multiple-quiz-generated.req.dto';
 import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto';
 import { QuizResDto } from '@modules/quiz/dto/response/quiz.res.dto';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
@@ -23,6 +28,7 @@ import {
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class QuizService {
@@ -50,6 +56,60 @@ export class QuizService {
     await this.quizRepository.save(quiz);
 
     return quiz.toDto(QuizResDto);
+  }
+
+  @Transactional()
+  async createBatch(
+    userId: Uuid,
+    quizzflyId: Uuid,
+    dto: CreateMultipleQuizGeneratedReqDto,
+  ) {
+    const quizzfly = await this.quizzflyService.findById(quizzflyId);
+    if (quizzfly.userId !== userId) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
+    const currentLastQuestion =
+      await this.quizzflyService.getLastQuestion(quizzflyId);
+
+    const quizzesInsert: Array<QuizEntity> = [];
+    const answersInsert: Array<AnswerEntity> = [];
+    let prevElementId = currentLastQuestion.id;
+
+    const quizzesForResponse = dto.quizzes.map((quiz) => {
+      const id = uuidv4();
+      const quizEntity = new QuizEntity({
+        ...quiz,
+        id,
+        answers: undefined,
+      } as QuizEntity);
+      quizEntity.quizzflyId = quizzflyId;
+      quizEntity.prevElementId = prevElementId;
+
+      const answersEntity = quiz.answers.map((answer, index) => {
+        const answerEntity = new AnswerEntity({
+          ...answer,
+          quizId: id as Uuid,
+          index,
+          id: uuidv4() as Uuid,
+        });
+
+        return answerEntity;
+      });
+
+      answersInsert.push(...answersEntity);
+      quizzesInsert.push(quizEntity);
+      prevElementId = id;
+
+      return { ...quizEntity, answers: answersEntity };
+    });
+
+    await this.quizRepository.save(quizzesInsert).then(async () => {
+      await this.eventService.emitAsync(
+        new InsertManyAnswerEvent(answersInsert),
+      );
+    });
+
+    return quizzesForResponse;
   }
 
   async findOneById(quizId: Uuid) {
