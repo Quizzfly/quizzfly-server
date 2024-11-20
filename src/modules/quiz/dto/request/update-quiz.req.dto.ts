@@ -8,7 +8,7 @@ import { PartialType } from '@nestjs/swagger';
 
 export class UpdateQuizReqDto extends PartialType(CreateQuizReqDto) {
   @StringFieldOptional()
-  content: string;
+  content?: string;
 
   @ClassFieldOptional(() => FileReqDto, { each: true, isArray: true })
   files?: FileReqDto[];
