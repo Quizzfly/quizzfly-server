@@ -1,4 +1,5 @@
 import { Uuid } from '@common/types/common.type';
+import { defaultCreateEntity } from '@core/constants/app.constant';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
@@ -15,7 +16,8 @@ import {
 export class AnswerEntity extends AbstractEntity {
   constructor(data?: Partial<AnswerEntity>) {
     super();
-    Object.assign(this, data);
+    Object.assign(this, { ...data, ...defaultCreateEntity });
+    this.files = data?.files ?? [];
   }
 
   @PrimaryGeneratedColumn('uuid', {

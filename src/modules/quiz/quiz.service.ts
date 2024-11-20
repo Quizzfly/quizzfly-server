@@ -100,7 +100,7 @@ export class QuizService {
       quizzesInsert.push(quizEntity);
       prevElementId = id;
 
-      return { ...quizEntity, answers: answersEntity };
+      return { ...quizEntity, type: 'QUIZ', answers: answersEntity };
     });
 
     await this.quizRepository.save(quizzesInsert).then(async () => {

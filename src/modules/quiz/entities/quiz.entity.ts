@@ -1,4 +1,5 @@
 import { Uuid } from '@common/types/common.type';
+import { defaultCreateEntity } from '@core/constants/app.constant';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
@@ -16,6 +17,15 @@ import {
 
 @Entity('quiz', { schema: 'public' })
 export class QuizEntity extends AbstractEntity {
+  constructor(data?: Partial<QuizEntity>) {
+    super();
+    Object.assign(this, { ...data, ...defaultCreateEntity });
+    this.backgroundUrl = data?.backgroundUrl ?? null;
+    this.timeLimit = data?.timeLimit ?? 20;
+    this.pointMultiplier = data?.pointMultiplier ?? 1;
+    this.files = data?.files ?? [];
+  }
+
   @PrimaryGeneratedColumn('uuid', {
     primaryKeyConstraintName: 'PK_quiz_id',
   })
@@ -62,9 +72,4 @@ export class QuizEntity extends AbstractEntity {
 
   @OneToMany(() => AnswerEntity, (answer) => answer.quiz)
   answers?: AnswerEntity[];
-
-  constructor(data?: Partial<QuizEntity>) {
-    super();
-    Object.assign(this, data);
-  }
 }
