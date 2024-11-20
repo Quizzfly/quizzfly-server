@@ -11,6 +11,7 @@ import { SlideEntity } from '@modules/slide/entity/slide.entity';
 import {
   SlideAction,
   SlideScope,
+  UpdateManySlideDto,
   UpdatePositionSlidePayLoad,
 } from '@modules/slide/events';
 import { SlideRepository } from '@modules/slide/repository/slide.repository';
@@ -103,6 +104,14 @@ export class SlideService {
 
     await this.slideRepository.save(slide);
     return slide.toDto(InfoSlideResDto);
+  }
+
+  @OnEvent(`${SlideScope}.${SlideAction.setBackgroundForMany}`)
+  async updateMany(payload: UpdateManySlideDto) {
+    return this.slideRepository.update(
+      { quizzflyId: payload.quizzflyId as Uuid },
+      payload.dto,
+    );
   }
 
   async duplicateSlide(quizzflyId: Uuid, slideId: Uuid, userId: Uuid) {

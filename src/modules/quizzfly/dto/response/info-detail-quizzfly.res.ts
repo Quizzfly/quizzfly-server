@@ -1,17 +1,9 @@
-import { Uuid } from '@common/types/common.type';
-import {
-  BooleanField,
-  DateField,
-  StringField,
-} from '@core/decorators/field.decorators';
+import { BaseResDto } from '@common/dto/base.res.dto';
+import { BooleanField, StringField } from '@core/decorators/field.decorators';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
-import { Exclude, Expose } from 'class-transformer';
+import { Expose } from 'class-transformer';
 
-@Exclude()
-export class InfoDetailQuizzflyResDto {
-  @Expose()
-  id: Uuid;
-
+export class InfoDetailQuizzflyResDto extends BaseResDto {
   @StringField()
   @Expose()
   title: string;
@@ -20,7 +12,7 @@ export class InfoDetailQuizzflyResDto {
   @Expose()
   description: string;
 
-  @StringField()
+  @StringField({ name: 'cover_image' })
   @Expose()
   coverImage: string;
 
@@ -28,15 +20,11 @@ export class InfoDetailQuizzflyResDto {
   @Expose()
   theme: string;
 
-  @BooleanField()
+  @BooleanField({ name: 'is_public' })
   @Expose()
   isPublic: boolean;
 
-  @StringField()
+  @StringField({ name: 'quizzfly_status' })
   @Expose()
   quizzflyStatus: QuizzflyStatus;
-
-  @DateField()
-  @Expose()
-  createdAt: Date;
 }

@@ -7,6 +7,7 @@ import { EventService } from '@core/events/event.service';
 import { Optional } from '@core/utils/optional';
 import {
   GetQuizEntityEvent,
+  UpdateManyQuizEvent,
   UpdatePositionQuizEvent,
 } from '@modules/quiz/events';
 import { ChangePositionQuestionReqDto } from '@modules/quizzfly/dto/request/change-position-question.req';
@@ -25,6 +26,7 @@ import {
 import { QuizzflyRepository } from '@modules/quizzfly/repository/quizzfly.repository';
 import {
   GetSlideEntityEvent,
+  UpdateManySlideEvent,
   UpdatePositionSlideEvent,
 } from '@modules/slide/events';
 import { UserService } from '@modules/user/user.service';
@@ -34,6 +36,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { plainToInstance } from 'class-transformer';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -116,7 +119,7 @@ export class QuizzflyService {
   async changeThemeQuizzfly(
     quizzflyId: Uuid,
     userId: Uuid,
-    dto: ChangeThemeQuizzflyReqDto,
+    payload: ChangeThemeQuizzflyReqDto,
   ) {
     const quizzfly = await this.findById(quizzflyId);
 
@@ -124,9 +127,29 @@ export class QuizzflyService {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
-    quizzfly.theme = dto.theme;
+    quizzfly.theme = payload.theme;
     await this.quizzflyRepository.save(quizzfly);
-    return quizzfly.toDto(InfoDetailQuizzflyResDto);
+
+    if (payload.applyToAll) {
+      await Promise.all([
+        this.eventService.emitAsync(
+          new UpdateManyQuizEvent({
+            quizzflyId,
+            dto: { backgroundUrl: payload.theme },
+          }),
+        ),
+        this.eventService.emitAsync(
+          new UpdateManySlideEvent({
+            quizzflyId,
+            dto: { backgroundUrl: payload.theme },
+          }),
+        ),
+      ]);
+    }
+
+    return plainToInstance(InfoDetailQuizzflyResDto, quizzfly, {
+      excludeExtraneousValues: true,
+    });
   }
 
   @OnEvent(`${QuizzflyScope}.${QuizzflyAction.getQuestions}`)

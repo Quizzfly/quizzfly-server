@@ -15,6 +15,7 @@ import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import {
   QuizAction,
   QuizScope,
+  UpdateManyQuizDto,
   UpdatePositionQuizPayload,
 } from '@modules/quiz/events';
 import { QuizRepository } from '@modules/quiz/repositories/quiz.repository';
@@ -199,6 +200,14 @@ export class QuizService {
     await this.quizRepository.save(quiz);
 
     return quiz.toDto(QuizResDto);
+  }
+
+  @OnEvent(`${QuizScope}.${QuizAction.setBackgroundForManyQuiz}`)
+  async updateMany(payload: UpdateManyQuizDto) {
+    return this.quizRepository.update(
+      { quizzflyId: payload.quizzflyId as Uuid },
+      payload.dto,
+    );
   }
 
   async deleteOne(quizzflyId: Uuid, quizId: Uuid, userId: Uuid) {
