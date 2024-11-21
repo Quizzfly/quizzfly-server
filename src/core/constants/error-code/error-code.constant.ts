@@ -40,6 +40,9 @@ export enum ErrorCode {
   // Group Errors
   GROUP_NOT_FOUND = 'GROUP_001',
   USER_IS_ALREADY_IN_GROUP = 'GROUP_002',
+
+  // Post Errors
+  POST_NOT_FOUND = 'POST_001',
 }
 
 export const CommonError: Record<string, string> = {
