@@ -16,6 +16,9 @@ export class InfoPostResDto extends BaseResDto {
   @ClassFieldOptional(() => FileResDto, { each: true, isArray: true })
   files?: Array<FileResDto>;
 
+  @StringField()
+  quizzflyId: string;
+
   @UUIDField()
   memberId: string;
 }
