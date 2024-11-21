@@ -19,6 +19,7 @@ export type Question =
   | (SlideEntity & QuestionType);
 
 export interface RoomModel {
+  roomId?: string;
   roomPin?: string;
   quizzflyId?: string;
   questions?: Record<string, Question>;
@@ -29,4 +30,7 @@ export interface RoomModel {
   endTime?: number;
   locked: boolean;
   host: UserModel;
+  isShowQuestion?: boolean;
+  isAutoPlay?: boolean;
+  lobbyMusic?: string;
 }

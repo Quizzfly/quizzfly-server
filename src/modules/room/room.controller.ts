@@ -43,7 +43,7 @@ export class RoomController {
     @Param('roomId') roomId: Uuid,
     @Body() dto: SettingRoomReqDto,
   ) {
-    return this.roomService.settingRoom(userId, roomId, dto);
+    return this.roomService.settingRoom({ userId, roomId, dto });
   }
 
   @ApiPublic({
