@@ -4,16 +4,18 @@ import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateRoomReqDto } from '@modules/room/dto/request/create-room.req';
-import { SettingRoomReqDto } from '@modules/room/dto/request/setting-room.req';
 import { InfoRoomResDto } from '@modules/room/dto/response/info-room.res';
 import { RoomStatus } from '@modules/room/entity/enums/room-status.enum';
 import { RoomEntity } from '@modules/room/entity/room.entity';
+import { RoomAction, RoomScope } from '@modules/room/events';
+import { SettingRoomPayload } from '@modules/room/events/setting-room.event';
 import { RoomRepository } from '@modules/room/repository/room.repository';
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -55,7 +57,9 @@ export class RoomService {
       .get();
   }
 
-  async settingRoom(userId: Uuid, roomId: Uuid, dto: SettingRoomReqDto) {
+  @OnEvent(`${RoomScope}.${RoomAction.settingRoom}`)
+  async settingRoom(payload: SettingRoomPayload) {
+    const { userId, roomId, dto } = payload;
     const room = await this.findById(roomId);
     if (room.user.id !== userId) {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);

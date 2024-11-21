@@ -1,3 +1,4 @@
+import { BaseResDto } from '@common/dto/base.res.dto';
 import { Uuid } from '@common/types/common.type';
 import {
   BooleanField,
@@ -5,18 +6,9 @@ import {
   StringField,
   UUIDField,
 } from '@core/decorators/field.decorators';
-import { Exclude, Expose } from 'class-transformer';
+import { Expose } from 'class-transformer';
 
-@Exclude()
-export class InfoRoomResDto {
-  @Expose()
-  @UUIDField()
-  id: Uuid;
-
-  @Expose()
-  @DateField()
-  createdAt: Date;
-
+export class InfoRoomResDto extends BaseResDto {
   @Expose()
   @DateField()
   startedAt: Date;

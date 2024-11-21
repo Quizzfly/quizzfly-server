@@ -27,3 +27,15 @@ export const convertCamelToSnake = (data: any): any => {
 export const camelToSnake = (key: string): string => {
   return key.replace(/([A-Z])/g, '_$1').toLowerCase();
 };
+
+export const updatePropertiesIfDefined = <T>(
+  target: T,
+  source: Partial<T>,
+  keys: (keyof T)[],
+) => {
+  keys.forEach((key) => {
+    if (source[key] !== undefined) {
+      target[key] = source[key]!;
+    }
+  });
+};

@@ -1,7 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { EventService } from '@core/events/event.service';
 import { WsExceptionFilter } from '@core/filters/ws-exception.filter';
-import { convertCamelToSnake } from '@core/helpers';
+import { convertCamelToSnake, updatePropertiesIfDefined } from '@core/helpers';
 import { WsValidationPipe } from '@core/pipes/ws-validation.pipe';
 import { Optional } from '@core/utils/optional';
 import { RoleInRoom } from '@libs/socket/enums/role-in-room.enum';
@@ -13,12 +13,14 @@ import { CreateRoomReqDto } from '@libs/socket/payload/request/create-room.req.d
 import { FinishQuestionReqDto } from '@libs/socket/payload/request/finish-question.req.dto';
 import { JoinRoomReqDto } from '@libs/socket/payload/request/join-room.req.dto';
 import { KickPlayerReqDto } from '@libs/socket/payload/request/kick-player.req';
+import { SettingRoomReqDto } from '@libs/socket/payload/request/setting-room.req.dto';
 import { StartQuizReqDto } from '@libs/socket/payload/request/start-quiz.req.dto';
 import { UpdateLeaderBoardReqDto } from '@libs/socket/payload/request/update-leader-board.req.dto';
 import { RoomPinDto } from '@libs/socket/payload/room-pin.dto';
 import { CalculateScoreUtil } from '@libs/socket/utils/calculate-score.util';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { GetQuestionsEvent } from '@modules/quizzfly/events/quizzfly.event';
+import { SettingRoomEvent } from '@modules/room/events/setting-room.event';
 import { Logger, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -99,6 +101,8 @@ export class SocketGateway
           name: message.name,
           role: RoleInRoom.HOST,
         },
+        isAutoPlay: true,
+        isShowQuestion: false,
       };
       this.logger.log(`Room created with pin: ${message.roomPin}.`);
     }
@@ -285,6 +289,64 @@ export class SocketGateway
     } else {
       throw new WsException('Room not found.');
     }
+  }
+
+  @SubscribeMessage('settingRoom')
+  async handleSettingRoom(
+    @MessageBody(new WsValidationPipe()) payload: SettingRoomReqDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const room = this.rooms[payload.roomPin];
+    if (!room) {
+      throw new WsException('Room not found.');
+    }
+
+    if (room.endTime) {
+      throw new WsException(
+        'The quiz session has already ended. Settings cannot be modified.',
+      );
+    }
+
+    const user = this.users[client.id];
+    if (user.role !== RoleInRoom.HOST) {
+      throw new WsException('Only the host can setting in room.');
+    }
+
+    room.roomId = payload.roomId;
+
+    const dto = {
+      isAutoPlay: payload.isAutoPlay,
+      isShowQuestion: payload.isShowQuestion,
+      lobbyMusic: payload.lobbyMusic,
+    };
+    updatePropertiesIfDefined<RoomModel>(room, dto, [
+      'isAutoPlay',
+      'isShowQuestion',
+      'lobbyMusic',
+    ]);
+
+    const roomSetting = await this.eventService.emitAsync(
+      new SettingRoomEvent({
+        userId: payload.userId,
+        roomId: payload.roomId,
+        dto,
+      }),
+    );
+
+    if (!roomSetting) {
+      throw new WsException('Internal Server Error.');
+    }
+
+    this.server.to(payload.roomPin).emit(
+      'settingRoom',
+      convertCamelToSnake({
+        roomPin: payload.roomPin,
+        roomId: payload.roomId,
+        isShowQuestion: room.isShowQuestion,
+        isAutoPlay: room.isAutoPlay,
+        lobbyMusic: room.lobbyMusic,
+      }),
+    );
   }
 
   @SubscribeMessage('startQuiz')
