@@ -27,6 +27,7 @@ export class PostController {
   @ApiAuth({
     summary: 'Create a post',
     statusCode: HttpStatus.CREATED,
+    type: InfoPostResDto,
   })
   @ApiParam({
     name: 'groupId',

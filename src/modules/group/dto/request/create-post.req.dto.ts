@@ -1,21 +1,25 @@
 import { Uuid } from '@common/types/common.type';
 import {
   ClassFieldOptional,
-  StringField,
+  EnumField,
   StringFieldOptional,
+  UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
 import { FileReqDto } from '@modules/file/dto/file.req.dto';
 import { PostType } from '@modules/group/enums/post-type.enum';
 import { Expose } from 'class-transformer';
 
 export class CreatePostReqDto {
-  @StringField()
+  @EnumField(() => PostType, {
+    name: 'type',
+    example: Object.values(PostType).join(' | '),
+  })
   type: PostType;
 
   @StringFieldOptional()
   content?: string;
 
-  @StringFieldOptional({
+  @UUIDFieldOptional({
     name: 'quizzfly_id',
   })
   @Expose({
