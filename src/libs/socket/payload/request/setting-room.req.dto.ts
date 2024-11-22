@@ -8,9 +8,6 @@ import {
 
 export class SettingRoomReqDto {
   @UUIDField()
-  userId: Uuid;
-
-  @UUIDField()
   roomId: Uuid;
 
   @StringField()
