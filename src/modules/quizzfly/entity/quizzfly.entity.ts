@@ -1,5 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { PostEntity } from '@modules/group/entity/post.entity';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { RoomEntity } from '@modules/room/entity/room.entity';
@@ -68,4 +69,7 @@ export class QuizzflyEntity extends AbstractEntity {
 
   @OneToMany('RoomEntity', 'quizzfly')
   rooms?: RoomEntity[];
+
+  @OneToMany('PostEntity', 'quizzfly')
+  posts?: PostEntity[];
 }

@@ -3,6 +3,7 @@ import { ROLE } from '@core/constants/entity.enum';
 import { hashPassword as hashPass } from '@core/utils/password.util';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
+import { PostEntity } from '@modules/group/entity/post.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { RoomEntity } from '@modules/room/entity/room.entity';
 import { SessionEntity } from '@modules/session/entities/session.entity';
@@ -55,6 +56,9 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany(() => MemberInGroupEntity, (member) => member.member)
   memberInGroups?: MemberInGroupEntity[];
+
+  @OneToMany('PostEntity', 'member')
+  posts?: PostEntity[];
 
   @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
   userInfo?: UserInfoEntity;
