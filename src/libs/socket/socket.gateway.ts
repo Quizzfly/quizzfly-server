@@ -327,7 +327,7 @@ export class SocketGateway
 
     const roomSetting = await this.eventService.emitAsync(
       new SettingRoomEvent({
-        userId: payload.userId,
+        userId: user.userId as Uuid,
         roomId: payload.roomId,
         dto,
       }),

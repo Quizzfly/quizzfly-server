@@ -3,6 +3,7 @@ import {
   ClassFieldOptional,
   EnumField,
   NumberFieldOptional,
+  StringField,
   StringFieldOptional,
 } from '@core/decorators/field.decorators';
 import { CreateAnswerReqDto } from '@modules/answer/dto/request/create-answer.req.dto';
@@ -22,7 +23,7 @@ export class CreateQuizGeneratedReqDto {
   @Expose({ name: 'background_url' })
   backgroundUrl?: string;
 
-  @StringFieldOptional()
+  @StringField()
   content: string;
 
   @Expose({ name: 'time_limit' })
