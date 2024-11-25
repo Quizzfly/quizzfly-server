@@ -24,6 +24,7 @@ export class PostRepository extends Repository<PostEntity> {
         'post.content',
         'post.files',
         'post.memberId',
+        'post.quizzflyId',
       ])
       .where('post.groupId = :groupId', { groupId })
       .andWhere('post.deletedAt IS NULL')
