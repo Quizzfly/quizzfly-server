@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
+import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
 import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
 import {
@@ -8,11 +9,12 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { UserResDto } from './dto/response/user.res.dto';
 import { UserService } from './user.service';
 
@@ -30,6 +32,20 @@ export class UserController {
   })
   @Get('me')
   async getCurrentUser(@CurrentUser('id') userId: Uuid) {
+    return this.userService.getUserInfo(userId);
+  }
+
+  @ApiAuth({
+    type: UserResDto,
+    summary: 'Get info detail user by id',
+  })
+  @ApiParam({
+    name: 'userId',
+    description: 'The UUID of the User',
+    type: 'string',
+  })
+  @Get(':userId')
+  async getInfoDetailUser(@Param('userId', ValidateUuid) userId: Uuid) {
     return this.userService.getUserInfo(userId);
   }
 
