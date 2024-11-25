@@ -7,7 +7,9 @@ import { Optional } from '@core/utils/optional';
 import { CreatePostReqDto } from '@modules/group/dto/request/create-post.req.dto';
 import { InfoPostResDto } from '@modules/group/dto/response/info-post.res.dto';
 import { PostEntity } from '@modules/group/entity/post.entity';
+import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
 import { PostRepository } from '@modules/group/repository/post.repository';
+import { ReactPostRepository } from '@modules/group/repository/react-post.repository';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import {
   ForbiddenException,
@@ -19,6 +21,7 @@ import {
 export class PostService {
   constructor(
     private readonly postRepository: PostRepository,
+    private readonly reactPostRepository: ReactPostRepository,
     private readonly memberInGroupService: MemberInGroupService,
   ) {}
 
@@ -103,7 +106,6 @@ export class PostService {
     }
 
     const posts = await this.postRepository.getListPost(groupId, filterOptions);
-    const responseData = posts.map((post) => post.toDto(InfoPostResDto));
 
     const totalRecords = await this.postRepository.countBy({
       groupId: groupId,
@@ -113,6 +115,38 @@ export class PostService {
       filterOptions as PageOptionsDto,
     );
 
-    return new OffsetPaginatedDto(responseData, meta);
+    return new OffsetPaginatedDto(posts, meta);
+  }
+
+  async reactPost(userId: Uuid, postId: Uuid) {
+    const post = await this.findById(postId);
+    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
+      userId,
+      post.groupId,
+    );
+
+    if (!isUserInGroup) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
+
+    if (
+      await this.reactPostRepository.existsBy({
+        memberId: userId,
+        postId: postId,
+      })
+    ) {
+      const reactPost = await this.reactPostRepository.findOneBy({
+        memberId: userId,
+        postId: postId,
+      });
+
+      await this.reactPostRepository.softDelete({ id: reactPost.id });
+    } else {
+      const reactPost = new ReactPostEntity({
+        memberId: userId,
+        postId: postId,
+      });
+      await this.reactPostRepository.save(reactPost);
+    }
   }
 }

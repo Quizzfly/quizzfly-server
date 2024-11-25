@@ -2,6 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { GroupEntity } from '@modules/group/entity/group.entity';
+import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
 import { PostType } from '@modules/group/enums/post-type.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
@@ -10,6 +11,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
@@ -71,6 +73,9 @@ export class PostEntity extends AbstractEntity {
   })
   @ManyToOne('UserEntity', 'posts')
   member: Relation<UserEntity>;
+
+  @OneToMany('ReactPostEntity', 'post')
+  reactPosts?: ReactPostEntity[];
 
   constructor(data?: Partial<PostEntity>) {
     super();

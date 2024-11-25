@@ -17,21 +17,37 @@ export class PostRepository extends Repository<PostEntity> {
 
     const query = this.createQueryBuilder('post')
       .select([
-        'post.id',
-        'post.createdAt',
-        'post.updatedAt',
-        'post.type',
-        'post.content',
-        'post.files',
-        'post.memberId',
-        'post.quizzflyId',
+        'post.id as id',
+        'post.createdAt as created_at',
+        'post.updatedAt as updated_at',
+        'post.type as type',
+        'post.content as content',
+        'post.files as files',
+        'post.memberId as member_id',
+        'post.quizzflyId as quizzfly_id',
       ])
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('COUNT(*)')
+            .from('react_post', 'react')
+            .where('react.postId = post.id')
+            .andWhere('react.deletedAt IS NULL'),
+        'reactCount',
+      )
       .where('post.groupId = :groupId', { groupId })
       .andWhere('post.deletedAt IS NULL')
       .orderBy('post.createdAt', filterOptions.order)
       .offset(skip)
       .limit(filterOptions.limit);
 
-    return query.getMany();
+    const rawResults = await query.getRawMany();
+
+    const results = rawResults.map((row) => ({
+      ...row,
+      reactCount: Number(row.reactCount),
+    }));
+
+    return results;
   }
 }

@@ -4,6 +4,7 @@ import { hashPassword as hashPass } from '@core/utils/password.util';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
 import { PostEntity } from '@modules/group/entity/post.entity';
+import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { RoomEntity } from '@modules/room/entity/room.entity';
 import { SessionEntity } from '@modules/session/entities/session.entity';
@@ -59,6 +60,9 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany('PostEntity', 'member')
   posts?: PostEntity[];
+
+  @OneToMany('ReactPostEntity', 'member')
+  reactPosts?: ReactPostEntity[];
 
   @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
   userInfo?: UserInfoEntity;

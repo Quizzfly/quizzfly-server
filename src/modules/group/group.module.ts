@@ -6,6 +6,7 @@ import { PostEntity } from '@modules/group/entity/post.entity';
 import { GroupRepository } from '@modules/group/repository/group.repository';
 import { MemberInGroupRepository } from '@modules/group/repository/member-in-group.repository';
 import { PostRepository } from '@modules/group/repository/post.repository';
+import { ReactPostRepository } from '@modules/group/repository/react-post.repository';
 import { GroupService } from '@modules/group/service/group.service';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { PostService } from '@modules/group/service/post.service';
@@ -24,6 +25,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     GroupRepository,
     MemberInGroupService,
     MemberInGroupRepository,
+    ReactPostRepository,
     PostRepository,
     PostService,
   ],

@@ -2,6 +2,7 @@ import { BaseResDto } from '@common/dto/base.res.dto';
 import {
   ClassFieldOptional,
   EnumField,
+  NumberField,
   StringField,
   UUIDField,
 } from '@core/decorators/field.decorators';
@@ -28,4 +29,7 @@ export class InfoPostResDto extends BaseResDto {
     name: 'member_id',
   })
   memberId: string;
+
+  @NumberField()
+  reactCount: number;
 }

@@ -117,4 +117,20 @@ export class PostController {
   ) {
     return this.postService.updatePost(postId, userId, dto);
   }
+
+  @ApiAuth({
+    summary: 'React post',
+  })
+  @ApiParam({
+    name: 'postId',
+    description: 'The UUID of the post',
+    type: 'string',
+  })
+  @Post('/posts/:postId/reacts')
+  async reactPost(
+    @CurrentUser('id') userId: Uuid,
+    @Param('postId', ValidateUuid) postId: Uuid,
+  ) {
+    return this.postService.reactPost(userId, postId);
+  }
 }
