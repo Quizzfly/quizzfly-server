@@ -16,6 +16,7 @@ export class PostRepository extends Repository<PostEntity> {
       : 0;
 
     const query = this.createQueryBuilder('post')
+      .leftJoinAndSelect('post.quizzfly', 'quizzfly')
       .select([
         'post.id as id',
         'post.createdAt as created_at',
@@ -25,6 +26,12 @@ export class PostRepository extends Repository<PostEntity> {
         'post.files as files',
         'post.memberId as member_id',
         'post.quizzflyId as quizzfly_id',
+        'quizzfly.title as title',
+        'quizzfly.description as description',
+        'quizzfly.coverImage as cover_image',
+        'quizzfly.theme as theme',
+        'quizzfly.isPublic as is_public',
+        'quizzfly.quizzflyStatus as quizzfly_status',
       ])
       .addSelect(
         (subQuery) =>
