@@ -1,13 +1,14 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
-import { GroupEntity } from '@modules/group/entity/group.entity';
+import { PostEntity } from '@modules/group/entity/post.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
@@ -36,7 +37,7 @@ export class CommentPostEntity extends AbstractEntity {
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_member_comment_post',
   })
-  @ManyToOne('UserEntity', 'posts')
+  @ManyToOne('UserEntity', 'commentPosts')
   member: Relation<UserEntity>;
 
   @Column({
@@ -48,10 +49,31 @@ export class CommentPostEntity extends AbstractEntity {
   @JoinColumn({
     name: 'post_id',
     referencedColumnName: 'id',
-    foreignKeyConstraintName: 'FK_group_post',
+    foreignKeyConstraintName: 'FK_post_comment_post',
   })
-  @ManyToOne('GroupEntity', 'posts')
-  group: Relation<GroupEntity>;
+  @ManyToOne('PostEntity', 'commentPosts')
+  post: Relation<PostEntity>;
+
+  @Column({
+    name: 'parent_comment_id',
+    type: 'uuid',
+    nullable: true,
+  })
+  parentCommentId?: Uuid;
+
+  @JoinColumn({
+    name: 'parent_comment_id',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'FK_parent_comment_post',
+  })
+  @ManyToOne(() => CommentPostEntity, (comment) => comment.childComments, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  parentComment?: Relation<CommentPostEntity>;
+
+  @OneToMany(() => CommentPostEntity, (comment) => comment.parentComment)
+  childComments?: Relation<CommentPostEntity[]>;
 
   constructor(data?: Partial<CommentPostEntity>) {
     super();

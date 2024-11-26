@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
+import { CommentPostEntity } from '@modules/group/entity/comment-post.entity';
 import { GroupEntity } from '@modules/group/entity/group.entity';
 import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
 import { PostType } from '@modules/group/enums/post-type.enum';
@@ -76,6 +77,9 @@ export class PostEntity extends AbstractEntity {
 
   @OneToMany('ReactPostEntity', 'post')
   reactPosts?: ReactPostEntity[];
+
+  @OneToMany('CommentPostEntity', 'post')
+  commentPosts?: CommentPostEntity[];
 
   constructor(data?: Partial<PostEntity>) {
     super();

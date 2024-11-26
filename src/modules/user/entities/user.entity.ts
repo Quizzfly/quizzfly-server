@@ -2,6 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { ROLE } from '@core/constants/entity.enum';
 import { hashPassword as hashPass } from '@core/utils/password.util';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { CommentPostEntity } from '@modules/group/entity/comment-post.entity';
 import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
 import { PostEntity } from '@modules/group/entity/post.entity';
 import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
@@ -63,6 +64,9 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany('ReactPostEntity', 'member')
   reactPosts?: ReactPostEntity[];
+
+  @OneToMany('CommentPostEntity', 'member')
+  commentPosts?: CommentPostEntity[];
 
   @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
   userInfo?: UserInfoEntity;

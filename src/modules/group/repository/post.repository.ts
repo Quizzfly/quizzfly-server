@@ -36,11 +36,20 @@ export class PostRepository extends Repository<PostEntity> {
       .addSelect(
         (subQuery) =>
           subQuery
-            .select('COUNT(*)')
+            .select('CAST(COUNT(*) AS INTEGER)')
             .from('react_post', 'react')
             .where('react.postId = post.id')
             .andWhere('react.deletedAt IS NULL'),
         'reactCount',
+      )
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('CAST(COUNT(*) AS INTEGER)')
+            .from('comment_post', 'comment')
+            .where('comment.postId = post.id')
+            .andWhere('comment.deletedAt IS NULL'),
+        'commentCount',
       )
       .where('post.groupId = :groupId', { groupId })
       .andWhere('post.deletedAt IS NULL')
@@ -48,13 +57,6 @@ export class PostRepository extends Repository<PostEntity> {
       .offset(skip)
       .limit(filterOptions.limit);
 
-    const rawResults = await query.getRawMany();
-
-    const results = rawResults.map((row) => ({
-      ...row,
-      reactCount: Number(row.reactCount),
-    }));
-
-    return results;
+    return await query.getRawMany();
   }
 }
