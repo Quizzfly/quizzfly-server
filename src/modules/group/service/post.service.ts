@@ -26,14 +26,7 @@ export class PostService {
   ) {}
 
   async createPost(userId: Uuid, groupId: Uuid, dto: CreatePostReqDto) {
-    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
-      userId,
-      groupId,
-    );
-
-    if (!isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.FORBIDDEN);
-    }
+    await this.isUserInGroup(userId, groupId);
 
     const post = new PostEntity({
       ...dto,
@@ -57,14 +50,7 @@ export class PostService {
   }
 
   async getInfoDetailPost(groupId: Uuid, postId: Uuid, userId: Uuid) {
-    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
-      userId,
-      groupId,
-    );
-
-    if (!isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.FORBIDDEN);
-    }
+    await this.isUserInGroup(userId, groupId);
 
     const post = await this.findById(postId);
     return post.toDto(InfoPostResDto);
@@ -96,14 +82,7 @@ export class PostService {
     userId: Uuid,
     filterOptions: PageOptionsDto,
   ) {
-    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
-      userId,
-      groupId,
-    );
-
-    if (!isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.FORBIDDEN);
-    }
+    await this.isUserInGroup(userId, groupId);
 
     const posts = await this.postRepository.getListPost(groupId, filterOptions);
 
@@ -120,14 +99,7 @@ export class PostService {
 
   async reactPost(userId: Uuid, postId: Uuid) {
     const post = await this.findById(postId);
-    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
-      userId,
-      post.groupId,
-    );
-
-    if (!isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.FORBIDDEN);
-    }
+    await this.isUserInGroup(userId, post.groupId);
 
     if (
       await this.reactPostRepository.existsBy({
@@ -147,6 +119,17 @@ export class PostService {
         postId: postId,
       });
       await this.reactPostRepository.save(reactPost);
+    }
+  }
+
+  private async isUserInGroup(userId: Uuid, groupId: Uuid) {
+    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
+      userId,
+      groupId,
+    );
+
+    if (!isUserInGroup) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
   }
 }
