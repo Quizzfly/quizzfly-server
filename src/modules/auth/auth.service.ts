@@ -6,7 +6,7 @@ import { TOKEN_TYPE } from '@core/constants/token-type.enum';
 import { JwtUtil } from '@core/utils/jwt.util';
 import { Optional } from '@core/utils/optional';
 import { hashPassword, verifyPassword } from '@core/utils/password.util';
-import { MailService } from '@mail/mail.service';
+import { MailService } from '@libs/mail/mail.service';
 import { AuthResetPasswordDto } from '@modules/auth/dto/request/auth-reset-password.dto';
 import { EmailDto } from '@modules/auth/dto/request/email.dto';
 import { LoginWithGoogleReqDto } from '@modules/auth/dto/request/login-with-google.req.dto';

@@ -1,4 +1,4 @@
-import { RoleInRoom } from '@libs/socket/enums/role-in-room.enum';
+import { RoleInRoom } from '@libs/socket/room/enums/role-in-room.enum';
 
 export interface UserModel {
   socketId: string;

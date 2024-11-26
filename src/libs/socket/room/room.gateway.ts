@@ -1,23 +1,23 @@
 import { Uuid } from '@common/types/common.type';
 import { EventService } from '@core/events/event.service';
-import { WsExceptionFilter } from '@core/filters/ws-exception.filter';
+import { WebsocketExceptionFilter } from '@core/filters/websocket-exception.filter';
 import { convertCamelToSnake, updatePropertiesIfDefined } from '@core/helpers';
 import { WsValidationPipe } from '@core/pipes/ws-validation.pipe';
 import { Optional } from '@core/utils/optional';
-import { RoleInRoom } from '@libs/socket/enums/role-in-room.enum';
-import { updateRank } from '@libs/socket/helpers/update-leader-board.helper';
-import { RoomModel } from '@libs/socket/model/room.model';
-import { UserModel } from '@libs/socket/model/user.model';
-import { AnswerQuestionReqDto } from '@libs/socket/payload/request/answer-question.req.dto';
-import { CreateRoomReqDto } from '@libs/socket/payload/request/create-room.req.dto';
-import { FinishQuestionReqDto } from '@libs/socket/payload/request/finish-question.req.dto';
-import { JoinRoomReqDto } from '@libs/socket/payload/request/join-room.req.dto';
-import { KickPlayerReqDto } from '@libs/socket/payload/request/kick-player.req';
-import { SettingRoomReqDto } from '@libs/socket/payload/request/setting-room.req.dto';
-import { StartQuizReqDto } from '@libs/socket/payload/request/start-quiz.req.dto';
-import { UpdateLeaderBoardReqDto } from '@libs/socket/payload/request/update-leader-board.req.dto';
-import { RoomPinDto } from '@libs/socket/payload/room-pin.dto';
-import { CalculateScoreUtil } from '@libs/socket/utils/calculate-score.util';
+import { RoleInRoom } from '@libs/socket/room/enums/role-in-room.enum';
+import { updateRank } from '@libs/socket/room/helpers/update-leader-board.helper';
+import { RoomModel } from '@libs/socket/room/model/room.model';
+import { UserModel } from '@libs/socket/room/model/user.model';
+import { AnswerQuestionReqDto } from '@libs/socket/room/payload/request/answer-question.req.dto';
+import { CreateRoomReqDto } from '@libs/socket/room/payload/request/create-room.req.dto';
+import { FinishQuestionReqDto } from '@libs/socket/room/payload/request/finish-question.req.dto';
+import { JoinRoomReqDto } from '@libs/socket/room/payload/request/join-room.req.dto';
+import { KickPlayerReqDto } from '@libs/socket/room/payload/request/kick-player.req';
+import { SettingRoomReqDto } from '@libs/socket/room/payload/request/setting-room.req.dto';
+import { StartQuizReqDto } from '@libs/socket/room/payload/request/start-quiz.req.dto';
+import { UpdateLeaderBoardReqDto } from '@libs/socket/room/payload/request/update-leader-board.req.dto';
+import { RoomPinDto } from '@libs/socket/room/payload/room-pin.dto';
+import { CalculateScoreUtil } from '@libs/socket/room/utils/calculate-score.util';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { GetQuestionsEvent } from '@modules/quizzfly/events/quizzfly.event';
 import { SettingRoomEvent } from '@modules/room/events/setting-room.event';
@@ -35,18 +35,18 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@UseFilters(WsExceptionFilter)
+@UseFilters(WebsocketExceptionFilter)
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
   namespace: '/rooms',
 })
-export class SocketGateway
+export class RoomGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer() server: Server;
-  private readonly logger = new Logger(SocketGateway.name);
+  private readonly logger = new Logger(RoomGateway.name);
   private rooms: Record<string, RoomModel> = {};
   private users: Record<string, UserModel> = {};
   private clients: Map<string, Socket> = new Map();

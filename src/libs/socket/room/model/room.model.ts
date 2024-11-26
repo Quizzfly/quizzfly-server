@@ -1,4 +1,4 @@
-import { UserModel } from '@libs/socket/model/user.model';
+import { UserModel } from '@libs/socket/room/model/user.model';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { SlideEntity } from '@modules/slide/entity/slide.entity';
 

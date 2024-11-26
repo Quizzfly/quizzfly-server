@@ -13,7 +13,7 @@ import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagina
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
-import { MailService } from '@mail/mail.service';
+import { MailService } from '@libs/mail/mail.service';
 import { InviteMemberToGroupReqDto } from '@modules/group/dto/request/invite-member-to-group.req.dto';
 import { InfoDetailGroupResDto } from '@modules/group/dto/response/info-detail-group.res.dto';
 import { InfoGroupResDto } from '@modules/group/dto/response/info-group.res.dto';

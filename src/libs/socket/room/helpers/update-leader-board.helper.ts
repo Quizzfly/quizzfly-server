@@ -1,4 +1,4 @@
-import { UserModel } from '@libs/socket/model/user.model';
+import { UserModel } from '@libs/socket/room/model/user.model';
 
 export function updateRank(players: Partial<UserModel>[]) {
   players.sort((a, b) => b.totalScore - a.totalScore);
