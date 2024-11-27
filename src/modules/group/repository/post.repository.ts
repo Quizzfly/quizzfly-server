@@ -16,22 +16,47 @@ export class PostRepository extends Repository<PostEntity> {
       : 0;
 
     const query = this.createQueryBuilder('post')
+      .leftJoinAndSelect('post.quizzfly', 'quizzfly')
       .select([
-        'post.id',
-        'post.createdAt',
-        'post.updatedAt',
-        'post.type',
-        'post.content',
-        'post.files',
-        'post.memberId',
-        'post.quizzflyId',
+        'post.id as id',
+        'post.createdAt as created_at',
+        'post.updatedAt as updated_at',
+        'post.type as type',
+        'post.content as content',
+        'post.files as files',
+        'post.memberId as member_id',
+        'post.quizzflyId as quizzfly_id',
+        'quizzfly.title as title',
+        'quizzfly.description as description',
+        'quizzfly.coverImage as cover_image',
+        'quizzfly.theme as theme',
+        'quizzfly.isPublic as is_public',
+        'quizzfly.quizzflyStatus as quizzfly_status',
       ])
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('CAST(COUNT(*) AS INTEGER)')
+            .from('react_post', 'react')
+            .where('react.postId = post.id')
+            .andWhere('react.deletedAt IS NULL'),
+        'reactCount',
+      )
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('CAST(COUNT(*) AS INTEGER)')
+            .from('comment_post', 'comment')
+            .where('comment.postId = post.id')
+            .andWhere('comment.deletedAt IS NULL'),
+        'commentCount',
+      )
       .where('post.groupId = :groupId', { groupId })
       .andWhere('post.deletedAt IS NULL')
       .orderBy('post.createdAt', filterOptions.order)
       .offset(skip)
       .limit(filterOptions.limit);
 
-    return query.getMany();
+    return await query.getRawMany();
   }
 }

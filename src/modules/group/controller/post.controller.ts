@@ -3,7 +3,9 @@ import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { CommentPostReqDto } from '@modules/group/dto/request/comment-post.req.dto';
 import { CreatePostReqDto } from '@modules/group/dto/request/create-post.req.dto';
+import { InfoCommentPostResDto } from '@modules/group/dto/response/info-comment-post.res.dto';
 import { InfoPostResDto } from '@modules/group/dto/response/info-post.res.dto';
 import { PostService } from '@modules/group/service/post.service';
 import {
@@ -116,5 +118,58 @@ export class PostController {
     @Body() dto: CreatePostReqDto,
   ) {
     return this.postService.updatePost(postId, userId, dto);
+  }
+
+  @ApiAuth({
+    summary: 'React post',
+  })
+  @ApiParam({
+    name: 'postId',
+    description: 'The UUID of the post',
+    type: 'string',
+  })
+  @Post('/posts/:postId/reacts')
+  async reactPost(
+    @CurrentUser('id') userId: Uuid,
+    @Param('postId', ValidateUuid) postId: Uuid,
+  ) {
+    return this.postService.reactPost(userId, postId);
+  }
+
+  @ApiAuth({
+    summary: 'Comment post',
+  })
+  @ApiParam({
+    name: 'postId',
+    description: 'The UUID of the post',
+    type: 'string',
+  })
+  @Post('/posts/:postId/comments')
+  async commentPost(
+    @CurrentUser('id') userId: Uuid,
+    @Param('postId', ValidateUuid) postId: Uuid,
+    @Body() dto: CommentPostReqDto,
+  ) {
+    return this.postService.commentPost(userId, postId, dto);
+  }
+
+  @ApiAuth({
+    summary: 'Get comment post',
+    type: InfoCommentPostResDto,
+    isPaginated: true,
+    paginationType: 'offset',
+  })
+  @ApiParam({
+    name: 'postId',
+    description: 'The UUID of the post',
+    type: 'string',
+  })
+  @Get('/posts/:postId/comments')
+  async getListCommentInPost(
+    @CurrentUser('id') userId: Uuid,
+    @Param('postId', ValidateUuid) postId: Uuid,
+    @Query() filterOptions: PageOptionsDto,
+  ) {
+    return this.postService.getCommentInPost(userId, postId, filterOptions);
   }
 }
