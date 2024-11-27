@@ -11,6 +11,7 @@ import { InfoPostResDto } from '@modules/group/dto/response/info-post.res.dto';
 import { CommentPostEntity } from '@modules/group/entity/comment-post.entity';
 import { PostEntity } from '@modules/group/entity/post.entity';
 import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
+import { mapToInfoPostResDto } from '@modules/group/mapper/post.mapper';
 import { CommentPostRepository } from '@modules/group/repository/comment-post.repository';
 import { PostRepository } from '@modules/group/repository/post.repository';
 import { ReactPostRepository } from '@modules/group/repository/react-post.repository';
@@ -99,7 +100,10 @@ export class PostService {
       filterOptions as PageOptionsDto,
     );
 
-    return new OffsetPaginatedDto(posts, meta);
+    return new OffsetPaginatedDto(
+      posts.map((res) => mapToInfoPostResDto(res)),
+      meta,
+    );
   }
 
   async reactPost(userId: Uuid, postId: Uuid) {
