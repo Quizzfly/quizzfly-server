@@ -1,5 +1,6 @@
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
+import { convertSnakeToCamel } from '@core/helpers';
 import { CommentPostEntity } from '@modules/group/entity/comment-post.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
@@ -16,14 +17,19 @@ export class CommentPostRepository extends Repository<CommentPostEntity> {
       : 0;
 
     const query = this.createQueryBuilder('comment_post')
+      .leftJoinAndSelect('comment_post.member', 'member')
+      .leftJoinAndSelect('member.userInfo', 'memberInfo')
       .select([
         'comment_post.id as id',
         'comment_post.createdAt as created_at',
         'comment_post.updatedAt as updated_at',
         'comment_post.content as content',
         'comment_post.files as files',
-        'comment_post.memberId as member_id',
         'comment_post.parentCommentId as parent_comment_id',
+        'memberInfo.username as username',
+        'memberInfo.avatar as avatar',
+        'memberInfo.name as name',
+        'member.id as member_id',
       ])
       .where('comment_post.postId = :postId', { postId })
       .andWhere('comment_post.deletedAt IS NULL')
@@ -31,6 +37,6 @@ export class CommentPostRepository extends Repository<CommentPostEntity> {
       .offset(skip)
       .limit(filterOptions.limit);
 
-    return await query.getRawMany();
+    return convertSnakeToCamel(await query.getRawMany());
   }
 }

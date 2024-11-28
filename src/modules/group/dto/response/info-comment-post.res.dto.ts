@@ -6,21 +6,36 @@ import {
   UUIDField,
 } from '@core/decorators/field.decorators';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
+import { UserInfoResDto } from '@modules/user/dto/response/user-info.res.dto';
+import { Expose, Transform } from 'class-transformer';
 
+@Expose({ toPlainOnly: true })
 export class InfoCommentPostResDto extends BaseResDto {
   @StringField()
+  @Expose()
   content: string;
 
   @ClassFieldOptional(() => FileResDto, { each: true, isArray: true })
+  @Expose()
   files?: Array<FileResDto>;
 
-  @UUIDField({
-    name: 'member_id',
+  @ClassFieldOptional(() => UserInfoResDto)
+  @Expose()
+  @Transform(({ obj }) => {
+    return obj.memberId
+      ? {
+          id: obj.memberId,
+          username: obj.username,
+          avatar: obj.avatar,
+          name: obj.name,
+        }
+      : null;
   })
-  memberId: Uuid;
+  member: UserInfoResDto;
 
   @UUIDField({
     name: 'parent_comment_id',
   })
+  @Expose()
   parentCommentId: Uuid;
 }
