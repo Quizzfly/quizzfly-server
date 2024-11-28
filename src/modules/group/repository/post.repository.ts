@@ -1,5 +1,6 @@
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
+import { convertSnakeToCamel } from '@core/helpers';
 import { PostEntity } from '@modules/group/entity/post.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
@@ -62,6 +63,6 @@ export class PostRepository extends Repository<PostEntity> {
       .offset(skip)
       .limit(filterOptions.limit);
 
-    return await query.getRawMany();
+    return convertSnakeToCamel(await query.getRawMany());
   }
 }

@@ -5,6 +5,7 @@ import {
 } from '@core/decorators/field.decorators';
 import { Expose } from 'class-transformer';
 
+@Expose()
 export class BaseResDto {
   @UUIDField()
   @Expose()

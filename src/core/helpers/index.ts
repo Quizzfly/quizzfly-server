@@ -39,3 +39,23 @@ export const updatePropertiesIfDefined = <T>(
     }
   });
 };
+
+export const convertSnakeToCamel = (data: any): any => {
+  if (Array.isArray(data)) {
+    return data.map((item) => convertSnakeToCamel(item));
+  } else if (data instanceof Date) {
+    return data;
+  } else if (data !== null && typeof data === 'object') {
+    const newObj = {};
+    Object.keys(data).forEach((key) => {
+      const camelKey = snakeToCamel(key);
+      newObj[camelKey] = convertSnakeToCamel(data[key]);
+    });
+    return newObj;
+  }
+  return data;
+};
+
+export const snakeToCamel = (key: string): string => {
+  return key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+};
