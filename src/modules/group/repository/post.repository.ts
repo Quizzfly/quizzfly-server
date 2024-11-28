@@ -57,6 +57,19 @@ export class PostRepository extends Repository<PostEntity> {
             .andWhere('comment.deletedAt IS NULL'),
         'commentCount',
       )
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select(
+              'CASE WHEN COUNT(*) > 0 THEN true ELSE false END',
+              'isLiked',
+            )
+            .from('react_post', 'react')
+            .where('react.postId = post.id')
+            .andWhere('react.memberId = member.id')
+            .andWhere('react.deletedAt IS NULL'),
+        'isLiked',
+      )
       .where('post.groupId = :groupId', { groupId })
       .andWhere('post.deletedAt IS NULL')
       .orderBy('post.createdAt', filterOptions.order)

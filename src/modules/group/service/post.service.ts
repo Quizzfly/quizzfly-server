@@ -153,10 +153,8 @@ export class PostService {
     const post = await this.findById(postId);
     await this.isUserInGroup(userId, post.groupId);
 
-    const comments = await this.commentPostRepository.getCommentInPost(
-      postId,
-      filterOptions,
-    );
+    const comments: Array<any> =
+      await this.commentPostRepository.getCommentInPost(postId, filterOptions);
 
     const totalRecords = await this.commentPostRepository.countBy({
       postId: postId,
@@ -166,7 +164,12 @@ export class PostService {
       filterOptions as PageOptionsDto,
     );
 
-    return new OffsetPaginatedDto(comments, meta);
+    return new OffsetPaginatedDto(
+      plainToInstance(InfoCommentPostResDto, comments, {
+        excludeExtraneousValues: true,
+      }),
+      meta,
+    );
   }
 
   private async isUserInGroup(userId: Uuid, groupId: Uuid) {

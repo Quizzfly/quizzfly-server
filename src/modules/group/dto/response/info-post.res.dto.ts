@@ -1,5 +1,6 @@
 import { BaseResDto } from '@common/dto/base.res.dto';
 import {
+  BooleanField,
   ClassFieldOptional,
   EnumField,
   NumberField,
@@ -66,4 +67,8 @@ export class InfoPostResDto extends BaseResDto {
   @NumberField()
   @Expose()
   commentCount: number;
+
+  @BooleanField()
+  @Expose()
+  isLiked: boolean;
 }
