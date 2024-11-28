@@ -11,7 +11,6 @@ import { InfoPostResDto } from '@modules/group/dto/response/info-post.res.dto';
 import { CommentPostEntity } from '@modules/group/entity/comment-post.entity';
 import { PostEntity } from '@modules/group/entity/post.entity';
 import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
-import { mapToInfoPostResDto } from '@modules/group/mapper/post.mapper';
 import { CommentPostRepository } from '@modules/group/repository/comment-post.repository';
 import { PostRepository } from '@modules/group/repository/post.repository';
 import { ReactPostRepository } from '@modules/group/repository/react-post.repository';
@@ -21,6 +20,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class PostService {
@@ -90,18 +90,17 @@ export class PostService {
   ) {
     await this.isUserInGroup(userId, groupId);
 
-    const posts = await this.postRepository.getListPost(groupId, filterOptions);
+    const posts: Array<any> = await this.postRepository.getListPost(
+      groupId,
+      filterOptions,
+    );
 
     const totalRecords = await this.postRepository.countBy({
       groupId: groupId,
     });
-    const meta = new OffsetPaginationDto(
-      totalRecords,
-      filterOptions as PageOptionsDto,
-    );
-
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
     return new OffsetPaginatedDto(
-      posts.map((res) => mapToInfoPostResDto(res)),
+      plainToInstance(InfoPostResDto, posts, { excludeExtraneousValues: true }),
       meta,
     );
   }
