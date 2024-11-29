@@ -1,6 +1,6 @@
 import { Uuid } from '@common/types/common.type';
-import { RoomStatus } from '@modules/room/entity/enums/room-status.enum';
-import { RoomEntity } from '@modules/room/entity/room.entity';
+import { RoomStatus } from '@modules/room/entities/constants/room-status.enum';
+import { RoomEntity } from '@modules/room/entities/room.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, In, Repository } from 'typeorm';
 

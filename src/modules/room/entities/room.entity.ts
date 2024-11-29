@@ -1,14 +1,18 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
-import { RoomStatus } from '@modules/room/entity/enums/room-status.enum';
+import { RoomStatus } from '@modules/room/entities/constants/room-status.enum';
+import { PlayerInRoomEntity } from '@modules/room/entities/player-in-room.entity';
+import { QuestionEntity } from '@modules/room/entities/question.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 
 @Entity('room', { schema: 'public' })
@@ -23,16 +27,24 @@ export class RoomEntity extends AbstractEntity {
   })
   id!: Uuid;
 
-  @Column({
-    name: 'room_pin',
-  })
+  @Column({ name: 'room_pin' })
   roomPin: string;
 
-  @Column({ name: 'started_at' })
-  startedAt: Date;
+  @Column({
+    name: 'start_time',
+    nullable: true,
+    default: null,
+    type: 'timestamptz',
+  })
+  startTime: Date;
 
-  @Column({ name: 'ended_at' })
-  endedAt: Date;
+  @Column({
+    name: 'end_time',
+    nullable: true,
+    default: null,
+    type: 'timestamptz',
+  })
+  endTime: Date;
 
   @Column({
     type: 'enum',
@@ -46,15 +58,14 @@ export class RoomEntity extends AbstractEntity {
   })
   isShowQuestion: boolean;
 
-  @Column({
-    name: 'is_auto_play',
-  })
+  @Column({ name: 'is_auto_play' })
   isAutoPlay: boolean;
 
-  @Column({
-    name: 'lobby_music',
-  })
+  @Column({ name: 'lobby_music' })
   lobbyMusic: string;
+
+  @Column({ name: 'locked' })
+  locked: boolean;
 
   @Column({
     name: 'quizzfly_id',
@@ -78,5 +89,11 @@ export class RoomEntity extends AbstractEntity {
     name: 'host_id',
   })
   @ManyToOne('UserEntity', 'rooms')
-  user!: UserEntity;
+  user!: Relation<UserEntity>;
+
+  @OneToMany(() => PlayerInRoomEntity, (playerInRoom) => playerInRoom.room)
+  playerInRooms?: PlayerInRoomEntity[];
+
+  @OneToMany(() => QuestionEntity, (question) => question.room)
+  questions?: QuestionEntity[];
 }

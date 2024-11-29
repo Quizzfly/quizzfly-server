@@ -3,7 +3,7 @@ import { AbstractEntity } from '@database/entities/abstract.entity';
 import { PostEntity } from '@modules/group/entity/post.entity';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
-import { RoomEntity } from '@modules/room/entity/room.entity';
+import { RoomEntity } from '@modules/room/entities/room.entity';
 import { SlideEntity } from '@modules/slide/entity/slide.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
@@ -13,6 +13,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 
 @Entity('quizzfly', { schema: 'public' })
@@ -49,17 +50,12 @@ export class QuizzflyEntity extends AbstractEntity {
   })
   quizzflyStatus: QuizzflyStatus;
 
-  @Column({
-    name: 'user_id',
-    type: 'uuid',
-  })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId!: Uuid;
 
-  @JoinColumn({
-    name: 'user_id',
-  })
-  @ManyToOne('UserEntity', 'quizzflys')
-  user!: UserEntity;
+  @JoinColumn({ name: 'user_id' })
+  @ManyToOne('UserEntity', 'quizzflies')
+  user!: Relation<UserEntity>;
 
   @OneToMany(() => QuizEntity, (quiz) => quiz.quizzfly)
   quizzes?: QuizEntity[];

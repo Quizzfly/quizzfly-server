@@ -5,11 +5,11 @@ import { Optional } from '@core/utils/optional';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateRoomReqDto } from '@modules/room/dto/request/create-room.req';
 import { InfoRoomResDto } from '@modules/room/dto/response/info-room.res';
-import { RoomStatus } from '@modules/room/entity/enums/room-status.enum';
-import { RoomEntity } from '@modules/room/entity/room.entity';
+import { RoomStatus } from '@modules/room/entities/constants/room-status.enum';
+import { RoomEntity } from '@modules/room/entities/room.entity';
 import { RoomAction, RoomScope } from '@modules/room/events';
 import { SettingRoomPayload } from '@modules/room/events/setting-room.event';
-import { RoomRepository } from '@modules/room/repository/room.repository';
+import { RoomRepository } from '@modules/room/repositories/room.repository';
 import {
   ForbiddenException,
   Injectable,
