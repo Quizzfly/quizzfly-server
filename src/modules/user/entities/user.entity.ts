@@ -5,7 +5,7 @@ import { AbstractEntity } from '@database/entities/abstract.entity';
 import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
 import { PostEntity } from '@modules/group/entity/post.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
-import { PlayerInRoomEntity } from '@modules/room/entities/player-in-room.entity';
+import { ParticipantInRoomEntity } from '@modules/room/entities/participant-in-room.entity';
 import { RoomEntity } from '@modules/room/entities/room.entity';
 import { SessionEntity } from '@modules/session/entities/session.entity';
 import {
@@ -64,8 +64,11 @@ export class UserEntity extends AbstractEntity {
   @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
   userInfo?: UserInfoEntity;
 
-  @OneToMany(() => PlayerInRoomEntity, (playerInRoom) => playerInRoom.user)
-  playerInRooms?: PlayerInRoomEntity[];
+  @OneToMany(
+    () => ParticipantInRoomEntity,
+    (participantInRoom) => participantInRoom.user,
+  )
+  participantInRooms?: ParticipantInRoomEntity[];
 
   @BeforeInsert()
   @BeforeUpdate()

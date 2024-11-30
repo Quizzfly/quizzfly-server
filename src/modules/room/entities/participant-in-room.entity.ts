@@ -1,5 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { ParticipantAnswerEntity } from '@modules/room/entities/participant-answer.entity';
 import { RoomEntity } from '@modules/room/entities/room.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
@@ -7,19 +8,20 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
 
-@Entity('player_in_room', { schema: 'public' })
-export class PlayerInRoomEntity extends AbstractEntity {
-  constructor(data?: Partial<PlayerInRoomEntity>) {
+@Entity('participant_in_room', { schema: 'public' })
+export class ParticipantInRoomEntity extends AbstractEntity {
+  constructor(data?: Partial<ParticipantInRoomEntity>) {
     super();
     Object.assign(this, data);
   }
 
   @PrimaryGeneratedColumn('uuid', {
-    primaryKeyConstraintName: 'PK_player_in_room_id',
+    primaryKeyConstraintName: 'PK_participant_in_room_id',
   })
   id!: Uuid;
 
@@ -60,10 +62,16 @@ export class PlayerInRoomEntity extends AbstractEntity {
   timeLeft: Date;
 
   @JoinColumn({ name: 'user_id' })
-  @ManyToOne(() => UserEntity, (user) => user.playerInRooms)
+  @ManyToOne(() => UserEntity, (user) => user.participantInRooms)
   user?: Relation<UserEntity>;
 
   @JoinColumn({ name: 'room_id' })
-  @ManyToOne(() => RoomEntity, (room) => room.playerInRooms)
+  @ManyToOne(() => RoomEntity, (room) => room.participantInRooms)
   room!: RoomEntity;
+
+  @OneToMany(
+    () => ParticipantAnswerEntity,
+    (participantAnswer) => participantAnswer.participant,
+  )
+  participantAnswers: ParticipantAnswerEntity[];
 }

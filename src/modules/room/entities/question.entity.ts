@@ -2,12 +2,14 @@ import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { QuizType } from '@modules/quiz/enums/quiz-type.enum';
+import { ParticipantAnswerEntity } from '@modules/room/entities/participant-answer.entity';
 import { RoomEntity } from '@modules/room/entities/room.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
@@ -86,4 +88,7 @@ export class QuestionEntity extends AbstractEntity {
   @JoinColumn({ name: 'room_id' })
   @ManyToOne(() => RoomEntity, (room) => room.questions)
   room!: Relation<RoomEntity>;
+
+  @OneToMany(() => ParticipantAnswerEntity, '')
+  participantAnswers: ParticipantAnswerEntity[];
 }

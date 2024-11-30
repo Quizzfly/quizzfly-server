@@ -2,7 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { RoomStatus } from '@modules/room/entities/constants/room-status.enum';
-import { PlayerInRoomEntity } from '@modules/room/entities/player-in-room.entity';
+import { ParticipantInRoomEntity } from '@modules/room/entities/participant-in-room.entity';
 import { QuestionEntity } from '@modules/room/entities/question.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
@@ -91,8 +91,11 @@ export class RoomEntity extends AbstractEntity {
   @ManyToOne('UserEntity', 'rooms')
   user!: Relation<UserEntity>;
 
-  @OneToMany(() => PlayerInRoomEntity, (playerInRoom) => playerInRoom.room)
-  playerInRooms?: PlayerInRoomEntity[];
+  @OneToMany(
+    () => ParticipantInRoomEntity,
+    (participantInRoom) => participantInRoom.room,
+  )
+  participantInRooms?: ParticipantInRoomEntity[];
 
   @OneToMany(() => QuestionEntity, (question) => question.room)
   questions?: QuestionEntity[];
