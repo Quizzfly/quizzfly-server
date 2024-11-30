@@ -15,7 +15,6 @@ import { CommentPostRepository } from '@modules/group/repository/comment-post.re
 import { PostRepository } from '@modules/group/repository/post.repository';
 import { ReactPostRepository } from '@modules/group/repository/react-post.repository';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
-import { GroupEvent } from '@modules/group/socket/enums/group-event.enum';
 import { GroupSocketGateway } from '@modules/group/socket/group-socket.gateway';
 import {
   ForbiddenException,
@@ -45,7 +44,7 @@ export class PostService {
     });
     await this.postRepository.save(post);
 
-    this.groupSocketGateway.sendToGroup(groupId, GroupEvent.CREATE_POST, post);
+    this.groupSocketGateway.sendToGroup(groupId, 'createPost', post);
     return post.toDto(InfoPostResDto);
   }
 
@@ -85,11 +84,7 @@ export class PostService {
     Object.assign(post, dto);
     await this.postRepository.save(post);
 
-    this.groupSocketGateway.sendToGroup(
-      post.groupId,
-      GroupEvent.UPDATE_POST,
-      post,
-    );
+    this.groupSocketGateway.sendToGroup(post.groupId, 'updatePost', post);
     return post.toDto(InfoPostResDto);
   }
 
@@ -139,11 +134,7 @@ export class PostService {
       await this.reactPostRepository.save(reactPost);
     }
 
-    this.groupSocketGateway.sendToGroup(
-      post.groupId,
-      GroupEvent.REACT_POST,
-      post,
-    );
+    this.groupSocketGateway.sendToGroup(post.groupId, 'reactPost', post);
   }
 
   async commentPost(userId: Uuid, postId: Uuid, dto: CommentPostReqDto) {
@@ -160,7 +151,7 @@ export class PostService {
 
     this.groupSocketGateway.sendToGroup(
       post.groupId,
-      GroupEvent.COMMENT_POST,
+      'commentPost',
       commentPost,
     );
     return commentPost.toDto(InfoCommentPostResDto);
