@@ -1,3 +1,4 @@
+import { CommentController } from '@modules/group/controller/comment.controller';
 import { GroupController } from '@modules/group/controller/group.controller';
 import { PostController } from '@modules/group/controller/post.controller';
 import { CommentPostEntity } from '@modules/group/entity/comment-post.entity';
@@ -9,6 +10,7 @@ import { GroupRepository } from '@modules/group/repository/group.repository';
 import { MemberInGroupRepository } from '@modules/group/repository/member-in-group.repository';
 import { PostRepository } from '@modules/group/repository/post.repository';
 import { ReactPostRepository } from '@modules/group/repository/react-post.repository';
+import { CommentService } from '@modules/group/service/comment.service';
 import { GroupService } from '@modules/group/service/group.service';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { PostService } from '@modules/group/service/post.service';
@@ -27,7 +29,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ]),
     UserModule,
   ],
-  controllers: [GroupController, PostController],
+  controllers: [GroupController, PostController, CommentController],
   providers: [
     GroupService,
     GroupRepository,
@@ -36,6 +38,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ReactPostRepository,
     PostRepository,
     CommentPostRepository,
+    CommentService,
     PostService,
     GroupSocketGateway,
   ],
