@@ -85,10 +85,10 @@ export class GroupService {
 
   async joinGroup(userId: Uuid, groupId: Uuid) {
     const group = await this.findById(groupId);
-    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
-      userId,
-      groupId,
-    );
+    const isUserInGroup = await this.memberInGroupRepository.existsBy({
+      groupId: groupId,
+      memberId: userId,
+    });
 
     if (isUserInGroup) {
       throw new ConflictException(ErrorCode.USER_IS_ALREADY_IN_GROUP);
@@ -112,27 +112,13 @@ export class GroupService {
   }
 
   async getMemberInGroup(groupId: Uuid, userId: Uuid) {
-    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
-      userId,
-      groupId,
-    );
-
-    if (!isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.FORBIDDEN);
-    }
+    await this.memberInGroupService.isUserInGroup(userId, groupId);
 
     return this.memberInGroupRepository.getMemberInGroup(groupId);
   }
 
   async getInfoDetailGroup(groupId: Uuid, userId: Uuid) {
-    const isUserInGroup = await this.memberInGroupService.isUserInGroup(
-      userId,
-      groupId,
-    );
-
-    if (!isUserInGroup) {
-      throw new ForbiddenException(ErrorCode.FORBIDDEN);
-    }
+    await this.memberInGroupService.isUserInGroup(userId, groupId);
 
     const group = await this.findById(groupId);
     return group.toDto(InfoGroupResDto);

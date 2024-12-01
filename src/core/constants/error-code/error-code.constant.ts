@@ -43,6 +43,9 @@ export enum ErrorCode {
 
   // Post Errors
   POST_NOT_FOUND = 'POST_001',
+
+  // Comment Errors
+  COMMENT_NOT_FOUND = 'COMMENT_001',
 }
 
 export const CommonError: Record<string, string> = {

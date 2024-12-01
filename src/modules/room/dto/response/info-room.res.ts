@@ -6,8 +6,9 @@ import {
   StringField,
   UUIDField,
 } from '@core/decorators/field.decorators';
-import { Expose } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
+@Exclude()
 export class InfoRoomResDto extends BaseResDto {
   @Expose()
   @DateField()

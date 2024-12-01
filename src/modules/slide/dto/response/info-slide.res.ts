@@ -7,7 +7,9 @@ import {
   UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
+import { Exclude } from 'class-transformer';
 
+@Exclude()
 export class InfoSlideResDto {
   @UUIDField()
   id: Uuid;

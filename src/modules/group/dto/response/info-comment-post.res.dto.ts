@@ -2,14 +2,16 @@ import { BaseResDto } from '@common/dto/base.res.dto';
 import { Uuid } from '@common/types/common.type';
 import {
   ClassFieldOptional,
+  NumberFieldOptional,
   StringField,
   UUIDField,
 } from '@core/decorators/field.decorators';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { UserInfoResDto } from '@modules/user/dto/response/user-info.res.dto';
-import { Expose, Transform } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 
 @Expose({ toPlainOnly: true })
+@Exclude()
 export class InfoCommentPostResDto extends BaseResDto {
   @StringField()
   @Expose()
@@ -38,4 +40,10 @@ export class InfoCommentPostResDto extends BaseResDto {
   })
   @Expose()
   parentCommentId: Uuid;
+
+  @NumberFieldOptional({
+    name: 'count_replies',
+  })
+  @Expose()
+  countReplies: number;
 }
