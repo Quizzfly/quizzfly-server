@@ -18,6 +18,10 @@ export class CreateParticipantInRoomTable1732964216415
         "rank" integer DEFAULT null,
         "time_join" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         "time_left" TIMESTAMP WITH TIME ZONE DEFAULT null,
+        "time_kicked" TIMESTAMP WITH TIME ZONE DEFAULT null,
+        "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+        "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+        "deleted_at" TIMESTAMP WITH TIME ZONE DEFAULT null,
         CONSTRAINT "PK_participant_in_room_id" PRIMARY KEY ("id")
       )
     `);

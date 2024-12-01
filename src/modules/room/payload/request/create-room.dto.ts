@@ -1,24 +1,24 @@
 import { Uuid } from '@common/types/common.type';
 import {
-  BooleanFieldOptional,
   StringField,
   StringFieldOptional,
   UUIDField,
 } from '@core/decorators/field.decorators';
+import { Expose } from 'class-transformer';
 
-export class SettingRoomReqDto {
+export class CreateRoomDto {
   @UUIDField()
+  @Expose({ name: 'room_id' })
   roomId: Uuid;
 
   @StringField()
+  @Expose({ name: 'room_pin' })
   roomPin: string;
 
-  @BooleanFieldOptional()
-  isShowQuestion: boolean;
-
-  @BooleanFieldOptional()
-  isAutoPlay: boolean;
+  @UUIDField()
+  @Expose({ name: 'user_id' })
+  userId: Uuid;
 
   @StringFieldOptional()
-  lobbyMusic: string;
+  name?: string;
 }

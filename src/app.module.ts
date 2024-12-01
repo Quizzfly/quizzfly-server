@@ -1,4 +1,3 @@
-import { RoomGateway } from '@libs/socket/room/room.gateway';
 import { AuthModule } from '@modules//auth/auth.module';
 import { AnswerModule } from '@modules/answer/answer.module';
 import { FileModule } from '@modules/file/file.module';
@@ -32,7 +31,6 @@ const modulesGenerate = generateModulesSet();
     QuizModule,
     AnswerModule,
     RoomModule,
-    RoomGateway,
     GroupModule,
   ],
 })

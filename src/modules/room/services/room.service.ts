@@ -4,18 +4,16 @@ import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateRoomReqDto } from '@modules/room/dto/request/create-room.req';
+import { SettingRoomReqDto } from '@modules/room/dto/request/setting-room.req';
 import { InfoRoomResDto } from '@modules/room/dto/response/info-room.res';
 import { RoomStatus } from '@modules/room/entities/constants/room-status.enum';
 import { RoomEntity } from '@modules/room/entities/room.entity';
-import { RoomAction, RoomScope } from '@modules/room/events';
-import { SettingRoomPayload } from '@modules/room/events/setting-room.event';
 import { RoomRepository } from '@modules/room/repositories/room.repository';
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -52,14 +50,12 @@ export class RoomService {
   }
 
   async findById(id: Uuid) {
-    return Optional.of(await this.roomRepository.findById(id))
+    return <RoomEntity>Optional.of(await this.roomRepository.findById(id))
       .throwIfNotPresent(new NotFoundException(ErrorCode.ROOM_NOT_FOUND))
       .get();
   }
 
-  @OnEvent(`${RoomScope}.${RoomAction.settingRoom}`)
-  async settingRoom(payload: SettingRoomPayload) {
-    const { userId, roomId, dto } = payload;
+  async settingRoom(userId: Uuid, roomId: Uuid, dto: SettingRoomReqDto) {
     const room = await this.findById(roomId);
     if (room.user.id !== userId) {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
@@ -72,6 +68,14 @@ export class RoomService {
     });
 
     await this.roomRepository.save(room);
+    return room.toDto(InfoRoomResDto);
+  }
+
+  async updateRoom(roomId: Uuid, dto: Partial<RoomEntity>) {
+    const room = await this.findById(roomId);
+    Object.assign(room, dto);
+    await this.roomRepository.save(room);
+
     return room.toDto(InfoRoomResDto);
   }
 

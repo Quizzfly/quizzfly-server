@@ -4,6 +4,7 @@ import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { QuizType } from '@modules/quiz/enums/quiz-type.enum';
 import { ParticipantAnswerEntity } from '@modules/room/entities/participant-answer.entity';
 import { RoomEntity } from '@modules/room/entities/room.entity';
+import { Expose } from 'class-transformer';
 import {
   Column,
   Entity,
@@ -32,12 +33,15 @@ export class QuestionEntity extends AbstractEntity {
   @PrimaryGeneratedColumn('uuid', {
     primaryKeyConstraintName: 'PK_question_id',
   })
+  @Expose()
   id!: Uuid;
 
   @Column({ name: 'room_id', type: 'uuid' })
+  @Expose()
   roomId!: Uuid;
 
   @Column()
+  @Expose()
   type: string;
 
   @Column({
@@ -45,6 +49,7 @@ export class QuestionEntity extends AbstractEntity {
     enum: QuizType,
     name: 'quiz_type',
   })
+  @Expose()
   quizType: QuizType;
 
   @Column({
@@ -53,36 +58,47 @@ export class QuestionEntity extends AbstractEntity {
     default: null,
     type: 'timestamptz',
   })
+  @Expose()
   startTime: Date;
 
   @Column({ default: false })
+  @Expose()
   done: boolean;
 
   @Column({ type: 'uuid', name: 'correct_answer_id', default: null })
+  @Expose()
   correctAnswerId: Uuid;
 
   @Column({ default: null })
+  @Expose()
   content: string;
 
   @Column({ name: 'time_limit', default: null })
+  @Expose()
   timeLimit: number;
 
   @Column({ name: 'point_multiplier', default: null })
+  @Expose()
   pointMultiplier: number;
 
   @Column('jsonb', { default: [] })
+  @Expose()
   files?: FileResDto[];
 
   @Column({ name: 'background_url', default: null })
+  @Expose()
   backgroundUrl: string;
 
   @Column({ name: 'question_index' })
+  @Expose()
   questionIndex: number;
 
   @Column({ type: 'jsonb', nullable: true, default: null })
+  @Expose()
   choices?: Record<Uuid, number>;
 
   @Column({ type: 'jsonb', nullable: true, default: null })
+  @Expose()
   answers?: Record<Uuid, AnswerInRoom>;
 
   @JoinColumn({ name: 'room_id' })

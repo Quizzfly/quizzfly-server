@@ -14,6 +14,9 @@ export class CreateParticipantAnswerTable1732964233723
         "chosen_answer_id" uuid NOT NULL,
         "is_correct" boolean NOT NULL,
         "score" integer NOT NULL,
+        "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+        "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+        "deleted_at" TIMESTAMP WITH TIME ZONE DEFAULT null,
         CONSTRAINT "PK_participant_answer_id" PRIMARY KEY ("id")
       )
     `);

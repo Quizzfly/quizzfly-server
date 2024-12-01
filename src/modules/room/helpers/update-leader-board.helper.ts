@@ -1,6 +1,6 @@
-import { UserModel } from '@libs/socket/room/model/user.model';
+import { ParticipantModel } from '@modules/room/model/participant.model';
 
-export function updateRank(players: Partial<UserModel>[]) {
+export function updateRank(players: Partial<ParticipantModel>[]) {
   players.sort((a, b) => b.totalScore - a.totalScore);
 
   players.forEach((player, index) => {

@@ -61,6 +61,14 @@ export class ParticipantInRoomEntity extends AbstractEntity {
   })
   timeLeft: Date;
 
+  @Column({
+    name: 'time_kicked',
+    type: 'timestamptz',
+    nullable: true,
+    default: null,
+  })
+  timeKicked: Date;
+
   @JoinColumn({ name: 'user_id' })
   @ManyToOne(() => UserEntity, (user) => user.participantInRooms)
   user?: Relation<UserEntity>;

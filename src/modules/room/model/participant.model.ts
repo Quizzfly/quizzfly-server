@@ -1,15 +1,15 @@
-import { RoleInRoom } from '@libs/socket/room/enums/role-in-room.enum';
+import { Uuid } from '@common/types/common.type';
 
-export interface UserModel {
+export interface ParticipantModel {
+  id?: Uuid;
   socketId: string;
-  userId?: string;
-  name: string;
-  role: RoleInRoom;
+  userId?: Uuid;
+  nickName: string;
   roomPin: string;
   totalScore?: number;
   rank?: number;
   answers?: Record<
-    string, // questionId
+    Uuid, // questionId
     {
       questionId: string;
       chosenAnswerId: string;

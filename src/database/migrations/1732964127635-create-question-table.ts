@@ -21,6 +21,9 @@ export class CreateQuestionTable1732964127635 implements MigrationInterface {
         "question_index" integer NOT NULL,
         "choices" jsonb DEFAULT null,
         "answers" jsonb DEFAULT null,
+        "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+        "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+        "deleted_at" TIMESTAMP WITH TIME ZONE DEFAULT null,
         CONSTRAINT "PK_question_id" PRIMARY KEY ("id")
       )
     `);
