@@ -1,5 +1,7 @@
 import { EventService } from '@core/events/event.service';
 import { WsExceptionFilter } from '@core/filters/ws-exception.filter';
+import { convertCamelToSnake } from '@core/helpers';
+import { WsValidationPipe } from '@core/pipes/ws-validation.pipe';
 import { RegisterGroupReqDto } from '@modules/group/socket/payload/request/register-group.req.dto';
 import { Logger, UseFilters } from '@nestjs/common';
 import {
@@ -44,7 +46,7 @@ export class GroupSocketGateway
   @SubscribeMessage('registerGroup')
   handleRegisterGroup(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: RegisterGroupReqDto,
+    @MessageBody(new WsValidationPipe()) data: RegisterGroupReqDto,
   ) {
     data.groupIds.forEach((id) => {
       client.join(id);
@@ -52,7 +54,7 @@ export class GroupSocketGateway
     });
   }
 
-  sendToGroup(groupId: string, event: string, data: object) {
-    this.server.to(groupId).emit(event, data);
+  sendToGroup<T>(groupId: string, event: string, data: T): void {
+    this.server.to(groupId).emit(event, convertCamelToSnake(data));
   }
 }
