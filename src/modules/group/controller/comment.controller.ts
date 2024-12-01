@@ -25,6 +25,7 @@ export class CommentController {
 
   @ApiAuth({
     summary: 'Comment post',
+    type: InfoCommentPostResDto,
   })
   @ApiParam({
     name: 'postId',
@@ -42,6 +43,7 @@ export class CommentController {
 
   @ApiAuth({
     summary: 'Edit comment post',
+    type: InfoCommentPostResDto,
   })
   @ApiParam({
     name: 'commentId',
@@ -94,7 +96,7 @@ export class CommentController {
   }
 
   @ApiAuth({
-    summary: 'Get child comment post',
+    summary: 'Get reply comment post',
     type: InfoCommentPostResDto,
     isPaginated: true,
     paginationType: 'offset',
@@ -104,13 +106,13 @@ export class CommentController {
     description: 'The UUID of the parent comment',
     type: 'string',
   })
-  @Get('/comments/:parentCommentId/childs')
-  async getListChildCommentInPost(
+  @Get('/comments/:parentCommentId/replies')
+  async getListReplyCommentInPost(
     @CurrentUser('id') userId: Uuid,
     @Param('parentCommentId', ValidateUuid) parentCommentId: Uuid,
     @Query() filterOptions: PageOptionsDto,
   ) {
-    return this.commentService.getChildCommentInPost(
+    return this.commentService.getReplyCommentInPost(
       userId,
       parentCommentId,
       filterOptions,

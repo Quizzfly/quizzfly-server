@@ -107,13 +107,17 @@ export class CommentService {
     );
   }
 
-  async getChildCommentInPost(
+  async getReplyCommentInPost(
     userId: Uuid,
     parentCommentId: Uuid,
     filterOptions: PageOptionsDto,
   ) {
+    const parentComment = await this.findById(parentCommentId);
+    const post = await this.postService.findById(parentComment.postId);
+
+    await this.memberInGroupService.isUserInGroup(userId, post.groupId);
     const comments: Array<any> =
-      await this.commentPostRepository.getChildComment(
+      await this.commentPostRepository.getReplyComment(
         parentCommentId,
         filterOptions,
       );

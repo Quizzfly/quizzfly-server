@@ -49,7 +49,7 @@ export class CommentPostRepository extends Repository<CommentPostEntity> {
     return convertSnakeToCamel(await query.getRawMany());
   }
 
-  async getChildComment(parentCommentId: Uuid, filterOptions: PageOptionsDto) {
+  async getReplyComment(parentCommentId: Uuid, filterOptions: PageOptionsDto) {
     const skip = filterOptions.page
       ? (filterOptions.page - 1) * filterOptions.limit
       : 0;
