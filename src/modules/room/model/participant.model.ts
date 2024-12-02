@@ -1,5 +1,21 @@
 import { Uuid } from '@common/types/common.type';
 
+export type ResultAnswer = Record<
+  Uuid, // questionId
+  {
+    questionId: string;
+    chosenAnswerId: string;
+    isCorrect: boolean;
+    score: number;
+  }
+>;
+
+export interface AnswerStatistic {
+  correctCount: number;
+  incorrectCount: number;
+  unansweredCount: number;
+}
+
 export interface ParticipantModel {
   id?: Uuid;
   socketId: string;

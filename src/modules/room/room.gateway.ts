@@ -9,6 +9,7 @@ import { CacheTTL } from '@libs/redis/utils/cache-ttl.utils';
 import { CreateCacheKey } from '@libs/redis/utils/create-cache-key.utils';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { GetQuestionsEvent } from '@modules/quizzfly/events/quizzfly.event';
+import { RoomStatus } from '@modules/room/entities/constants/room-status.enum';
 import { ParticipantInRoomEntity } from '@modules/room/entities/participant-in-room.entity';
 import {
   AnswerInRoom,
@@ -19,6 +20,7 @@ import { RoomPhase } from '@modules/room/enums/room-phase.enum';
 import { updateRank } from '@modules/room/helpers/update-leader-board.helper';
 import { ParticipantModel } from '@modules/room/model/participant.model';
 import { Question, RoomModel } from '@modules/room/model/room.model';
+import { HostDto } from '@modules/room/payload/host.dto';
 import { ParticipantDto } from '@modules/room/payload/participant.dto';
 import { AnswerQuestionDto } from '@modules/room/payload/request/answer-question.dto';
 import { CreateRoomDto } from '@modules/room/payload/request/create-room.dto';
@@ -31,10 +33,12 @@ import { NextQuestionDto } from '@modules/room/payload/request/next-question.dto
 import { SettingRoomDto } from '@modules/room/payload/request/setting-room.dto';
 import { StartQuizDto } from '@modules/room/payload/request/start-quiz.dto';
 import { UpdateLeaderBoardDto } from '@modules/room/payload/request/update-leader-board.dto';
+import { QuizFinishedDto } from '@modules/room/payload/response/quiz-finished.dto';
 import { ParticipantAnswerService } from '@modules/room/services/participant-answer.service';
 import { ParticipantInRoomService } from '@modules/room/services/participant-in-room.service';
 import { QuestionService } from '@modules/room/services/question.service';
 import { RoomService } from '@modules/room/services/room.service';
+import { calculateResult } from '@modules/room/utils/calculate-result.util';
 import { CalculateScoreUtil } from '@modules/room/utils/calculate-score.util';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Logger, UseFilters } from '@nestjs/common';
@@ -517,7 +521,10 @@ export class RoomGateway
     );
     this.logger.log(`Quiz started in room: ${roomPin}.`);
 
-    await this.roomService.updateRoom(room.roomId, { startTime: new Date() });
+    await this.roomService.updateRoom(room.roomId, {
+      startTime: new Date(room.startTime),
+      roomStatus: RoomStatus.IN_PROGRESS,
+    });
   }
 
   @SubscribeMessage(RoomEvent.NEXT_QUESTION)
@@ -666,7 +673,7 @@ export class RoomGateway
   }
 
   @SubscribeMessage(RoomEvent.FINISH_QUESTION)
-  async handleQuestionFinish(
+  async handleFinishQuestion(
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: FinishQuestionDto,
   ) {
@@ -917,6 +924,62 @@ export class RoomGateway
     this.server.in(room.roomPin).socketsLeave(room.roomPin);
     delete this.rooms[room.roomPin];
     this.clients.delete(room.host.socketId);
+  }
+
+  @SubscribeMessage(RoomEvent.FINISH_QUIZ)
+  async handleFinishQuiz(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new WsValidationPipe()) payload: HostDto,
+  ) {
+    const room = <RoomModel>(
+      Optional.of(this.rooms[payload.roomPin])
+        .throwIfNotPresent(new WsException('Room not found.'))
+        .get()
+    );
+
+    if (!this.isHostInRoom(payload.hostId, client.id, room)) {
+      throw new WsException(
+        'Only the room owner is allowed to perform this action.',
+      );
+    }
+
+    const items: QuizFinishedDto[] = [];
+    const participantsStore: Partial<ParticipantInRoomEntity>[] = [];
+    // for participant
+    Array.from(room.participants).forEach((participantId: string) => {
+      const participant = this.participants[participantId];
+      const participantClient = this.clients.get(participantId);
+
+      const result = calculateResult(participant.answers);
+      participantsStore.push({ id: participant.id, ...result });
+      const data: QuizFinishedDto = {
+        id: participant.id,
+        socketId: participant.socketId,
+        userId: participant.userId,
+        nickName: participant.nickName,
+        roomPin: participant.roomPin,
+        totalScore: participant.totalScore,
+        rank: participant.rank,
+        timeLeft: participant.timeLeft,
+        timeJoin: participant.timeJoin,
+        isKicked: !!participant.timeKicked,
+        totalParticipant: room.participants.size,
+        ...result,
+      };
+      items.push(data);
+
+      participantClient.emit(
+        RoomEvent.QUIZ_FINISHED,
+        convertCamelToSnake(data),
+      );
+    });
+
+    // for host
+    client.emit(RoomEvent.QUIZ_FINISHED, convertCamelToSnake(items));
+
+    await this.participantInRoomService.updateMultipleParticipant(
+      participantsStore,
+    );
   }
 
   async handleParticipantDisconnect(

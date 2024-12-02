@@ -69,6 +69,15 @@ export class ParticipantInRoomEntity extends AbstractEntity {
   })
   timeKicked: Date;
 
+  @Column({ name: 'correct_count', default: 0 })
+  correctCount: number;
+
+  @Column({ name: 'incorrect_count', default: 0 })
+  incorrectCount: number;
+
+  @Column({ name: 'unanswered_count', default: 0 })
+  unansweredCount: number;
+
   @JoinColumn({ name: 'user_id' })
   @ManyToOne(() => UserEntity, (user) => user.participantInRooms)
   user?: Relation<UserEntity>;
