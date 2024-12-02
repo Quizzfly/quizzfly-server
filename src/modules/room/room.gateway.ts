@@ -489,6 +489,7 @@ export class RoomGateway
 
     this.sendDataForParticipant(room, RoomEvent.QUIZ_STARTED, {
       roomPin: payload.roomPin,
+      startTime: room.currentQuestion.startTime,
       question,
     });
 
@@ -497,7 +498,7 @@ export class RoomGateway
       RoomEvent.QUIZ_STARTED,
       convertCamelToSnake({
         roomPin,
-        startTime: room.startTime,
+        startTime: room.currentQuestion.startTime,
         question: room.currentQuestion,
         questions: questionsStored,
       }),
@@ -556,6 +557,7 @@ export class RoomGateway
 
     this.sendDataForParticipant(room, RoomEvent.QUIZ_STARTED, {
       roomPin: payload.roomPin,
+      startTime: room.currentQuestion.startTime,
       question: data,
     });
 
@@ -564,13 +566,13 @@ export class RoomGateway
       RoomEvent.NEXT_QUESTION,
       convertCamelToSnake({
         roomPin: payload.roomPin,
-        startTime: new Date(),
+        startTime: room.currentQuestion.startTime,
         question: question,
       }),
     );
 
     await this.questionService.updateQuestion(room.currentQuestion.id, {
-      startTime: new Date(),
+      startTime: room.currentQuestion.startTime,
     });
   }
 
@@ -686,7 +688,7 @@ export class RoomGateway
           roomPin: payload.roomPin,
           score: answerOfParticipantWithQuestion?.score ?? 0,
           totalScore: participant?.totalScore ?? 0,
-          correct: answerOfParticipantWithQuestion?.isCorrect ?? false,
+          isCorrect: answerOfParticipantWithQuestion?.isCorrect ?? false,
           questionId: payload.questionId,
           correctAnswerId: room.currentQuestion?.correctAnswerId ?? null,
           chosenAnswerId:
@@ -702,7 +704,7 @@ export class RoomGateway
         roomPin: payload.roomPin,
         questionId: payload.questionId,
         correctAnswerId: room.currentQuestion?.correctAnswerId ?? null,
-        answersCount: room.currentQuestion?.choices ?? null,
+        choices: room.currentQuestion?.choices ?? null,
       }),
     );
 
