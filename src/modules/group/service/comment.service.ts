@@ -42,13 +42,14 @@ export class CommentService {
       parentCommentId: dto.parentCommentId,
     });
     await this.commentPostRepository.save(commentPost);
+    const savedComment = await this.findById(commentPost.id);
 
     this.groupSocketGateway.sendToGroup(
       post.groupId,
       GroupEvent.COMMENT_POST,
       commentPost,
     );
-    return commentPost.toDto(InfoCommentPostResDto);
+    return savedComment.toDto(InfoCommentPostResDto);
   }
 
   async editCommentPost(userId: Uuid, commentId: Uuid, dto: CommentPostReqDto) {
@@ -74,9 +75,12 @@ export class CommentService {
       const replyComments = await this.commentPostRepository.findBy({
         parentCommentId: commentId,
       });
-      replyComments.forEach((comment) => {
-        this.commentPostRepository.softDelete({ id: comment.id });
-      });
+
+      const replyCommentIds = replyComments.map((comment) => comment.id);
+
+      if (replyCommentIds.length > 0) {
+        await this.commentPostRepository.softDelete(replyCommentIds);
+      }
     }
 
     await this.commentPostRepository.softDelete({ id: commentId });

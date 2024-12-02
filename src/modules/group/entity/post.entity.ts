@@ -72,7 +72,7 @@ export class PostEntity extends AbstractEntity {
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_member_post',
   })
-  @ManyToOne('UserEntity', 'posts')
+  @ManyToOne('UserEntity', 'posts', { eager: true })
   member: Relation<UserEntity>;
 
   @OneToMany('ReactPostEntity', 'post')

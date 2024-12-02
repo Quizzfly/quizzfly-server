@@ -41,7 +41,8 @@ export class PostService {
     await this.postRepository.save(post);
 
     this.groupSocketGateway.sendToGroup(groupId, GroupEvent.CREATE_POST, post);
-    return post.toDto(InfoPostResDto);
+    const savedPost = await this.findById(post.id);
+    return savedPost.toDto(InfoPostResDto);
   }
 
   async findById(id: Uuid) {
