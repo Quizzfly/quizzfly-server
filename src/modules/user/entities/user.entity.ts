@@ -68,7 +68,7 @@ export class UserEntity extends AbstractEntity {
   @OneToMany('CommentPostEntity', 'member')
   commentPosts?: CommentPostEntity[];
 
-  @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user)
+  @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user, { eager: true })
   userInfo?: UserInfoEntity;
 
   @BeforeInsert()

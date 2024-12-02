@@ -48,14 +48,15 @@ export class InfoPostResDto extends BaseResDto {
 
   @ClassFieldOptional(() => UserInfoResDto)
   @Transform(({ obj }) => {
-    return obj.memberId
-      ? {
-          id: obj.memberId,
-          username: obj.username,
-          avatar: obj.avatar,
-          name: obj.name,
-        }
-      : null;
+    const { member, memberId, username, avatar, name } = obj;
+
+    if (member?.userInfo) {
+      const { id } = member;
+      const { username, avatar, name } = member.userInfo;
+      return { id, username, avatar, name };
+    }
+
+    return memberId ? { id: memberId, username, avatar, name } : null;
   })
   @Expose()
   member: UserInfoResDto;

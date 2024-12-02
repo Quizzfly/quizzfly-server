@@ -1,9 +1,10 @@
 import { Uuid } from '@common/types/common.type';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { GroupEntity } from '@modules/group/entity/group.entity';
 import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entity';
 import { RoleInGroup } from '@modules/group/enums/role-in-group.enum';
 import { MemberInGroupRepository } from '@modules/group/repository/member-in-group.repository';
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class MemberInGroupService {
@@ -40,9 +41,7 @@ export class MemberInGroupService {
         groupId,
       );
     if (!memberInGroup) {
-      return false;
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
-
-    return true;
   }
 }
