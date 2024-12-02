@@ -30,6 +30,9 @@ export class CommentService {
 
   async commentPost(userId: Uuid, postId: Uuid, dto: CommentPostReqDto) {
     const post = await this.postService.findById(postId);
+    if (dto.parentCommentId !== null) {
+      await this.findById(dto.parentCommentId);
+    }
     await this.memberInGroupService.isUserInGroup(userId, post.groupId);
 
     const commentPost = new CommentPostEntity({
@@ -67,6 +70,15 @@ export class CommentService {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
+    if (comment.parentCommentId === null) {
+      const replyComments = await this.commentPostRepository.findBy({
+        parentCommentId: commentId,
+      });
+      replyComments.forEach((comment) => {
+        this.commentPostRepository.softDelete({ id: comment.id });
+      });
+    }
+
     await this.commentPostRepository.softDelete({ id: commentId });
   }
 
@@ -94,10 +106,7 @@ export class CommentService {
     const totalRecords = await this.commentPostRepository.countBy({
       postId: postId,
     });
-    const meta = new OffsetPaginationDto(
-      totalRecords,
-      filterOptions as PageOptionsDto,
-    );
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
 
     return new OffsetPaginatedDto(
       plainToInstance(InfoCommentPostResDto, comments, {
@@ -125,10 +134,7 @@ export class CommentService {
     const totalRecords = await this.commentPostRepository.countBy({
       parentCommentId: parentCommentId,
     });
-    const meta = new OffsetPaginationDto(
-      totalRecords,
-      filterOptions as PageOptionsDto,
-    );
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
 
     return new OffsetPaginatedDto(
       plainToInstance(InfoCommentPostResDto, comments, {
