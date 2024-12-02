@@ -7,7 +7,10 @@ export interface HostModel {
   name: string;
 }
 
-export type Question = QuestionEntity & { noParticipantAnswered?: number };
+export type Question = QuestionEntity & {
+  noParticipantAnswered?: number;
+  endTime?: Date;
+};
 
 export interface RoomModel {
   roomId: Uuid;

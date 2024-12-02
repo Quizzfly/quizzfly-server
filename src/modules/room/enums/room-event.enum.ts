@@ -12,6 +12,8 @@ export enum RoomEvent {
   ANSWER_QUESTION = 'answerQuestion',
   FINISH_QUESTION = 'finishQuestion',
   UPDATE_LEADERBOARD = 'updateLeaderboard',
+  PARTICIPANT_RECONNECT = 'participantReconnect',
+  FINISH_QUIZ = 'finishQuiz',
 
   // response event
   ROOM_CREATED = 'roomCreated',
@@ -23,4 +25,7 @@ export enum RoomEvent {
   RESULT_ANSWER = 'resultAnswer',
   SUMMARY_ANSWER = 'summaryAnswer',
   ROOM_CANCELED = 'roomCanceled',
+  PARTICIPANT_RECONNECTED = 'participantReconnected',
+  PARTICIPANT_RECONNECTED_SUCCESS = 'participantReconnectedSuccess',
+  QUIZ_FINISHED = 'quizFinished',
 }

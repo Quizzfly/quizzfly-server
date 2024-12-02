@@ -1,9 +1,12 @@
 import { Uuid } from '@common/types/common.type';
+import { CacheKey } from '@core/constants/cache.constant';
 import { EventService } from '@core/events/event.service';
 import { WebsocketExceptionFilter } from '@core/filters/websocket-exception.filter';
 import { convertCamelToSnake, updatePropertiesIfDefined } from '@core/helpers';
 import { WsValidationPipe } from '@core/pipes/ws-validation.pipe';
 import { Optional } from '@core/utils/optional';
+import { CacheTTL } from '@libs/redis/utils/cache-ttl.utils';
+import { CreateCacheKey } from '@libs/redis/utils/create-cache-key.utils';
 import { AnswerEntity } from '@modules/answer/entities/answer.entity';
 import { GetQuestionsEvent } from '@modules/quizzfly/events/quizzfly.event';
 import { ParticipantInRoomEntity } from '@modules/room/entities/participant-in-room.entity';
@@ -12,9 +15,11 @@ import {
   QuestionEntity,
 } from '@modules/room/entities/question.entity';
 import { RoomEvent } from '@modules/room/enums/room-event.enum';
+import { RoomPhase } from '@modules/room/enums/room-phase.enum';
 import { updateRank } from '@modules/room/helpers/update-leader-board.helper';
 import { ParticipantModel } from '@modules/room/model/participant.model';
 import { Question, RoomModel } from '@modules/room/model/room.model';
+import { ParticipantDto } from '@modules/room/payload/participant.dto';
 import { AnswerQuestionDto } from '@modules/room/payload/request/answer-question.dto';
 import { CreateRoomDto } from '@modules/room/payload/request/create-room.dto';
 import { FinishQuestionDto } from '@modules/room/payload/request/finish-question.dto';
@@ -31,7 +36,8 @@ import { ParticipantInRoomService } from '@modules/room/services/participant-in-
 import { QuestionService } from '@modules/room/services/question.service';
 import { RoomService } from '@modules/room/services/room.service';
 import { CalculateScoreUtil } from '@modules/room/utils/calculate-score.util';
-import { Logger, UseFilters } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Logger, UseFilters } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -43,6 +49,7 @@ import {
   WebSocketServer,
   WsException,
 } from '@nestjs/websockets';
+import { Cache } from 'cache-manager';
 import { Server, Socket } from 'socket.io';
 
 @UseFilters(WebsocketExceptionFilter)
@@ -67,6 +74,7 @@ export class RoomGateway
     private readonly participantInRoomService: ParticipantInRoomService,
     private readonly questionService: QuestionService,
     private readonly participantAnswerService: ParticipantAnswerService,
+    @Inject(CACHE_MANAGER) private readonly cacheService: Cache,
   ) {}
 
   afterInit(server: Server) {
@@ -77,7 +85,7 @@ export class RoomGateway
     this.logger.log(`Connected ${client.id}`);
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     const { roomPin, userId } = client.data;
     this.logger.log(`Disconnected: ${client.id}`);
     if (!roomPin) {
@@ -96,7 +104,7 @@ export class RoomGateway
       if (!participant) {
         return;
       }
-      this.handleParticipantDisconnect(participant, room);
+      await this.handleParticipantDisconnect(participant, room);
     }
   }
 
@@ -172,6 +180,7 @@ export class RoomGateway
       roomPin: payload.roomPin,
       answers: {},
       totalScore: 0,
+      timeJoin: new Date(),
     };
     this.clients.set(newParticipant.id, client);
     client.join(payload.roomPin);
@@ -222,7 +231,9 @@ export class RoomGateway
         totalParticipant: room.participants.size,
       }),
     );
+    participant.timeLeft = new Date();
 
+    await this.storeParticipantInfo(participant);
     delete this.participants[payload.participantId];
     this.clients.delete(payload.participantId);
 
@@ -272,6 +283,7 @@ export class RoomGateway
     });
     socket.leave(payload.roomPin);
 
+    await this.storeParticipantInfo(participant);
     delete this.participants[payload.participantId];
     this.clients.delete(payload.participantId);
 
@@ -605,7 +617,7 @@ export class RoomGateway
 
     const calculateScore = new CalculateScoreUtil({
       baseScore: 1000,
-      startTime: question.startTime.getTime(),
+      startTime: new Date(question.startTime).getTime(),
       timeLimit: question.timeLimit,
       responseTime: Date.now(),
       isCorrect: payload.answerId === question.correctAnswerId,
@@ -734,6 +746,7 @@ export class RoomGateway
     if (!question.done) {
       throw new WsException('Unfinished question.');
     }
+    question.endTime = new Date();
 
     const leaderBoard: Partial<ParticipantModel & { score: number }>[] = [];
     Array.from(room.participants).forEach((participantId: string) => {
@@ -773,6 +786,113 @@ export class RoomGateway
     );
   }
 
+  @SubscribeMessage(RoomEvent.PARTICIPANT_RECONNECT)
+  async handleParticipantReconnect(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new WsValidationPipe()) payload: ParticipantDto,
+  ) {
+    const room: RoomModel = this.rooms[payload.roomPin];
+    if (!room) {
+      throw new WsException('Room not found.');
+    }
+
+    const participant = <ParticipantModel>Optional.of(
+      await this.getParticipantInfoFromCache(payload.participantId),
+    )
+      .throwIfNotPresent(
+        new WsException('Participant invalid or time out reconnect.'),
+      )
+      .get();
+
+    this.participants[payload.participantId] = participant;
+
+    participant.socketId = client.id;
+    room.participants.add(payload.participantId);
+    this.server.to(payload.roomPin).emit(
+      RoomEvent.PARTICIPANT_RECONNECTED,
+      convertCamelToSnake({
+        participant,
+        totalParticipant: room.participants.size,
+      }),
+    );
+
+    client.join(payload.roomPin);
+    this.clients.set(payload.participantId, client);
+
+    const responseData: any = { participant, roomPin: payload.roomPin };
+    // phase lobby
+    if (!room.startTime) {
+      responseData.state = RoomPhase.LOBBY;
+    }
+    // phase question in progress
+    else if (!room.currentQuestion.done && room.currentQuestion.startTime) {
+      responseData.state = RoomPhase.QUESTION_STARTED;
+
+      if (room.currentQuestion.type === 'QUIZ') {
+        const question = JSON.parse(
+          JSON.stringify(room.currentQuestion),
+        ) as Question;
+        delete question.correctAnswerId;
+        Object.values(question.answers).forEach((answer) => {
+          delete answer.isCorrect;
+        });
+
+        responseData.question = {
+          ...question,
+          timeLeft:
+            new Date(question.startTime).getTime() +
+            question.timeLimit * 60 -
+            Date.now(),
+        };
+      } else {
+        responseData.question = room.currentQuestion;
+      }
+    }
+    // phase question done
+    else if (
+      room.currentQuestion.done &&
+      room.currentQuestion.type === 'QUIZ' &&
+      !room.currentQuestion.endTime
+    ) {
+      responseData.state = RoomPhase.QUESTION_END;
+      const answerOfParticipantWithQuestion =
+        participant.answers[room.currentQuestion.id];
+
+      responseData.result = {
+        score: answerOfParticipantWithQuestion?.score ?? 0,
+        totalScore: participant?.totalScore ?? 0,
+        isCorrect: answerOfParticipantWithQuestion?.isCorrect ?? false,
+        questionId: room.currentQuestion.roomId,
+        correctAnswerId: room.currentQuestion?.correctAnswerId ?? null,
+        chosenAnswerId: answerOfParticipantWithQuestion?.chosenAnswerId ?? null,
+      };
+    }
+    // phase show leaderboard
+    else if (room.currentQuestion.endTime) {
+      responseData.state = RoomPhase.UPDATE_RANK;
+      const leaderBoard: Partial<ParticipantModel & { score: number }>[] = [];
+      Array.from(room.participants).forEach((participantId: string) => {
+        const participant = this.participants[participantId];
+        leaderBoard.push({
+          id: participant.id,
+          userId: participant.userId,
+          socketId: participant.socketId,
+          nickName: participant.nickName,
+          score: participant.answers[room.currentQuestion.id]?.score ?? 0,
+          totalScore: participant?.totalScore ?? 0,
+          rank: 0,
+        });
+      });
+
+      responseData.leaderBoard = updateRank(leaderBoard);
+    }
+
+    client.emit(
+      RoomEvent.PARTICIPANT_RECONNECTED_SUCCESS,
+      convertCamelToSnake(responseData),
+    );
+  }
+
   handleHostDisconnect(room: RoomModel) {
     this.server.to(room.roomPin).emit(
       RoomEvent.ROOM_CANCELED,
@@ -799,7 +919,12 @@ export class RoomGateway
     this.clients.delete(room.host.socketId);
   }
 
-  handleParticipantDisconnect(participant: ParticipantModel, room: RoomModel) {
+  async handleParticipantDisconnect(
+    participant: ParticipantModel,
+    room: RoomModel,
+  ) {
+    await this.storeParticipantInfo(participant);
+
     room.participants.delete(participant.id);
 
     const socketClient = this.clients.get(participant.id);
@@ -838,5 +963,24 @@ export class RoomGateway
 
   isParticipantInRoom(participantId: Uuid, room: RoomModel) {
     return room.participants.has(participantId);
+  }
+
+  async storeParticipantInfo(
+    participant: ParticipantModel,
+    ttl: number = CacheTTL.minutes(10),
+  ) {
+    await this.cacheService.set(
+      CreateCacheKey(CacheKey.PARTICIPANT_IN_ROOM, participant.id),
+      participant,
+      ttl,
+    );
+  }
+
+  async getParticipantInfoFromCache(participantId: Uuid) {
+    const participant = await this.cacheService.get<ParticipantModel>(
+      CreateCacheKey(CacheKey.PARTICIPANT_IN_ROOM, participantId),
+    );
+
+    return participant;
   }
 }
