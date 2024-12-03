@@ -1,8 +1,8 @@
-export class Optional {
-  #instance;
+export class Optional<T extends object = any> {
+  private readonly instance: T;
 
-  constructor(instance: any) {
-    this.#instance = instance;
+  constructor(instance: T) {
+    this.instance = instance;
   }
 
   static of(instance: any) {
@@ -11,8 +11,8 @@ export class Optional {
 
   throwIfPresent(exception: any) {
     if (
-      (Array.isArray(this.#instance) && this.#instance[0]) ||
-      (!Array.isArray(this.#instance) && this.#instance)
+      (Array.isArray(this.instance) && this.instance[0]) ||
+      (!Array.isArray(this.instance) && this.instance)
     ) {
       throw exception;
     }
@@ -22,8 +22,8 @@ export class Optional {
 
   throwIfNotPresent(exception: any) {
     if (
-      (Array.isArray(this.#instance) && !this.#instance[0]) ||
-      (!Array.isArray(this.#instance) && !this.#instance)
+      (Array.isArray(this.instance) && !this.instance[0]) ||
+      (!Array.isArray(this.instance) && !this.instance)
     ) {
       throw exception;
     }
@@ -32,7 +32,7 @@ export class Optional {
   }
 
   throwIfNullable(exception: any) {
-    if (this.#instance === null) {
+    if (this.instance === null) {
       throw exception;
     }
 
@@ -40,10 +40,7 @@ export class Optional {
   }
 
   throwIfExist(exception: any) {
-    if (
-      (Array.isArray(this.#instance) && this.#instance[0]) ||
-      this.#instance
-    ) {
+    if ((Array.isArray(this.instance) && this.instance[0]) || this.instance) {
       throw exception;
     }
 
@@ -51,16 +48,16 @@ export class Optional {
   }
 
   isPresent() {
-    if (Array.isArray(this.#instance)) {
-      return Boolean(this.#instance[0]);
+    if (Array.isArray(this.instance)) {
+      return Boolean(this.instance[0]);
     }
 
-    return Boolean(this.#instance);
+    return Boolean(this.instance);
   }
 
   get() {
-    if (!this.#instance) throw new Error('Should call throwIfNullable first');
+    if (!this.instance) throw new Error('Should call throwIfNullable first');
 
-    return this.#instance;
+    return this.instance;
   }
 }

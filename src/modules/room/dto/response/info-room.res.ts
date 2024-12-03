@@ -11,34 +11,34 @@ import { Exclude, Expose } from 'class-transformer';
 @Exclude()
 export class InfoRoomResDto extends BaseResDto {
   @Expose()
-  @DateField()
-  startedAt: Date;
+  @DateField({ name: 'start_time' })
+  startTime: Date;
 
   @Expose()
-  @DateField()
-  endedAt: Date;
+  @DateField({ name: 'end_time' })
+  endTime: Date;
 
   @Expose()
-  @StringField()
+  @StringField({ name: 'room_pin' })
   roomPin: string;
 
   @Expose()
-  @StringField()
+  @StringField({ name: 'room_status' })
   roomStatus: string;
 
   @Expose()
-  @BooleanField()
+  @BooleanField({ name: 'is_show_question' })
   isShowQuestion: boolean;
 
   @Expose()
-  @BooleanField()
+  @BooleanField({ name: 'is_auto_play' })
   isAutoPlay: boolean;
 
   @Expose()
-  @StringField()
+  @StringField({ name: 'lobby_music' })
   lobbyMusic: string;
 
   @Expose()
-  @UUIDField()
+  @UUIDField({ name: 'quizzfly_id' })
   quizzflyId: Uuid;
 }

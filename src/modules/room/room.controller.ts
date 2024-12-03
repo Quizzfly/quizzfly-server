@@ -4,7 +4,7 @@ import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
 import { CreateRoomReqDto } from '@modules/room/dto/request/create-room.req';
 import { SettingRoomReqDto } from '@modules/room/dto/request/setting-room.req';
 import { InfoRoomResDto } from '@modules/room/dto/response/info-room.res';
-import { RoomService } from '@modules/room/room.service';
+import { RoomService } from '@modules/room/services/room.service';
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 
@@ -43,7 +43,7 @@ export class RoomController {
     @Param('roomId') roomId: Uuid,
     @Body() dto: SettingRoomReqDto,
   ) {
-    return this.roomService.settingRoom({ userId, roomId, dto });
+    return this.roomService.settingRoom(userId, roomId, dto);
   }
 
   @ApiPublic({
