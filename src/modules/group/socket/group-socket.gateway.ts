@@ -1,5 +1,5 @@
 import { EventService } from '@core/events/event.service';
-import { WsExceptionFilter } from '@core/filters/ws-exception.filter';
+import { WebsocketExceptionFilter } from '@core/filters/websocket-exception.filter';
 import { convertCamelToSnake } from '@core/helpers';
 import { WsValidationPipe } from '@core/pipes/ws-validation.pipe';
 import { RegisterGroupReqDto } from '@modules/group/socket/payload/request/register-group.req.dto';
@@ -16,7 +16,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@UseFilters(WsExceptionFilter)
+@UseFilters(WebsocketExceptionFilter)
 @WebSocketGateway({
   cors: {
     origin: '*',
