@@ -44,7 +44,7 @@ export class PostEntity extends AbstractEntity {
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_group_post',
   })
-  @ManyToOne('GroupEntity', 'posts')
+  @ManyToOne('GroupEntity', 'posts', { eager: true })
   group: Relation<GroupEntity>;
 
   @Column({

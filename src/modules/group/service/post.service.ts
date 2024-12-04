@@ -40,9 +40,15 @@ export class PostService {
     });
     await this.postRepository.save(post);
 
-    this.groupSocketGateway.sendToGroup(groupId, GroupEvent.CREATE_POST, post);
     const savedPost = await this.findById(post.id);
-    return savedPost.toDto(InfoPostResDto);
+    const response = savedPost.toDto(InfoPostResDto);
+
+    this.groupSocketGateway.sendToGroup(
+      groupId,
+      GroupEvent.CREATE_POST,
+      response,
+    );
+    return response;
   }
 
   async findById(id: Uuid) {
@@ -58,8 +64,10 @@ export class PostService {
   async getInfoDetailPost(groupId: Uuid, postId: Uuid, userId: Uuid) {
     await this.memberInGroupService.isUserInGroup(userId, groupId);
 
-    const post = await this.findById(postId);
-    return post.toDto(InfoPostResDto);
+    const post = await this.postRepository.getDetailPost(postId);
+    return plainToInstance(InfoPostResDto, post, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async deletePost(postId: Uuid, userId: Uuid) {
@@ -69,6 +77,11 @@ export class PostService {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     await this.postRepository.softDelete({ id: postId });
+    this.groupSocketGateway.sendToGroup(
+      post.groupId,
+      GroupEvent.DELETE_POST,
+      post,
+    );
   }
 
   async updatePost(postId: Uuid, userId: Uuid, dto: CreatePostReqDto) {
@@ -81,12 +94,15 @@ export class PostService {
     Object.assign(post, dto);
     await this.postRepository.save(post);
 
+    const savedPost = await this.findById(post.id);
+    const response = savedPost.toDto(InfoPostResDto);
+
     this.groupSocketGateway.sendToGroup(
-      post.groupId,
+      savedPost.groupId,
       GroupEvent.UPDATE_POST,
-      post,
+      response,
     );
-    return post.toDto(InfoPostResDto);
+    return response;
   }
 
   async getListPost(
@@ -133,12 +149,12 @@ export class PostService {
         postId: postId,
       });
       await this.reactPostRepository.save(reactPost);
-    }
 
-    this.groupSocketGateway.sendToGroup(
-      post.groupId,
-      GroupEvent.REACT_POST,
-      post,
-    );
+      this.groupSocketGateway.sendToGroup(
+        post.groupId,
+        GroupEvent.REACT_POST,
+        post.toDto(InfoPostResDto),
+      );
+    }
   }
 }

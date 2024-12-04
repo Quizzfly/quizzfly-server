@@ -3,4 +3,7 @@ export enum GroupEvent {
   UPDATE_POST = 'updatePost',
   REACT_POST = 'reactPost',
   COMMENT_POST = 'commentPost',
+  UPDATE_COMMENT_POST = 'updateCommentPost',
+  DELETE_COMMENT_POST = 'deleteCommentPost',
+  DELETE_POST = 'deletePost',
 }

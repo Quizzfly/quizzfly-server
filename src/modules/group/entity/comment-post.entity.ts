@@ -51,7 +51,7 @@ export class CommentPostEntity extends AbstractEntity {
     referencedColumnName: 'id',
     foreignKeyConstraintName: 'FK_post_comment_post',
   })
-  @ManyToOne('PostEntity', 'commentPosts')
+  @ManyToOne('PostEntity', 'commentPosts', { eager: true })
   post: Relation<PostEntity>;
 
   @Column({

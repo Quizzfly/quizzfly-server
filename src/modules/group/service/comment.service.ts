@@ -43,13 +43,16 @@ export class CommentService {
     });
     await this.commentPostRepository.save(commentPost);
     const savedComment = await this.findById(commentPost.id);
+    const response = plainToInstance(InfoCommentPostResDto, savedComment, {
+      excludeExtraneousValues: true,
+    });
 
     this.groupSocketGateway.sendToGroup(
       post.groupId,
       GroupEvent.COMMENT_POST,
-      commentPost,
+      response,
     );
-    return savedComment.toDto(InfoCommentPostResDto);
+    return response;
   }
 
   async editCommentPost(userId: Uuid, commentId: Uuid, dto: CommentPostReqDto) {
@@ -61,7 +64,18 @@ export class CommentService {
 
     Object.assign(comment, dto);
     await this.commentPostRepository.save(comment);
-    return comment.toDto(InfoCommentPostResDto);
+
+    const savedComment = await this.findById(commentId);
+    const response = plainToInstance(InfoCommentPostResDto, savedComment, {
+      excludeExtraneousValues: true,
+    });
+
+    this.groupSocketGateway.sendToGroup(
+      comment.post.groupId,
+      GroupEvent.UPDATE_COMMENT_POST,
+      response,
+    );
+    return response;
   }
 
   async deleteCommentPost(userId: Uuid, commentId: Uuid) {
@@ -83,6 +97,13 @@ export class CommentService {
       }
     }
 
+    this.groupSocketGateway.sendToGroup(
+      comment.post.groupId,
+      GroupEvent.DELETE_COMMENT_POST,
+      plainToInstance(InfoCommentPostResDto, comment, {
+        excludeExtraneousValues: true,
+      }),
+    );
     await this.commentPostRepository.softDelete({ id: commentId });
   }
 
