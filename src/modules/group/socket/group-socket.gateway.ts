@@ -1,4 +1,5 @@
 import { Uuid } from '@common/types/common.type';
+import { WebsocketExceptionFilter } from '@core/filters/websocket-exception.filter';
 import { convertCamelToSnake } from '@core/helpers';
 import { MemberInGroupRepository } from '@modules/group/repository/member-in-group.repository';
 import { Logger, UseFilters } from '@nestjs/common';
@@ -10,7 +11,6 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { WebsocketExceptionFilter } from '@core/filters/websocket-exception.filter';
 
 @UseFilters(WebsocketExceptionFilter)
 @WebSocketGateway({
@@ -20,14 +20,14 @@ import { WebsocketExceptionFilter } from '@core/filters/websocket-exception.filt
   namespace: '/groups',
 })
 export class GroupSocketGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer() server: Server;
   private readonly logger = new Logger(GroupSocketGateway.name);
 
   constructor(
     private readonly memberInGroupRepository: MemberInGroupRepository,
-  ) {
-  }
+  ) {}
 
   afterInit(server: Server) {
     this.logger.log(server);

@@ -47,4 +47,8 @@ export class InfoCommentPostResDto extends BaseResDto {
   })
   @Expose()
   countReplies: number;
+
+  @ClassFieldOptional(() => InfoCommentPostResDto)
+  @Expose()
+  replies?: Array<InfoCommentPostResDto>;
 }
