@@ -9,7 +9,7 @@ import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.e
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
 
-export class InfoQuizzflyResDto extends BaseResDto {
+export class QuizzflyDetailResDto extends BaseResDto {
   @StringField()
   title: string;
 
@@ -34,8 +34,8 @@ export class InfoQuizzflyResDto extends BaseResDto {
   static toInfoQuizzflyResponse(
     quizzflyEntity: QuizzflyEntity,
     userEntity: UserEntity,
-  ): InfoQuizzflyResDto {
-    const dto = new InfoQuizzflyResDto();
+  ): QuizzflyDetailResDto {
+    const dto = new QuizzflyDetailResDto();
     dto.id = quizzflyEntity.id;
     dto.title = quizzflyEntity.title;
     dto.coverImage = quizzflyEntity.coverImage;

@@ -5,8 +5,8 @@ import { ChangePositionQuestionReqDto } from '@modules/quizzfly/dto/request/chan
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
 import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
 import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.req';
-import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.res';
-import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly.res';
+import { QuizzflyDetailResDto } from '@modules/quizzfly/dto/response/quizzfly-detail.res';
+import { QuizzflyResDto } from '@modules/quizzfly/dto/response/quizzfly.res';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import {
   Body,
@@ -32,7 +32,7 @@ export class QuizzflyController {
 
   @Post('drafts')
   @ApiAuth({
-    type: InfoQuizzflyResDto,
+    type: QuizzflyDetailResDto,
     summary: 'Create a draft quizzfly',
   })
   async createDraftQuizzfly(@CurrentUser('id') userId: Uuid) {
@@ -41,7 +41,7 @@ export class QuizzflyController {
 
   @Put(':quizzflyId/settings')
   @ApiAuth({
-    type: InfoDetailQuizzflyResDto,
+    type: QuizzflyResDto,
     summary: 'Setting quizzfly',
   })
   @ApiParam({
@@ -60,7 +60,7 @@ export class QuizzflyController {
   @Get()
   @ApiAuth({
     summary: 'Get my quizzfly',
-    type: InfoQuizzflyResDto,
+    type: QuizzflyDetailResDto,
     isPaginated: true,
     paginationType: 'offset',
   })
@@ -74,7 +74,7 @@ export class QuizzflyController {
   @Get(':quizzflyId')
   @ApiPublic({
     summary: 'Get quizzfly by id',
-    type: InfoQuizzflyResDto,
+    type: QuizzflyDetailResDto,
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -87,7 +87,7 @@ export class QuizzflyController {
 
   @Patch(':quizzflyId/themes')
   @ApiAuth({
-    type: InfoDetailQuizzflyResDto,
+    type: QuizzflyResDto,
     summary: 'Update theme quizzfly',
   })
   @ApiParam({

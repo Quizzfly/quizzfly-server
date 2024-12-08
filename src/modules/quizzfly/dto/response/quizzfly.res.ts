@@ -4,7 +4,7 @@ import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.e
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
-export class InfoDetailQuizzflyResDto extends BaseResDto {
+export class QuizzflyResDto extends BaseResDto {
   @StringField()
   @Expose()
   title: string;

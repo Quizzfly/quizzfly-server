@@ -14,8 +14,8 @@ import { ChangePositionQuestionReqDto } from '@modules/quizzfly/dto/request/chan
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
 import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
 import { SettingQuizzflyReqDto } from '@modules/quizzfly/dto/request/setting-quizzfly.req';
-import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.res';
-import { InfoQuizzflyResDto } from '@modules/quizzfly/dto/response/info-quizzfly.res';
+import { QuizzflyDetailResDto } from '@modules/quizzfly/dto/response/quizzfly-detail.res';
+import { QuizzflyResDto } from '@modules/quizzfly/dto/response/quizzfly.res';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
@@ -55,7 +55,7 @@ export class QuizzflyService {
     draftQuizzfly.user = await this.userService.findByUserId(userId);
 
     await this.quizzflyRepository.save(draftQuizzfly);
-    return InfoQuizzflyResDto.toInfoQuizzflyResponse(
+    return QuizzflyDetailResDto.toInfoQuizzflyResponse(
       draftQuizzfly,
       draftQuizzfly.user,
     );
@@ -72,13 +72,10 @@ export class QuizzflyService {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
-    quizzfly.title = dto.title;
-    quizzfly.description = dto.description;
-    quizzfly.isPublic = dto.is_public;
-    quizzfly.coverImage = dto.cover_image;
+    Object.assign(quizzfly, dto);
     await this.quizzflyRepository.save(quizzfly);
 
-    return quizzfly.toDto(InfoDetailQuizzflyResDto);
+    return quizzfly.toDto(QuizzflyResDto);
   }
 
   async getMyQuizzfly(userId: Uuid, filterOptions: QueryQuizzflyReqDto) {
@@ -89,7 +86,7 @@ export class QuizzflyService {
     const user = await this.userService.findByUserId(userId);
 
     const items = quizzflys.map((quizzfly) =>
-      InfoQuizzflyResDto.toInfoQuizzflyResponse(quizzfly, user),
+      QuizzflyDetailResDto.toInfoQuizzflyResponse(quizzfly, user),
     );
     const totalRecords = await this.quizzflyRepository.countBy({ userId });
     const meta = new OffsetPaginationDto(
@@ -101,7 +98,7 @@ export class QuizzflyService {
   }
 
   async findById(quizzflyId: Uuid) {
-    return Optional.of(
+    return <QuizzflyEntity>Optional.of(
       await this.quizzflyRepository.findOne({
         where: { id: quizzflyId },
         relations: ['user'],
@@ -113,7 +110,7 @@ export class QuizzflyService {
 
   async getDetailQuizzfly(quizzflyId: Uuid) {
     const quizzfly = await this.findById(quizzflyId);
-    return quizzfly.toDto(InfoDetailQuizzflyResDto);
+    return quizzfly.toDto(QuizzflyResDto);
   }
 
   async changeThemeQuizzfly(
@@ -147,7 +144,7 @@ export class QuizzflyService {
       ]);
     }
 
-    return plainToInstance(InfoDetailQuizzflyResDto, quizzfly, {
+    return plainToInstance(QuizzflyResDto, quizzfly, {
       excludeExtraneousValues: true,
     });
   }

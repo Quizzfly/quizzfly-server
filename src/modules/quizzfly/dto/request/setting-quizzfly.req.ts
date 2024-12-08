@@ -2,6 +2,8 @@ import {
   BooleanFieldOptional,
   StringFieldOptional,
 } from '@core/decorators/field.decorators';
+import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
+import { Expose } from 'class-transformer';
 
 export class SettingQuizzflyReqDto {
   @StringFieldOptional()
@@ -10,9 +12,18 @@ export class SettingQuizzflyReqDto {
   @StringFieldOptional()
   description?: string;
 
-  @BooleanFieldOptional()
-  is_public?: boolean;
+  @BooleanFieldOptional({ name: 'is_public' })
+  @Expose({ name: 'is_public' })
+  isPublic?: boolean;
 
-  @StringFieldOptional()
-  cover_image?: string;
+  @StringFieldOptional({ name: 'cover_image' })
+  @Expose({ name: 'cover_image' })
+  coverImage?: string;
+
+  @StringFieldOptional({
+    name: 'quizzfly_status',
+    example: Object.values(QuizzflyStatus).join('|'),
+  })
+  @Expose({ name: 'quizzfly_status' })
+  quizzflyStatus?: QuizzflyStatus;
 }
