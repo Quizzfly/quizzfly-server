@@ -8,7 +8,7 @@ import {
 } from '@core/decorators/field.decorators';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
 import { PostType } from '@modules/group/enums/post-type.enum';
-import { InfoDetailQuizzflyResDto } from '@modules/quizzfly/dto/response/info-detail-quizzfly.res';
+import { QuizzflyResDto } from '@modules/quizzfly/dto/response/quizzfly.res';
 import { UserInfoResDto } from '@modules/user/dto/response/user-info.res.dto';
 import { Expose, Transform } from 'class-transformer';
 
@@ -29,7 +29,7 @@ export class InfoPostResDto extends BaseResDto {
   @Expose()
   files?: Array<FileResDto>;
 
-  @ClassFieldOptional(() => InfoDetailQuizzflyResDto)
+  @ClassFieldOptional(() => QuizzflyResDto)
   @Expose()
   @Transform(({ obj }) => {
     return obj.quizzflyId
@@ -44,7 +44,7 @@ export class InfoPostResDto extends BaseResDto {
         }
       : null;
   })
-  quizzfly: InfoDetailQuizzflyResDto;
+  quizzfly: QuizzflyResDto;
 
   @ClassFieldOptional(() => UserInfoResDto)
   @Transform(({ obj }) => {
