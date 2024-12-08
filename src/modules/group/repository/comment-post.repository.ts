@@ -39,6 +39,32 @@ export class CommentPostRepository extends Repository<CommentPostEntity> {
             .andWhere('childComment.deletedAt IS NULL'),
         'countReplies',
       )
+      .addSelect(
+        (subQuery) =>
+          subQuery.select('json_agg(reply)').from((qb) => {
+            return qb
+              .select([
+                'reply.id as id',
+                'reply.createdAt as created_at',
+                'reply.updatedAt as updated_at',
+                'reply.content as content',
+                'reply.files as files',
+                'reply.parentCommentId as parent_comment_id',
+                'replyMemberInfo.username as username',
+                'replyMemberInfo.avatar as avatar',
+                'replyMemberInfo.name as name',
+                'replyMember.id as member_id',
+              ])
+              .from('comment_post', 'reply')
+              .leftJoin('reply.member', 'replyMember')
+              .leftJoin('replyMember.userInfo', 'replyMemberInfo')
+              .where('reply.parentCommentId = comment_post.id')
+              .andWhere('reply.deletedAt IS NULL')
+              .orderBy('reply.createdAt', 'ASC')
+              .limit(5);
+          }, 'reply'),
+        'replies',
+      )
       .where('comment_post.postId = :postId', { postId })
       .andWhere('comment_post.deletedAt IS NULL')
       .andWhere('comment_post.parentCommentId IS NULL')
