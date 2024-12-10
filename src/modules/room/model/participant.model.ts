@@ -33,7 +33,7 @@ export interface ParticipantModel {
       score: number;
     }
   >;
-  timeLeft?: Date;
-  timeKicked?: Date;
-  timeJoin?: Date;
+  timeLeft?: Date | number;
+  timeKicked?: Date | number;
+  timeJoin?: Date | number;
 }
