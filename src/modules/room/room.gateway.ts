@@ -33,7 +33,9 @@ import { NextQuestionDto } from '@modules/room/payload/request/next-question.dto
 import { SettingRoomDto } from '@modules/room/payload/request/setting-room.dto';
 import { StartQuizDto } from '@modules/room/payload/request/start-quiz.dto';
 import { UpdateLeaderBoardDto } from '@modules/room/payload/request/update-leader-board.dto';
+import { QuestionDto } from '@modules/room/payload/response/question.dto';
 import { QuizFinishedDto } from '@modules/room/payload/response/quiz-finished.dto';
+import { QuizStartedDto } from '@modules/room/payload/response/quiz-started.dto';
 import { ParticipantAnswerService } from '@modules/room/services/participant-answer.service';
 import { ParticipantInRoomService } from '@modules/room/services/participant-in-room.service';
 import { QuestionService } from '@modules/room/services/question.service';
@@ -54,6 +56,7 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Cache } from 'cache-manager';
+import { plainToInstance } from 'class-transformer';
 import { Server, Socket } from 'socket.io';
 
 @UseFilters(WebsocketExceptionFilter)
@@ -503,21 +506,27 @@ export class RoomGateway
       });
     }
 
-    this.sendDataForParticipant(room, RoomEvent.QUIZ_STARTED, {
-      roomPin: payload.roomPin,
-      startTime: room.currentQuestion.startTime,
-      question,
-    });
+    this.sendDataForParticipant(
+      room,
+      RoomEvent.QUIZ_STARTED,
+      plainToInstance(QuizStartedDto, {
+        roomPin: payload.roomPin,
+        startTime: room.currentQuestion.startTime,
+        question,
+      }),
+    );
 
     // for host
     client.emit(
       RoomEvent.QUIZ_STARTED,
-      convertCamelToSnake({
-        roomPin,
-        startTime: room.currentQuestion.startTime,
-        question: room.currentQuestion,
-        questions: questionsStored,
-      }),
+      convertCamelToSnake(
+        plainToInstance(QuizStartedDto, {
+          roomPin,
+          startTime: room.currentQuestion.startTime,
+          question: room.currentQuestion,
+          questions: questionsStored,
+        }),
+      ),
     );
     this.logger.log(`Quiz started in room: ${roomPin}.`);
 
@@ -574,20 +583,26 @@ export class RoomGateway
       });
     }
 
-    this.sendDataForParticipant(room, RoomEvent.QUIZ_STARTED, {
-      roomPin: payload.roomPin,
-      startTime: room.currentQuestion.startTime,
-      question: data,
-    });
+    this.sendDataForParticipant(
+      room,
+      RoomEvent.QUIZ_STARTED,
+      plainToInstance(QuizStartedDto, {
+        roomPin: payload.roomPin,
+        startTime: room.currentQuestion.startTime,
+        question: data,
+      }),
+    );
 
     // for host
     client.emit(
       RoomEvent.NEXT_QUESTION,
-      convertCamelToSnake({
-        roomPin: payload.roomPin,
-        startTime: room.currentQuestion.startTime,
-        question: question,
-      }),
+      convertCamelToSnake(
+        plainToInstance(QuizStartedDto, {
+          roomPin: payload.roomPin,
+          startTime: room.currentQuestion.startTime,
+          question: question,
+        }),
+      ),
     );
 
     await this.questionService.updateQuestion(room.currentQuestion.id, {
@@ -845,14 +860,17 @@ export class RoomGateway
         });
 
         responseData.question = {
-          ...question,
+          ...plainToInstance(QuestionDto, question),
           timeLeft:
             new Date(question.startTime).getTime() +
             question.timeLimit * 60 -
             Date.now(),
         };
       } else {
-        responseData.question = room.currentQuestion;
+        responseData.question = plainToInstance(
+          QuestionDto,
+          room.currentQuestion,
+        );
       }
     }
     // phase question done
@@ -960,8 +978,8 @@ export class RoomGateway
         roomPin: participant.roomPin,
         totalScore: participant.totalScore,
         rank: participant.rank,
-        timeLeft: participant.timeLeft,
-        timeJoin: participant.timeJoin,
+        timeLeft: new Date(participant.timeLeft).getTime(),
+        timeJoin: new Date(participant.timeJoin).getTime(),
         isKicked: !!participant.timeKicked,
         totalParticipant: room.participants.size,
         ...result,
