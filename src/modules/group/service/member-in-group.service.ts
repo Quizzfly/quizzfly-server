@@ -44,4 +44,8 @@ export class MemberInGroupService {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
   }
+
+  async getMemberInGroup(groupId: Uuid) {
+    return await this.memberInGroupRepository.getMemberInGroup(groupId);
+  }
 }

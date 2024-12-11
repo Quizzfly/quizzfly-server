@@ -15,6 +15,7 @@ import { GroupService } from '@modules/group/service/group.service';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { PostService } from '@modules/group/service/post.service';
 import { GroupSocketGateway } from '@modules/group/socket/group-socket.gateway';
+import { NotificationModule } from '@modules/notification/notification.module';
 import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -28,6 +29,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       CommentPostEntity,
     ]),
     UserModule,
+    NotificationModule,
   ],
   controllers: [GroupController, PostController, CommentController],
   providers: [

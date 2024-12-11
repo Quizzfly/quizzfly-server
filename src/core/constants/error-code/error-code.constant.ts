@@ -46,6 +46,9 @@ export enum ErrorCode {
 
   // Comment Errors
   COMMENT_NOT_FOUND = 'COMMENT_001',
+
+  // Notification Errors
+  NOTIFICATION_NOT_FOUND = 'NOTIFICATION_001',
 }
 
 export const CommonError: Record<string, string> = {

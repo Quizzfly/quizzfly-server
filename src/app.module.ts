@@ -3,6 +3,7 @@ import { AnswerModule } from '@modules/answer/answer.module';
 import { FileModule } from '@modules/file/file.module';
 import { GroupModule } from '@modules/group/group.module';
 import { HealthModule } from '@modules/health/health.module';
+import { NotificationModule } from '@modules/notification/notification.module';
 import { QuizModule } from '@modules/quiz/quiz.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
 import { RoomModule } from '@modules/room/room.module';
@@ -32,6 +33,7 @@ const modulesGenerate = generateModulesSet();
     AnswerModule,
     RoomModule,
     GroupModule,
+    NotificationModule,
   ],
 })
 export class AppModule {}
