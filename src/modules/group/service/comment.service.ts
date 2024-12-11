@@ -12,6 +12,9 @@ import { MemberInGroupService } from '@modules/group/service/member-in-group.ser
 import { PostService } from '@modules/group/service/post.service';
 import { GroupEvent } from '@modules/group/socket/enums/group-event.enum';
 import { GroupSocketGateway } from '@modules/group/socket/group-socket.gateway';
+import { CreateNotificationDto } from '@modules/notification/dto/request/create-notification.dto';
+import { NotificationType } from '@modules/notification/enums/notification-type.enum';
+import { PushNotificationService } from '@modules/notification/service /push-notification.service';
 import {
   ForbiddenException,
   Injectable,
@@ -26,6 +29,7 @@ export class CommentService {
     private readonly memberInGroupService: MemberInGroupService,
     private readonly postService: PostService,
     private readonly groupSocketGateway: GroupSocketGateway,
+    private readonly pushNotificationService: PushNotificationService,
   ) {}
 
   async commentPost(userId: Uuid, postId: Uuid, dto: CommentPostReqDto) {
@@ -52,6 +56,20 @@ export class CommentService {
       GroupEvent.COMMENT_POST,
       response,
     );
+
+    if (userId !== post.memberId) {
+      const notificationDto = new CreateNotificationDto();
+      notificationDto.content = `${userId} commented to your post.`;
+      notificationDto.objectId = commentPost.id;
+      notificationDto.notificationType = NotificationType.COMMENT;
+      notificationDto.agentId = userId;
+      notificationDto.receiverId = post.memberId;
+
+      await this.pushNotificationService.pushNotificationToUser(
+        notificationDto,
+        post.memberId,
+      );
+    }
     return response;
   }
 

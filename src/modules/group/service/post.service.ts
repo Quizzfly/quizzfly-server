@@ -1,3 +1,5 @@
+import { CreateNotificationDto } from '@/modules/notification/dto/request/create-notification.dto';
+import { NotificationType } from '@/modules/notification/enums/notification-type.enum';
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
@@ -13,6 +15,7 @@ import { ReactPostRepository } from '@modules/group/repository/react-post.reposi
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { GroupEvent } from '@modules/group/socket/enums/group-event.enum';
 import { GroupSocketGateway } from '@modules/group/socket/group-socket.gateway';
+import { PushNotificationService } from '@modules/notification/service /push-notification.service';
 import {
   ForbiddenException,
   Injectable,
@@ -27,6 +30,7 @@ export class PostService {
     private readonly reactPostRepository: ReactPostRepository,
     private readonly memberInGroupService: MemberInGroupService,
     private readonly groupSocketGateway: GroupSocketGateway,
+    private readonly pushNotificationService: PushNotificationService,
   ) {}
 
   async createPost(userId: Uuid, groupId: Uuid, dto: CreatePostReqDto) {
@@ -48,6 +52,24 @@ export class PostService {
       GroupEvent.CREATE_POST,
       response,
     );
+
+    const groupMembers =
+      await this.memberInGroupService.getMemberInGroup(groupId);
+
+    for (const member of groupMembers) {
+      if (member.id !== userId) {
+        await this.pushNotificationService.pushNotificationToUser(
+          {
+            content: `A new post has been created in your group.`,
+            objectId: post.id,
+            notificationType: NotificationType.POST,
+            agentId: userId,
+            receiverId: member.id,
+          },
+          member.id,
+        );
+      }
+    }
     return response;
   }
 
@@ -155,6 +177,20 @@ export class PostService {
         GroupEvent.REACT_POST,
         post.toDto(InfoPostResDto),
       );
+
+      if (userId !== post.memberId) {
+        const notificationDto = new CreateNotificationDto();
+        notificationDto.content = `${userId} reacted to your post.`;
+        notificationDto.objectId = post.id;
+        notificationDto.notificationType = NotificationType.POST;
+        notificationDto.agentId = userId;
+        notificationDto.receiverId = post.memberId;
+
+        await this.pushNotificationService.pushNotificationToUser(
+          notificationDto,
+          post.memberId,
+        );
+      }
     }
   }
 }
