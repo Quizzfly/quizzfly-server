@@ -2,7 +2,7 @@ import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
-import { NotificationService } from '@modules/notification/service /notification.service';
+import { NotificationService } from '@modules/notification/service/notification.service';
 import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { NotificationResDto } from '../dto/response/notification.res.dto';

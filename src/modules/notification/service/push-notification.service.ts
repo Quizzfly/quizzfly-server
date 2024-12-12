@@ -1,6 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { CreateNotificationDto } from '@modules/notification/dto/request/create-notification.dto';
-import { NotificationService } from '@modules/notification/service /notification.service';
+import { NotificationService } from '@/modules/notification/service/notification.service';
 import { NotificationSocketGateway } from '@modules/notification/socket/notification-socket.gateway';
 import { Injectable } from '@nestjs/common';
 

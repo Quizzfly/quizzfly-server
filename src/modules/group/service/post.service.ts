@@ -15,7 +15,7 @@ import { ReactPostRepository } from '@modules/group/repository/react-post.reposi
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { GroupEvent } from '@modules/group/socket/enums/group-event.enum';
 import { GroupSocketGateway } from '@modules/group/socket/group-socket.gateway';
-import { PushNotificationService } from '@modules/notification/service /push-notification.service';
+import { PushNotificationService } from '@modules/notification/service/push-notification.service';
 import {
   ForbiddenException,
   Injectable,

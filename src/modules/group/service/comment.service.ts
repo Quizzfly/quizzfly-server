@@ -14,7 +14,7 @@ import { GroupEvent } from '@modules/group/socket/enums/group-event.enum';
 import { GroupSocketGateway } from '@modules/group/socket/group-socket.gateway';
 import { CreateNotificationDto } from '@modules/notification/dto/request/create-notification.dto';
 import { NotificationType } from '@modules/notification/enums/notification-type.enum';
-import { PushNotificationService } from '@modules/notification/service /push-notification.service';
+import { PushNotificationService } from '@modules/notification/service/push-notification.service';
 import {
   ForbiddenException,
   Injectable,
