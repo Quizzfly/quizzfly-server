@@ -1,11 +1,15 @@
 import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
+import { ICurrentUser } from '@modules/auth/types/jwt-payload.type';
 import { CreateRoomReqDto } from '@modules/room/dto/request/create-room.req';
+import { FilterRoomReqDto } from '@modules/room/dto/request/filter-room.req.dto';
 import { SettingRoomReqDto } from '@modules/room/dto/request/setting-room.req';
 import { InfoRoomResDto } from '@modules/room/dto/response/info-room.res';
+import { ParticipantResDto } from '@modules/room/dto/response/participant.res.dto';
+import { RoomReportResDto } from '@modules/room/dto/response/room-report.res.dto';
 import { RoomService } from '@modules/room/services/room.service';
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Room APIs')
@@ -59,4 +63,31 @@ export class RoomController {
   async getDetailRoom(@Param('roomId') roomId: Uuid) {
     return this.roomService.getDetailRoomById(roomId);
   }
+
+  @ApiAuth({
+    summary: 'Get list room for reports',
+    isPaginated: true,
+    paginationType: 'offset',
+    type: RoomReportResDto,
+  })
+  @Get()
+  getListRoomForReport(
+    @CurrentUser() user: ICurrentUser,
+    @Query() filter: FilterRoomReqDto,
+  ) {
+    return this.roomService.getAllRoom(user.id, filter);
+  }
+
+  @ApiAuth({
+    summary: 'Get list participant in room',
+    isArray: true,
+    type: ParticipantResDto,
+  })
+  @ApiParam({
+    name: 'roomId',
+    description: 'The UUID of the room',
+    type: 'string',
+  })
+  @Get(':roomId/participants')
+  getListParticipantInRoom(@Param('roomId') roomId: Uuid) {}
 }

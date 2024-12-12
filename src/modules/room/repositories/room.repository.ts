@@ -33,7 +33,7 @@ export class RoomRepository extends Repository<RoomEntity> {
     const startTime = new Date(filter.fromDate).setHours(0, 0, 0, 0);
     const endTime = new Date(filter.toDate).getTime();
 
-    const rooms = await this.createQueryBuilder('room')
+    const query = this.createQueryBuilder('room')
       .where('room.deletedAt IS NULL')
       .andWhere('room.hostId = :hostId', { hostId: hostId })
       .andWhere('room.createdAt BETWEEN :startDate AND :endDate', {
@@ -68,9 +68,16 @@ export class RoomRepository extends Repository<RoomEntity> {
       )
       .orderBy(filter.sortBy, filter.order)
       .offset(skip)
-      .limit(filter.limit)
-      .getRawMany();
+      .limit(filter.limit);
 
-    return convertSnakeToCamel(rooms);
+    if (filter.roomStatus && filter.roomStatus.length > 0) {
+      query.andWhere('room.roomStatus IN (:...status)', {
+        status: Array.isArray(filter.roomStatus)
+          ? filter.roomStatus
+          : [filter.roomStatus],
+      });
+    }
+
+    return convertSnakeToCamel(await query.getRawMany());
   }
 }

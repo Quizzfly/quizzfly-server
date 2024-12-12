@@ -20,7 +20,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { Between } from 'typeorm';
+import { Between, In } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -100,14 +100,17 @@ export class RoomService {
     const startTime = new Date(filter.fromDate).setHours(0, 0, 0, 0);
     const endTime = new Date(filter.toDate).getTime();
 
-    const totalRecords = await this.roomRepository.countBy({
-      hostId,
-      createdAt: Between(new Date(startTime), new Date(endTime)),
+    const totalRecords = await this.roomRepository.count({
+      where: {
+        hostId,
+        createdAt: Between(new Date(startTime), new Date(endTime)),
+        roomStatus: filter.roomStatus ? In([...filter.roomStatus]) : undefined,
+      },
     });
 
     const meta = new OffsetPaginationDto(totalRecords, {
       limit: filter.limit,
-      page: filter.limit,
+      page: filter.page,
     } as PageOptionsDto);
 
     return new OffsetPaginatedDto<RoomReportResDto>(
