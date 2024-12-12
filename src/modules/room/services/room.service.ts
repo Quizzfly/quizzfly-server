@@ -1,11 +1,16 @@
 import { CommonFunction } from '@common/common.function';
+import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
+import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateRoomReqDto } from '@modules/room/dto/request/create-room.req';
+import { FilterRoomReqDto } from '@modules/room/dto/request/filter-room.req.dto';
 import { SettingRoomReqDto } from '@modules/room/dto/request/setting-room.req';
 import { InfoRoomResDto } from '@modules/room/dto/response/info-room.res';
+import { RoomReportResDto } from '@modules/room/dto/response/room-report.res.dto';
 import { RoomStatus } from '@modules/room/entities/constants/room-status.enum';
 import { RoomEntity } from '@modules/room/entities/room.entity';
 import { RoomRepository } from '@modules/room/repositories/room.repository';
@@ -14,6 +19,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { Between } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -82,5 +89,30 @@ export class RoomService {
   async getDetailRoomById(id: Uuid) {
     const room = await this.findById(id);
     return room.toDto(InfoRoomResDto);
+  }
+
+  async getAllRoom(hostId: Uuid, filter: FilterRoomReqDto) {
+    const rooms = (await this.roomRepository.getAllRoom(
+      hostId,
+      filter,
+    )) as RoomReportResDto[];
+
+    const startTime = new Date(filter.fromDate).setHours(0, 0, 0, 0);
+    const endTime = new Date(filter.toDate).getTime();
+
+    const totalRecords = await this.roomRepository.countBy({
+      hostId,
+      createdAt: Between(new Date(startTime), new Date(endTime)),
+    });
+
+    const meta = new OffsetPaginationDto(totalRecords, {
+      limit: filter.limit,
+      page: filter.limit,
+    } as PageOptionsDto);
+
+    return new OffsetPaginatedDto<RoomReportResDto>(
+      plainToInstance(RoomReportResDto, rooms),
+      meta,
+    );
   }
 }

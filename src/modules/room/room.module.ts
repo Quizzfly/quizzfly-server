@@ -16,6 +16,18 @@ import { RoomService } from '@modules/room/services/room.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+const providers = [
+  RoomRepository,
+  RoomService,
+  RoomGateway,
+  ParticipantInRoomRepository,
+  ParticipantInRoomService,
+  QuestionRepository,
+  QuestionService,
+  ParticipantAnswerRepository,
+  ParticipantAnswerService,
+];
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -38,5 +50,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ParticipantAnswerRepository,
     ParticipantAnswerService,
   ],
+  exports: providers,
 })
 export class RoomModule {}
