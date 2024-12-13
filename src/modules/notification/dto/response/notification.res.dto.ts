@@ -1,50 +1,43 @@
 import { BaseResDto } from '@common/dto/base.res.dto';
 import { Uuid } from '@common/types/common.type';
 import {
+  BooleanField,
   ClassFieldOptional,
   EnumField,
-  NumberField,
   StringField,
-  StringFieldOptional,
   UUIDField,
-  UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
-import { AnswerResDto } from '@modules/answer/dto/response/answer.res.dto';
-import { FileResDto } from '@modules/file/dto/file.res.dto';
-import { QuizType } from '@modules/quiz/enums/quiz-type.enum';
+import { NotificationType } from '@modules/notification/enums/notification-type.enum';
+import { UserInfoResDto } from '@modules/user/dto/response/user-info.res.dto';
+import { Expose, Transform } from 'class-transformer';
 
+@Expose({ toPlainOnly: true })
 export class NotificationResDto extends BaseResDto {
+  @UUIDField()
+  @Expose()
+  objectId: Uuid;
+
   @StringField()
-  content: string;
+  @Expose()
+  content: Uuid;
 
-  @NumberField({ name: 'time_limit' })
-  timeLimit: number;
-
-  @NumberField({ name: 'point_multiplier' })
-  pointMultiplier: number;
-
-  @EnumField(() => QuizType, {
-    name: 'quiz_type',
-    example: Object.values(QuizType).join(' | '),
+  @EnumField(() => NotificationType, {
+    name: 'notification_type',
+    example: Object.values(NotificationType).join(' | '),
   })
-  quizType: QuizType;
+  @Expose()
+  notificationType: NotificationType;
 
-  @ClassFieldOptional(() => FileResDto, {
-    each: true,
-    isArray: true,
-    default: [],
+  @BooleanField()
+  @Expose()
+  isRead: boolean;
+
+  @ClassFieldOptional(() => UserInfoResDto)
+  @Transform(({ obj }) => {
+    const { memberId, username, avatar, name } = obj;
+
+    return memberId ? { id: memberId, username, avatar, name } : null;
   })
-  files?: FileResDto[];
-
-  @StringFieldOptional({ name: 'background_url' })
-  backgroundUrl?: string;
-
-  @UUIDFieldOptional({ name: 'prev_element_id', nullable: true })
-  prevElementId: Uuid = null;
-
-  @UUIDField({ name: 'quizzfly_id' })
-  quizzflyId!: Uuid;
-
-  @ClassFieldOptional(() => AnswerResDto, { each: true, isArray: true })
-  answers?: AnswerResDto[] = [];
+  @Expose()
+  agent: UserInfoResDto;
 }
