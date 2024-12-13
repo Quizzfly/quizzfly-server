@@ -1,14 +1,18 @@
+import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
+import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { CreateNotificationDto } from '@modules/notification/dto/request/create-notification.dto';
+import { NotificationResDto } from '@modules/notification/dto/response/notification.res.dto';
 import { NotificationRepository } from '@modules/notification/repository/notification.repository';
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { NotificationEntity } from '../entity/notification.entity';
 
 @Injectable()
@@ -70,9 +74,19 @@ export class NotificationService {
   }
 
   async getListNotification(userId: Uuid, filter: PageOptionsDto) {
-    return await this.notificationRepository.getListNotification(
-      userId,
-      filter,
+    const notifications: Array<any> =
+      await this.notificationRepository.getListNotification(userId, filter);
+
+    const totalRecords = await this.notificationRepository.countBy({
+      receiverId: userId,
+    });
+    const meta = new OffsetPaginationDto(totalRecords, filter);
+
+    return new OffsetPaginatedDto(
+      plainToInstance(NotificationResDto, notifications, {
+        excludeExtraneousValues: true,
+      }),
+      meta,
     );
   }
 }
