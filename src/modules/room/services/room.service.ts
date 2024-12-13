@@ -114,7 +114,9 @@ export class RoomService {
     } as PageOptionsDto);
 
     return new OffsetPaginatedDto<RoomReportResDto>(
-      plainToInstance(RoomReportResDto, rooms),
+      plainToInstance(RoomReportResDto, rooms, {
+        excludeExtraneousValues: true,
+      }),
       meta,
     );
   }

@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
+import { QuestionResDto } from '@modules/room/dto/response/question.res.dto';
 import { QuestionEntity } from '@modules/room/entities/question.entity';
 import { Question } from '@modules/room/model/room.model';
 import { QuestionRepository } from '@modules/room/repositories/question.repository';
@@ -45,6 +46,16 @@ export class QuestionService {
     Object.assign(question, dto);
 
     return this.repository.save(question);
+  }
+
+  async getListQuestionInRoom(roomId: Uuid) {
+    await this.roomService.findById(roomId);
+
+    const questions = await this.repository.findBy({ roomId });
+
+    return plainToInstance(QuestionResDto, questions, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async findAll(filter: FindManyOptions<Question>) {

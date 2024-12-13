@@ -18,7 +18,7 @@ import { QuizzflyDetailResDto } from '@modules/quizzfly/dto/response/quizzfly-de
 import { QuizzflyResDto } from '@modules/quizzfly/dto/response/quizzfly.res';
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
-import { PrevElementType } from '@modules/quizzfly/enums/prev-element-type.enum';
+import { QuizzflyContentType } from '@modules/quizzfly/enums/quizzfly-content-type.enum';
 import {
   QuizzflyAction,
   QuizzflyScope,
@@ -222,7 +222,7 @@ export class QuizzflyService {
 
     let firstQuestion: any, secondQuestion: any;
 
-    if (dto.firstQuestionType === PrevElementType.QUIZ) {
+    if (dto.firstQuestionType === QuizzflyContentType.QUIZ) {
       firstQuestion = await this.eventService.emitAsync(
         new GetQuizEntityEvent(dto.firstQuestionId),
       );
@@ -232,7 +232,7 @@ export class QuizzflyService {
       );
     }
 
-    if (dto.secondQuestionType === PrevElementType.QUIZ) {
+    if (dto.secondQuestionType === QuizzflyContentType.QUIZ) {
       secondQuestion = await this.eventService.emitAsync(
         new GetQuizEntityEvent(dto.secondQuestionId),
       );
@@ -364,7 +364,7 @@ export class QuizzflyService {
     newPrevElementId: string | null,
     questionType: any,
   ) {
-    if (questionType === PrevElementType.QUIZ) {
+    if (questionType === QuizzflyContentType.QUIZ) {
       await this.eventService.emitAsync(
         new UpdatePositionQuizEvent({
           quizId: questionId,

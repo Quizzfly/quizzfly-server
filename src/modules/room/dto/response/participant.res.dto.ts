@@ -1,55 +1,62 @@
 import { BaseResDto } from '@common/dto/base.res.dto';
 import { Uuid } from '@common/types/common.type';
-import { Column } from 'typeorm';
+import {
+  DateField,
+  DateFieldOptional,
+  NumberField,
+  StringField,
+  StringFieldOptional,
+  UUIDField,
+} from '@core/decorators/field.decorators';
+import { Expose } from 'class-transformer';
 
+@Expose()
 export class ParticipantResDto extends BaseResDto {
-  @Column({ name: 'socket_id', nullable: true, default: null })
+  @StringFieldOptional({ name: 'socket_id' })
+  @Expose()
   socketId?: string;
 
-  @Column({ name: 'nick_name' })
+  @StringField({ name: 'nick_name' })
+  @Expose()
   nickName: string;
 
-  @Column({ name: 'room_id', type: 'uuid' })
+  @UUIDField({ name: 'room_id' })
+  @Expose()
   roomId!: Uuid;
 
-  @Column({ name: 'room_pin' })
+  @StringField({ name: 'room_pin' })
+  @Expose()
   roomPin!: string;
 
-  @Column({ name: 'total_score', default: 0 })
+  @NumberField({ name: 'total_score' })
+  @Expose()
   totalScore: number;
 
-  @Column({ nullable: true, default: null })
+  @NumberField({ nullable: true, default: null })
+  @Expose()
   rank: number;
 
-  @Column({
-    name: 'time_join',
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
+  @DateField({ name: 'time_join' })
+  @Expose()
   timeJoin: Date;
 
-  @Column({
-    name: 'time_left',
-    type: 'timestamptz',
-    nullable: true,
-    default: null,
-  })
+  @DateFieldOptional({ name: 'time_left', default: null })
+  @Expose()
   timeLeft: Date;
 
-  @Column({
-    name: 'time_kicked',
-    type: 'timestamptz',
-    nullable: true,
-    default: null,
-  })
+  @DateFieldOptional({ name: 'time_kicked', default: null })
+  @Expose()
   timeKicked: Date;
 
-  @Column({ name: 'correct_count', default: 0 })
+  @NumberField({ name: 'correct_count', default: 0 })
+  @Expose()
   correctCount: number;
 
-  @Column({ name: 'incorrect_count', default: 0 })
+  @NumberField({ name: 'incorrect_count', default: 0 })
+  @Expose()
   incorrectCount: number;
 
-  @Column({ name: 'unanswered_count', default: 0 })
+  @NumberField({ name: 'unanswered_count', default: 0 })
+  @Expose()
   unansweredCount: number;
 }

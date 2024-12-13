@@ -55,6 +55,10 @@ export class RoomReportResDto extends BaseResDto {
   @Expose()
   participantCount: number;
 
+  @NumberField({ name: 'question_count' })
+  @Expose()
+  questionCount: number;
+
   @ClassFieldOptional(() => BaseQuizzflyRes)
   @Transform(({ obj }) => {
     return obj.quizzflyId && obj.quizzflyTitle

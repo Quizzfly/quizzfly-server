@@ -66,6 +66,15 @@ export class RoomRepository extends Repository<RoomEntity> {
             .andWhere('participant.deletedAt IS NULL'),
         'participant_count',
       )
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('CAST(COUNT(*) AS INTEGER)')
+            .from('question', 'question')
+            .where('question.roomId = room.id')
+            .andWhere('question.deletedAt IS NULL'),
+        'question_count',
+      )
       .orderBy(filter.sortBy, filter.order)
       .offset(skip)
       .limit(filter.limit);
