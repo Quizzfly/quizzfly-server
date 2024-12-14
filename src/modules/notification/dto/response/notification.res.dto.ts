@@ -8,6 +8,7 @@ import {
   UUIDField,
 } from '@core/decorators/field.decorators';
 import { NotificationType } from '@modules/notification/enums/notification-type.enum';
+import { TargetType } from '@modules/notification/enums/target-type.enum';
 import { UserInfoResDto } from '@modules/user/dto/response/user-info.res.dto';
 import { Expose, Transform } from 'class-transformer';
 
@@ -16,6 +17,17 @@ export class NotificationResDto extends BaseResDto {
   @UUIDField()
   @Expose()
   objectId: Uuid;
+
+  @UUIDField()
+  @Expose()
+  targetId: Uuid;
+
+  @EnumField(() => TargetType, {
+    name: 'target_type',
+    example: Object.values(TargetType).join(' | '),
+  })
+  @Expose()
+  targetType: TargetType;
 
   @StringField()
   @Expose()

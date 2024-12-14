@@ -16,4 +16,16 @@ export class PushNotificationService {
       await this.notificationService.createNotification(data);
     this.notificationSocketGateway.pushNotificationToUser(userId, notification);
   }
+
+  async pushNotifcationToUsers(items: CreateNotificationDto[]) {
+    const notifications =
+      await this.notificationService.createNotifications(items);
+
+    notifications.forEach((notification) => {
+      this.notificationSocketGateway.pushNotificationToUser(
+        notification.receiverId,
+        notification,
+      );
+    });
+  }
 }

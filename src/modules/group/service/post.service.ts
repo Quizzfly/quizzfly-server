@@ -15,6 +15,7 @@ import { ReactPostRepository } from '@modules/group/repository/react-post.reposi
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { GroupEvent } from '@modules/group/socket/enums/group-event.enum';
 import { GroupSocketGateway } from '@modules/group/socket/group-socket.gateway';
+import { TargetType } from '@modules/notification/enums/target-type.enum';
 import { PushNotificationService } from '@modules/notification/service/push-notification.service';
 import {
   ForbiddenException,
@@ -56,19 +57,24 @@ export class PostService {
     const groupMembers =
       await this.memberInGroupService.getMemberInGroup(groupId);
 
+    const notifications: CreateNotificationDto[] = [];
+
     for (const member of groupMembers) {
       if (member.id !== userId) {
-        await this.pushNotificationService.pushNotificationToUser(
-          {
-            content: `A new post has been created in your group.`,
-            objectId: post.id,
-            notificationType: NotificationType.POST,
-            agentId: userId,
-            receiverId: member.id,
-          },
-          member.id,
-        );
+        notifications.push({
+          content: `A new post has been created in your group.`,
+          objectId: post.id,
+          notificationType: NotificationType.POST,
+          agentId: userId,
+          receiverId: member.id,
+          targetId: post.groupId,
+          targetType: TargetType.GROUP,
+        });
       }
+    }
+
+    if (notifications.length > 0) {
+      await this.pushNotificationService.pushNotifcationToUsers(notifications);
     }
     return response;
   }
@@ -180,11 +186,13 @@ export class PostService {
 
       if (userId !== post.memberId) {
         const notificationDto = new CreateNotificationDto();
-        notificationDto.content = `${userId} reacted to your post.`;
+        notificationDto.content = `reacted to your post.`;
         notificationDto.objectId = post.id;
         notificationDto.notificationType = NotificationType.POST;
         notificationDto.agentId = userId;
         notificationDto.receiverId = post.memberId;
+        notificationDto.targetType = TargetType.GROUP;
+        notificationDto.targetId = post.groupId;
 
         await this.pushNotificationService.pushNotificationToUser(
           notificationDto,

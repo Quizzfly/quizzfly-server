@@ -1,5 +1,6 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
+import { TargetType } from '@modules/notification/enums/target-type.enum';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
   Column,
@@ -31,6 +32,12 @@ export class NotificationEntity extends AbstractEntity {
 
   @Column({ name: 'object_id', type: 'uuid' })
   objectId: Uuid;
+
+  @Column({ name: 'target_id', type: 'uuid' })
+  targetId: Uuid;
+
+  @Column({ name: 'target_type', type: 'enum', enum: TargetType })
+  targetType: TargetType;
 
   @Column({ name: 'notification_type', type: 'enum', enum: NotificationType })
   notificationType: NotificationType;
