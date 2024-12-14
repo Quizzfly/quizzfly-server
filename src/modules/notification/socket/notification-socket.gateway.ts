@@ -12,7 +12,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-UseFilters(WebsocketExceptionFilter);
+@UseFilters(WebsocketExceptionFilter)
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -32,8 +32,8 @@ export class NotificationSocketGateway
     this.logger.log(server);
   }
 
-  async handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`Connected ${client.id} group`);
+  handleConnection(client: Socket, ...args: any[]) {
+    this.logger.log(`Connected ${client.id} notification`);
     const userId = client.handshake.query.user_id as Uuid;
     this.users[userId] = client;
   }

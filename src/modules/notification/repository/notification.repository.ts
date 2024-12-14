@@ -25,6 +25,8 @@ export class NotificationRepository extends Repository<NotificationEntity> {
         'notification.content as content',
         'notification.objectId as object_id',
         'notification.notificationType as notification_type',
+        'notification.targetId as target_id',
+        'notification.targetType as target_type',
         'notification.isRead as is_read',
         'memberInfo.username as username',
         'memberInfo.avatar as avatar',

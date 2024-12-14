@@ -25,6 +25,8 @@ export class NotificationService {
     const notification = new NotificationEntity({
       content: data.content,
       objectId: data.objectId,
+      targetId: data.targetId,
+      targetType: data.targetType,
       notificationType: data.notificationType,
       agentId: data.agentId,
       receiverId: data.receiverId,
@@ -34,8 +36,15 @@ export class NotificationService {
     return notification;
   }
 
+  async createNotifications(items: CreateNotificationDto[]) {
+    const notifications = await this.notificationRepository.save(
+      items as NotificationEntity[],
+    );
+    return notifications;
+  }
+
   async findById(id: Uuid) {
-    return Optional.of(
+    return <NotificationEntity>Optional.of(
       await this.notificationRepository.findOne({
         where: { id },
       }),
