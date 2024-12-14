@@ -11,6 +11,9 @@ export class CreateNotificationDto {
   @StringField({ name: 'content' })
   content: string;
 
+  @StringField({ name: 'description' })
+  description?: string;
+
   @UUIDField({ name: 'object_id' })
   objectId: Uuid;
 

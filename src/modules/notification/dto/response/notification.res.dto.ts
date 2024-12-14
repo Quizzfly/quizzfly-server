@@ -31,7 +31,11 @@ export class NotificationResDto extends BaseResDto {
 
   @StringField()
   @Expose()
-  content: Uuid;
+  content: string;
+
+  @StringField()
+  @Expose()
+  description: string;
 
   @EnumField(() => NotificationType, {
     name: 'notification_type',
@@ -46,7 +50,13 @@ export class NotificationResDto extends BaseResDto {
 
   @ClassFieldOptional(() => UserInfoResDto)
   @Transform(({ obj }) => {
-    const { memberId, username, avatar, name } = obj;
+    const { agent, memberId, username, avatar, name } = obj;
+
+    if (agent?.userInfo) {
+      const { id } = agent;
+      const { username, avatar, name } = agent.userInfo;
+      return { id, username, avatar, name };
+    }
 
     return memberId ? { id: memberId, username, avatar, name } : null;
   })
