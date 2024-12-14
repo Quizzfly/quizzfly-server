@@ -183,7 +183,7 @@ export class CommentService {
     commentPost: CommentPostEntity,
     dto: CommentPostReqDto,
   ) {
-    if (dto.parentCommentId === null) {
+    if (dto.parentCommentId === undefined || dto.parentCommentId === null) {
       if (userId !== post.memberId) {
         const notificationDto = new CreateNotificationDto();
         notificationDto.content = `commented to your post.`;
@@ -193,6 +193,7 @@ export class CommentService {
         notificationDto.receiverId = post.memberId;
         notificationDto.targetId = post.groupId;
         notificationDto.targetType = TargetType.GROUP;
+        notificationDto.description = commentPost.content;
 
         await this.pushNotificationService.pushNotificationToUser(
           notificationDto,
@@ -210,6 +211,7 @@ export class CommentService {
         notificationDto.receiverId = parentComment.memberId;
         notificationDto.targetId = post.groupId;
         notificationDto.targetType = TargetType.GROUP;
+        notificationDto.description = commentPost.content;
 
         await this.pushNotificationService.pushNotificationToUser(
           notificationDto,

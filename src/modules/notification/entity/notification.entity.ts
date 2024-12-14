@@ -27,6 +27,9 @@ export class NotificationEntity extends AbstractEntity {
   @Column()
   content: string;
 
+  @Column()
+  description: string;
+
   @Column({ name: 'is_read', type: 'boolean', default: false })
   isRead?: boolean;
 
@@ -46,7 +49,7 @@ export class NotificationEntity extends AbstractEntity {
   agentId!: Uuid;
 
   @JoinColumn({ name: 'agent_id' })
-  @ManyToOne('UserEntity', 'notifications')
+  @ManyToOne('UserEntity', 'notifications', { eager: true })
   agent: Relation<UserEntity>;
 
   @Column({ name: 'receiver_id', type: 'uuid' })

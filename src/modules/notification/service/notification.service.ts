@@ -24,6 +24,7 @@ export class NotificationService {
   async createNotification(data: CreateNotificationDto) {
     const notification = new NotificationEntity({
       content: data.content,
+      description: data.description,
       objectId: data.objectId,
       targetId: data.targetId,
       targetType: data.targetType,
