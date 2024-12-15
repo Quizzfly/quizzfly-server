@@ -22,7 +22,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
+import { CommentAction, CommentScope } from '../events';
 
 @Injectable()
 export class CommentService {
@@ -115,6 +117,7 @@ export class CommentService {
     await this.commentPostRepository.softDelete({ id: commentId });
   }
 
+  @OnEvent(`${CommentScope}.${CommentAction.getCommentEntity}`)
   async findById(id: Uuid) {
     return Optional.of(
       await this.commentPostRepository.findOne({
