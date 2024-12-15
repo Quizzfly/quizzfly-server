@@ -3,9 +3,15 @@ import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
+import { EventService } from '@core/events/event.service';
 import { Optional } from '@core/utils/optional';
+import {
+  GetCommentEntityEvent,
+  GetPostEntityEvent,
+} from '@modules/group/events';
 import { CreateNotificationDto } from '@modules/notification/dto/request/create-notification.dto';
 import { NotificationResDto } from '@modules/notification/dto/response/notification.res.dto';
+import { NotificationType } from '@modules/notification/enums/notification-type.enum';
 import { NotificationRepository } from '@modules/notification/repository/notification.repository';
 import {
   ForbiddenException,
@@ -19,6 +25,7 @@ import { NotificationEntity } from '../entity/notification.entity';
 export class NotificationService {
   constructor(
     private readonly notificationRepository: NotificationRepository,
+    private readonly eventService: EventService,
   ) {}
 
   async createNotification(data: CreateNotificationDto) {
@@ -92,11 +99,41 @@ export class NotificationService {
     });
     const meta = new OffsetPaginationDto(totalRecords, filter);
 
-    return new OffsetPaginatedDto(
-      plainToInstance(NotificationResDto, notifications, {
-        excludeExtraneousValues: true,
-      }),
-      meta,
+    const responseData = await Promise.all(
+      notifications.map((notification) =>
+        this.convertToNotificationResponse(notification.id),
+      ),
     );
+
+    return new OffsetPaginatedDto(responseData, meta);
+  }
+
+  async convertToNotificationResponse(notificationId: Uuid) {
+    const notification = await this.findById(notificationId);
+
+    // @ts-ignore
+    const responseData: Partial<NotificationResDto> = {
+      ...notification,
+    };
+
+    if (notification.notificationType === NotificationType.COMMENT) {
+      responseData.object = await this.eventService.emitAsync(
+        new GetCommentEntityEvent(notification.objectId),
+      );
+    } else if (notification.notificationType === NotificationType.POST) {
+      responseData.object = await this.eventService.emitAsync(
+        new GetPostEntityEvent(notification.objectId),
+      );
+    }
+
+    const notificationResponse = plainToInstance(
+      NotificationResDto,
+      responseData,
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+
+    return notificationResponse;
   }
 }

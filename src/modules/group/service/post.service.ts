@@ -10,6 +10,7 @@ import { CreatePostReqDto } from '@modules/group/dto/request/create-post.req.dto
 import { InfoPostResDto } from '@modules/group/dto/response/info-post.res.dto';
 import { PostEntity } from '@modules/group/entity/post.entity';
 import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
+import { PostAction, PostScope } from '@modules/group/events';
 import { PostRepository } from '@modules/group/repository/post.repository';
 import { ReactPostRepository } from '@modules/group/repository/react-post.repository';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
@@ -22,6 +23,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
@@ -79,6 +81,7 @@ export class PostService {
     return response;
   }
 
+  @OnEvent(`${PostScope}.${PostAction.getPostEntity}`)
   async findById(id: Uuid) {
     return Optional.of(
       await this.postRepository.findOne({

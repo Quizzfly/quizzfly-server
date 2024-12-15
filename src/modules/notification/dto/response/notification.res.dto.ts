@@ -16,10 +16,6 @@ import { Expose, Transform } from 'class-transformer';
 export class NotificationResDto extends BaseResDto {
   @UUIDField()
   @Expose()
-  objectId: Uuid;
-
-  @UUIDField()
-  @Expose()
   targetId: Uuid;
 
   @EnumField(() => TargetType, {
@@ -62,4 +58,36 @@ export class NotificationResDto extends BaseResDto {
   })
   @Expose()
   agent: UserInfoResDto;
+
+  @UUIDField()
+  @Expose()
+  @Transform(({ obj }) => {
+    if (obj.notificationType === NotificationType.COMMENT) {
+      return {
+        id: obj?.object?.id,
+        content: obj?.object?.content,
+        createdAt: obj?.object?.createdAt,
+        updatedAt: obj?.object?.updatedAt,
+        postId: obj?.object?.postId,
+        parentCommentId: obj?.object?.parentCommentId,
+        files: obj?.object?.files,
+      };
+    }
+
+    if (obj.notificationType === NotificationType.POST) {
+      return {
+        id: obj?.object?.id,
+        type: obj?.object?.type,
+        content: obj?.object?.content,
+        groupId: obj?.object?.groupId,
+        quizzflyId: obj?.object?.quizzflyId,
+        createdAt: obj?.object?.createdAt,
+        updatedAt: obj?.object?.updatedAt,
+        files: obj?.object?.files,
+      };
+    }
+
+    return obj ? { id: obj.id } : null;
+  })
+  object: object;
 }
