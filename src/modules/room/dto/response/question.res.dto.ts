@@ -76,7 +76,7 @@ export class QuestionResDto extends BaseResDto {
   @Expose()
   answers?: AnswerResDto[];
 
-  @NumberFieldOptional({ name: 'no_participant_answered', default: null })
+  @NumberFieldOptional({ name: 'participant_answered_count', default: null })
   @Transform(({ obj }) => {
     return obj.choices
       ? Object.values(obj.choices).reduce(
@@ -86,5 +86,5 @@ export class QuestionResDto extends BaseResDto {
       : null;
   })
   @Expose()
-  noParticipantAnswered?: number;
+  participantAnsweredCount?: number;
 }

@@ -4,7 +4,7 @@ export type ResultAnswer = Record<
   Uuid, // questionId
   {
     questionId: string;
-    chosenAnswerId: string;
+    chosenAnswerId?: string;
     isCorrect: boolean;
     score: number;
   }
@@ -24,15 +24,7 @@ export interface ParticipantModel {
   roomPin: string;
   totalScore?: number;
   rank?: number;
-  answers?: Record<
-    Uuid, // questionId
-    {
-      questionId: string;
-      chosenAnswerId: string;
-      isCorrect: boolean;
-      score: number;
-    }
-  >;
+  answers?: ResultAnswer;
   timeLeft?: Date | number;
   timeKicked?: Date | number;
   timeJoin?: Date | number;
