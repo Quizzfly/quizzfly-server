@@ -105,6 +105,9 @@ export class QuestionEntity extends AbstractEntity {
   @ManyToOne(() => RoomEntity, (room) => room.questions)
   room!: Relation<RoomEntity>;
 
-  @OneToMany(() => ParticipantAnswerEntity, '')
+  @OneToMany(
+    () => ParticipantAnswerEntity,
+    (participantAnswer) => participantAnswer.question,
+  )
   participantAnswers: ParticipantAnswerEntity[];
 }

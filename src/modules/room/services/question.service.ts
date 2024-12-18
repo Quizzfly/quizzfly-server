@@ -3,7 +3,6 @@ import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { QuestionResDto } from '@modules/room/dto/response/question.res.dto';
 import { QuestionEntity } from '@modules/room/entities/question.entity';
-import { Question } from '@modules/room/model/room.model';
 import { QuestionRepository } from '@modules/room/repositories/question.repository';
 import { RoomService } from '@modules/room/services/room.service';
 import {
@@ -12,7 +11,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { FindManyOptions } from 'typeorm';
 
 @Injectable()
 export class QuestionService {
@@ -56,9 +54,5 @@ export class QuestionService {
     return plainToInstance(QuestionResDto, questions, {
       excludeExtraneousValues: true,
     });
-  }
-
-  async findAll(filter: FindManyOptions<Question>) {
-    return this.repository.find(filter);
   }
 }

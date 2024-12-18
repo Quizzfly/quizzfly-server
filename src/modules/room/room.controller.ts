@@ -8,9 +8,12 @@ import { FilterRoomReqDto } from '@modules/room/dto/request/filter-room.req.dto'
 import { GetParticipantReqDto } from '@modules/room/dto/request/get-participant.req.dto';
 import { SettingRoomReqDto } from '@modules/room/dto/request/setting-room.req';
 import { InfoRoomResDto } from '@modules/room/dto/response/info-room.res';
+import { ParticipantResultResDto } from '@modules/room/dto/response/participant-result.res.dto';
 import { ParticipantResDto } from '@modules/room/dto/response/participant.res.dto';
 import { QuestionResDto } from '@modules/room/dto/response/question.res.dto';
 import { RoomReportResDto } from '@modules/room/dto/response/room-report.res.dto';
+import { RoomSummaryResDto } from '@modules/room/dto/response/room-summary.res.dto';
+import { ParticipantAnswerService } from '@modules/room/services/participant-answer.service';
 import { ParticipantInRoomService } from '@modules/room/services/participant-in-room.service';
 import { QuestionService } from '@modules/room/services/question.service';
 import { RoomService } from '@modules/room/services/room.service';
@@ -27,6 +30,7 @@ export class RoomController {
     private readonly roomService: RoomService,
     private readonly participantInRoomService: ParticipantInRoomService,
     private readonly questionService: QuestionService,
+    private readonly participantAnswerService: ParticipantAnswerService,
   ) {}
 
   @ApiAuth({
@@ -88,6 +92,20 @@ export class RoomController {
   }
 
   @ApiAuth({
+    summary: 'Get list room summary',
+    type: RoomSummaryResDto,
+  })
+  @ApiParam({
+    name: 'roomId',
+    description: 'The UUID of the room',
+    type: 'string',
+  })
+  @Get(':roomId/summary')
+  getRoomSummary(@Param('roomId', ValidateUuid) roomId: Uuid) {
+    return this.roomService.getRoomSummary(roomId);
+  }
+
+  @ApiAuth({
     summary: 'Get list participant in room',
     isArray: true,
     type: ParticipantResDto,
@@ -109,6 +127,31 @@ export class RoomController {
   }
 
   @ApiAuth({
+    summary: 'Get result of one participant in room',
+    isArray: true,
+    type: ParticipantResultResDto,
+  })
+  @ApiParam({
+    name: 'roomId',
+    description: 'The UUID of the room',
+    type: 'string',
+  })
+  @ApiParam({
+    name: 'participantId',
+    description: 'The UUID of the participant',
+    type: 'string',
+  })
+  @Get(':roomId/participants/:participantId/results')
+  getResultOfParticipant(
+    @Param('roomId', ValidateUuid) roomId: Uuid,
+    @Param('participantId', ValidateUuid) participantId: Uuid,
+  ) {
+    return this.participantAnswerService.getListResultByParticipant(
+      participantId,
+    );
+  }
+
+  @ApiAuth({
     summary: 'Get list question in room',
     isArray: true,
     type: QuestionResDto,
@@ -122,18 +165,6 @@ export class RoomController {
   getListQuestionInRoom(@Param('roomId', ValidateUuid) roomId: Uuid) {
     return this.questionService.getListQuestionInRoom(roomId);
   }
-
-  @ApiAuth({
-    summary: 'Get list question and result in room',
-    isArray: true,
-  })
-  @ApiParam({
-    name: 'roomId',
-    description: 'The UUID of the room',
-    type: 'string',
-  })
-  @Get(':roomId/questions/results')
-  getListQuestionAndResultInRoom(@Param('roomId', ValidateUuid) roomId: Uuid) {}
 
   @ApiAuth({
     summary: 'Get one question and result in room',

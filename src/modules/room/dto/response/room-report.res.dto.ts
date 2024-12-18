@@ -1,25 +1,13 @@
 import { BaseResDto } from '@common/dto/base.res.dto';
-import { Uuid } from '@common/types/common.type';
 import {
   BooleanField,
   ClassFieldOptional,
   DateField,
   NumberField,
   StringField,
-  UUIDField,
 } from '@core/decorators/field.decorators';
+import { BaseQuizzflyDto } from '@shared/dto/base-quizzfly.dto';
 import { Expose, Transform } from 'class-transformer';
-
-@Expose()
-class BaseQuizzflyRes {
-  @UUIDField()
-  @Expose()
-  id: Uuid;
-
-  @UUIDField()
-  @Expose()
-  title: string;
-}
 
 @Expose()
 export class RoomReportResDto extends BaseResDto {
@@ -59,12 +47,12 @@ export class RoomReportResDto extends BaseResDto {
   @Expose()
   questionCount: number;
 
-  @ClassFieldOptional(() => BaseQuizzflyRes)
+  @ClassFieldOptional(() => BaseQuizzflyDto)
   @Transform(({ obj }) => {
-    return obj.quizzflyId && obj.quizzflyTitle
+    return obj.quizzflyId
       ? { id: obj.quizzflyId, title: obj.quizzflyTitle }
       : null;
   })
   @Expose()
-  quizzfly: BaseQuizzflyRes;
+  quizzfly: BaseQuizzflyDto;
 }

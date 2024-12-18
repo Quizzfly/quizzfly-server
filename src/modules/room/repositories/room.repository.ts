@@ -89,4 +89,54 @@ export class RoomRepository extends Repository<RoomEntity> {
 
     return convertSnakeToCamel(await query.getRawMany());
   }
+
+  async getRoomSummary(roomId: Uuid) {
+    const room = await this.createQueryBuilder('room')
+      .where('room.deletedAt IS NULL')
+      .andWhere('room.id = :roomId', { roomId })
+      .leftJoin('room.user', 'host')
+      .leftJoin('host.userInfo', 'hostInfo')
+      .leftJoinAndSelect('room.quizzfly', 'quizzfly')
+      .select([
+        'room.id as id',
+        'room.createdAt as created_at',
+        'room.updatedAt as updated_at',
+        'room.deletedAt as deleted_at',
+        'room.roomPin as room_pin',
+        'room.startTime as start_time',
+        'room.endTime as end_time',
+        'room.roomStatus as room_status',
+        'room.isShowQuestion as is_show_question',
+        'room.isAutoPlay as is_auto_play',
+        'room.lobbyMusic as lobby_music',
+        'host.id as host_id',
+        'host.email as host_email',
+        'hostInfo.username as host_username',
+        'hostInfo.avatar as host_avatar',
+        'hostInfo.name as host_name',
+        'quizzfly.id as quizzfly_id',
+        'quizzfly.title as quizzfly_title',
+      ])
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('CAST(COUNT(*) AS INTEGER)')
+            .from('participant_in_room', 'participant')
+            .where('participant.roomId = room.id')
+            .andWhere('participant.deletedAt IS NULL'),
+        'participant_count',
+      )
+      .addSelect(
+        (subQuery) =>
+          subQuery
+            .select('CAST(COUNT(*) AS INTEGER)')
+            .from('question', 'question')
+            .where('question.roomId = room.id')
+            .andWhere('question.deletedAt IS NULL'),
+        'question_count',
+      )
+      .getRawOne();
+
+    return convertSnakeToCamel(room);
+  }
 }

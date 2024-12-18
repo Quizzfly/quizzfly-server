@@ -87,4 +87,28 @@ export class QuestionResDto extends BaseResDto {
   })
   @Expose()
   participantAnsweredCount?: number;
+
+  @NumberField({ name: 'correct_count', default: 0 })
+  @Transform(({ obj }) =>
+    obj.choices[obj?.correctAnswerId] ? obj.choices[obj.correctAnswerId] : 0,
+  )
+  @Expose()
+  correctCount: number;
+
+  @NumberField({ name: 'incorrect_count', default: 0 })
+  @Transform(({ obj }) => {
+    return obj.choices
+      ? Object.entries(
+          obj.choices as {
+            [key: string]: number;
+          },
+        ).reduce(
+          (acc, [key, value]) =>
+            key !== obj.correctAnswerId ? acc + value : acc,
+          0,
+        )
+      : null;
+  })
+  @Expose()
+  incorrectCount: number;
 }

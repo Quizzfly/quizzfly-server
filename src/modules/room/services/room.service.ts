@@ -11,6 +11,7 @@ import { FilterRoomReqDto } from '@modules/room/dto/request/filter-room.req.dto'
 import { SettingRoomReqDto } from '@modules/room/dto/request/setting-room.req';
 import { InfoRoomResDto } from '@modules/room/dto/response/info-room.res';
 import { RoomReportResDto } from '@modules/room/dto/response/room-report.res.dto';
+import { RoomSummaryResDto } from '@modules/room/dto/response/room-summary.res.dto';
 import { RoomStatus } from '@modules/room/entities/constants/room-status.enum';
 import { RoomEntity } from '@modules/room/entities/room.entity';
 import { RoomRepository } from '@modules/room/repositories/room.repository';
@@ -119,5 +120,13 @@ export class RoomService {
       }),
       meta,
     );
+  }
+
+  async getRoomSummary(roomId: Uuid) {
+    const room = await this.roomRepository.getRoomSummary(roomId);
+
+    return plainToInstance(RoomSummaryResDto, room, {
+      excludeExtraneousValues: true,
+    });
   }
 }
