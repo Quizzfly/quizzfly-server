@@ -1,4 +1,4 @@
-export enum PrevElementType {
+export enum QuizzflyContentType {
   SLIDE = 'SLIDE',
   QUIZ = 'QUIZ',
 }

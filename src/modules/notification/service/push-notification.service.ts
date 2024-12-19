@@ -21,7 +21,7 @@ export class PushNotificationService {
       );
     this.notificationSocketGateway.pushNotificationToUser(
       userId,
-      savedNotification
+      savedNotification,
     );
   }
 
@@ -36,7 +36,7 @@ export class PushNotificationService {
         );
       this.notificationSocketGateway.pushNotificationToUser(
         notification.receiverId,
-        savedNotification
+        savedNotification,
       );
     }
   }

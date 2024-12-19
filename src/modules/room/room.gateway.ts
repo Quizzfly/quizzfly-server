@@ -120,11 +120,13 @@ export class RoomGateway
     @MessageBody(new WsValidationPipe()) payload: CreateRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    if (this.rooms[payload.roomPin]) {
-      throw new WsException(
-        'The room PIN you entered already exists. Please choose a different one.',
-      );
-    }
+    Optional.of(this.rooms[payload.roomPin])
+      .throwIfPresent(
+        new WsException(
+          'The room PIN you entered already exists. Please choose a different one.',
+        ),
+      )
+      .get();
 
     this.rooms[payload.roomPin] = {
       roomId: payload.roomId,
@@ -158,17 +160,11 @@ export class RoomGateway
     @MessageBody(new WsValidationPipe()) payload: JoinRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const room = this.rooms[payload.roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
-    if (room.locked) {
-      this.logger.log(
-        `User with socketId ${client.id} attempted to join a locked room: ${payload.roomPin}.`,
-      );
-      throw new WsException('Room is locked.');
-    }
+    if (room.locked) throw new WsException('Room is locked.');
 
     const newParticipant = await this.participantInRoomService.joinRoom({
       socketId: client.id,
@@ -215,18 +211,17 @@ export class RoomGateway
     @MessageBody() payload: LeaveRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const room = this.rooms[payload.roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     room.participants.delete(payload.participantId);
     client.leave(payload.roomPin);
 
-    const participant = this.participants[payload.participantId];
-    if (!participant) {
-      throw new WsException('Participant not found.');
-    }
+    const participant = Optional.of(this.participants[payload.participantId])
+      .throwIfNotPresent(new WsException('Participant not found.'))
+      .get() as ParticipantModel;
+
     this.logger.log(
       `Participant [${participant.socketId} - ${participant.userId} - ${participant.nickName}] leaved room ${payload.roomPin}.`,
     );
@@ -255,26 +250,26 @@ export class RoomGateway
     @MessageBody(new WsValidationPipe()) payload: KickParticipantDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const room = this.rooms[payload.roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     if (!this.isHostInRoom(payload.hostId, client.id, room)) {
       throw new WsException('Only the host can kick participant in room.');
     }
 
-    const socket = this.clients.get(payload.participantId);
-    if (!socket) {
-      throw new WsException(
-        `No participant with participantId: ${payload.participantId} exists in room ${payload.roomPin}.`,
-      );
-    }
+    const socket = Optional.of(this.clients.get(payload.participantId))
+      .throwIfNotPresent(
+        new WsException(
+          `No participant with participantId: ${payload.participantId} exists in room ${payload.roomPin}.`,
+        ),
+      )
+      .get() as Socket;
 
-    const participant = this.participants[payload.participantId];
-    if (!participant) {
-      throw new WsException('Participant not found.');
-    }
+    const participant = Optional.of(this.participants[payload.participantId])
+      .throwIfNotPresent(new WsException('Participant not found.'))
+      .get() as ParticipantModel;
+
     room.participants.delete(payload.participantId);
 
     this.server.to(payload.roomPin).emit(
@@ -306,10 +301,9 @@ export class RoomGateway
     @MessageBody(new WsValidationPipe()) payload: LockRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const room = this.rooms[payload.roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     if (!this.isHostInRoom(payload.hostId, client.id, room)) {
       throw new WsException('Only the host can lock the room.');
@@ -331,10 +325,9 @@ export class RoomGateway
     @MessageBody(new WsValidationPipe()) payload: LockRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const room = this.rooms[payload.roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     if (!this.isHostInRoom(payload.hostId, client.id, room)) {
       throw new WsException('Only the host can unlock the room.');
@@ -354,20 +347,18 @@ export class RoomGateway
     @MessageBody(new WsValidationPipe()) payload: SettingRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const room = this.rooms[payload.roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     if (!this.isHostInRoom(payload.hostId, client.id, room)) {
       throw new WsException('Only the host can setting in room.');
     }
 
-    if (room.endTime) {
+    if (room.endTime)
       throw new WsException(
         'The quiz session has already ended. Settings cannot be modified.',
       );
-    }
 
     const dto = {
       isAutoPlay: payload.isAutoPlay,
@@ -380,15 +371,13 @@ export class RoomGateway
       'lobbyMusic',
     ]);
 
-    const roomSetting = await this.roomService.settingRoom(
-      payload.hostId as Uuid,
-      room.roomId,
-      dto,
-    );
-
-    if (!roomSetting) {
-      throw new WsException('Internal Server Error.');
-    }
+    Optional.of(
+      await this.roomService.settingRoom(
+        payload.hostId as Uuid,
+        room.roomId,
+        dto,
+      ),
+    ).throwIfNullable(new WsException('Internal Server Error.'));
 
     this.server.to(payload.roomPin).emit(
       RoomEvent.SETTING_ROOM,
@@ -409,31 +398,30 @@ export class RoomGateway
   ) {
     const { roomPin, quizzflyId } = payload;
 
-    const room = this.rooms[roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     if (!this.isHostInRoom(payload.hostId, client.id, room)) {
       throw new WsException('Only the host can start the quiz.');
     }
 
-    if (room.startTime) {
-      throw new WsException('Quiz has been started.');
-    }
+    if (room.startTime) throw new WsException('Quiz has been started.');
 
-    const questions = await this.eventService.emitAsync(
-      new GetQuestionsEvent({
-        userId: room.host.userId,
-        quizzflyId: quizzflyId as Uuid,
-      }),
-    );
-
-    if (!questions || questions.length === 0) {
-      throw new WsException(
-        'Question set not found. Please check the ID and try again.',
-      );
-    }
+    const questions = Optional.of(
+      await this.eventService.emitAsync(
+        new GetQuestionsEvent({
+          userId: room.host.userId,
+          quizzflyId: quizzflyId as Uuid,
+        }),
+      ),
+    )
+      .throwIfNotPresent(
+        new WsException(
+          'Question set not found. Please check the ID and try again.',
+        ),
+      )
+      .get() as Array<any>;
 
     const items = questions.map((question: any, index: number) => {
       delete question.id;
@@ -504,6 +492,7 @@ export class RoomGateway
       Object.values(question.answers).forEach((answer) => {
         delete answer.isCorrect;
       });
+      this.initResultAnswerForParticipant(room, room.currentQuestion);
     }
 
     this.sendDataForParticipant(
@@ -541,10 +530,9 @@ export class RoomGateway
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: NextQuestionDto,
   ) {
-    const room = this.rooms[payload.roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     if (!this.isHostInRoom(payload.hostId, client.id, room)) {
       throw new WsException('Only the host can get next question.');
@@ -571,6 +559,7 @@ export class RoomGateway
 
     if (room.currentQuestion.type === 'QUIZ') {
       room.currentQuestion.noParticipantAnswered = 0;
+      this.initResultAnswerForParticipant(room, room.currentQuestion);
     }
 
     // for participant
@@ -615,17 +604,13 @@ export class RoomGateway
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: AnswerQuestionDto,
   ) {
-    const room = <RoomModel>(
-      Optional.of(this.rooms[payload.roomPin])
-        .throwIfNotPresent(new WsException('Room not found.'))
-        .get()
-    );
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
-    const participant: ParticipantModel = Optional.of(
-      this.participants[payload.participantId],
-    )
+    const participant = Optional.of(this.participants[payload.participantId])
       .throwIfNotPresent(new WsException('Participant invalid.'))
-      .get();
+      .get() as ParticipantModel;
 
     const question = room.currentQuestion;
     if (question.type !== 'QUIZ') {
@@ -647,16 +632,15 @@ export class RoomGateway
     });
     const score = calculateScore.score;
 
-    if (!participant.answers[payload.questionId]) {
-      participant.answers[payload.questionId] = {
-        questionId: payload.questionId,
-        chosenAnswerId: payload.answerId,
-        isCorrect: question.correctAnswerId === payload.answerId,
-        score,
-      };
-    } else {
-      throw new WsException('You have answered this question.');
-    }
+    Optional.of(participant.answers[payload.questionId]).throwIfPresent(
+      new WsException('You have answered this question.'),
+    );
+    participant.answers[payload.questionId] = {
+      questionId: payload.questionId,
+      chosenAnswerId: payload.answerId,
+      isCorrect: question.correctAnswerId === payload.answerId,
+      score,
+    };
 
     if (!question.choices[payload.answerId]) {
       question.choices[payload.answerId] = 1;
@@ -692,11 +676,9 @@ export class RoomGateway
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: FinishQuestionDto,
   ) {
-    const room = <RoomModel>(
-      Optional.of(this.rooms[payload.roomPin])
-        .throwIfNotPresent(new WsException('Room not found.'))
-        .get()
-    );
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     if (!this.isHostInRoom(payload.hostId, client.id, room)) {
       throw new WsException(
@@ -753,10 +735,9 @@ export class RoomGateway
     @MessageBody(new WsValidationPipe()) payload: UpdateLeaderBoardDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const room: RoomModel = this.rooms[payload.roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     if (!this.isHostInRoom(payload.hostId, client.id, room)) {
       throw new WsException(
@@ -813,10 +794,9 @@ export class RoomGateway
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: ParticipantDto,
   ) {
-    const room: RoomModel = this.rooms[payload.roomPin];
-    if (!room) {
-      throw new WsException('Room not found.');
-    }
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     const participant = <ParticipantModel>Optional.of(
       await this.getParticipantInfoFromCache(payload.participantId),
@@ -918,42 +898,14 @@ export class RoomGateway
     );
   }
 
-  handleHostDisconnect(room: RoomModel) {
-    this.server.to(room.roomPin).emit(
-      RoomEvent.ROOM_CANCELED,
-      convertCamelToSnake({
-        disconnectRoom: true,
-        message: 'The host has disconnected. Please wait or rejoin later.',
-      }),
-    );
-
-    Array.from(room.participants).forEach((participantId: string) => {
-      const participant = this.participants[participantId];
-      if (participant) {
-        delete this.participants[participantId];
-      }
-
-      const socketParticipant = this.clients[participantId];
-      if (socketParticipant) {
-        this.clients.delete(participantId);
-      }
-    });
-
-    this.server.in(room.roomPin).socketsLeave(room.roomPin);
-    delete this.rooms[room.roomPin];
-    this.clients.delete(room.host.socketId);
-  }
-
   @SubscribeMessage(RoomEvent.FINISH_QUIZ)
   async handleFinishQuiz(
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: HostDto,
   ) {
-    const room = <RoomModel>(
-      Optional.of(this.rooms[payload.roomPin])
-        .throwIfNotPresent(new WsException('Room not found.'))
-        .get()
-    );
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
 
     if (!this.isHostInRoom(payload.hostId, client.id, room)) {
       throw new WsException(
@@ -1000,6 +952,32 @@ export class RoomGateway
     );
   }
 
+  handleHostDisconnect(room: RoomModel) {
+    this.server.to(room.roomPin).emit(
+      RoomEvent.ROOM_CANCELED,
+      convertCamelToSnake({
+        disconnectRoom: true,
+        message: 'The host has disconnected. Please wait or rejoin later.',
+      }),
+    );
+
+    Array.from(room.participants).forEach((participantId: string) => {
+      const participant = this.participants[participantId];
+      if (participant) {
+        delete this.participants[participantId];
+      }
+
+      const socketParticipant = this.clients[participantId];
+      if (socketParticipant) {
+        this.clients.delete(participantId);
+      }
+    });
+
+    this.server.in(room.roomPin).socketsLeave(room.roomPin);
+    delete this.rooms[room.roomPin];
+    this.clients.delete(room.host.socketId);
+  }
+
   async handleParticipantDisconnect(
     participant: ParticipantModel,
     room: RoomModel,
@@ -1042,10 +1020,6 @@ export class RoomGateway
     return hostId === room.host.userId && socketId === room.host.socketId;
   }
 
-  isParticipantInRoom(participantId: Uuid, room: RoomModel) {
-    return room.participants.has(participantId);
-  }
-
   async storeParticipantInfo(
     participant: ParticipantModel,
     ttl: number = CacheTTL.minutes(10),
@@ -1063,5 +1037,16 @@ export class RoomGateway
     );
 
     return participant;
+  }
+
+  initResultAnswerForParticipant(room: RoomModel, question: Question) {
+    Array.from(room.participants).forEach((participantId) => {
+      const participant = this.participants[participantId];
+      participant.answers[question.id] = {
+        questionId: question.id,
+        isCorrect: false,
+        score: 0,
+      };
+    });
   }
 }
