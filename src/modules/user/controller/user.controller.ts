@@ -15,8 +15,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
-import { UserResDto } from './dto/response/user.res.dto';
-import { UserService } from './user.service';
+import { UserResDto } from '../dto/response/user.res.dto';
+import { UserService } from '../user.service';
 
 @ApiTags('User APIs')
 @Controller({

@@ -1,6 +1,10 @@
 import { CommonFunction } from '@common/common.function';
+import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
+import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { CacheKey } from '@core/constants/cache.constant';
+import { ROLE } from '@core/constants/entity.enum';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
@@ -160,5 +164,34 @@ export class UserService {
       CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
     );
     await this.sessionService.deleteByUserId({ userId: user.id });
+  }
+
+  async getListUser(filter: PageOptionsDto) {
+    const users: Array<any> = await this.userRepository.getListUser(filter);
+    const totalRecords = await this.userRepository.count({
+      where: { role: ROLE.USER },
+      withDeleted: true,
+    });
+    const meta = new OffsetPaginationDto(totalRecords, filter);
+
+    return new OffsetPaginatedDto(
+      plainToInstance(UserResDto, users, { excludeExtraneousValues: true }),
+      meta,
+    );
+  }
+
+  async deleteUser(userId: Uuid) {
+    const user = await this.findByUserId(userId);
+    if (user.deletedAt === null) {
+      await this.userRepository.softDelete({ id: userId });
+    }
+  }
+
+  async restoreUser(userId: Uuid) {
+    const user = await this.findByUserId(userId);
+    if (user.deletedAt !== null) {
+      user.deletedAt = null;
+      await this.userRepository.save(user);
+    }
   }
 }
