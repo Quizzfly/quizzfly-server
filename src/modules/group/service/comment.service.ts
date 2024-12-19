@@ -7,17 +7,24 @@ import { Optional } from '@core/utils/optional';
 import { CommentPostReqDto } from '@modules/group/dto/request/comment-post.req.dto';
 import { InfoCommentPostResDto } from '@modules/group/dto/response/info-comment-post.res.dto';
 import { CommentPostEntity } from '@modules/group/entity/comment-post.entity';
+import { PostEntity } from '@modules/group/entity/post.entity';
 import { CommentPostRepository } from '@modules/group/repository/comment-post.repository';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { PostService } from '@modules/group/service/post.service';
 import { GroupEvent } from '@modules/group/socket/enums/group-event.enum';
 import { GroupSocketGateway } from '@modules/group/socket/group-socket.gateway';
+import { CreateNotificationDto } from '@modules/notification/dto/request/create-notification.dto';
+import { NotificationType } from '@modules/notification/enums/notification-type.enum';
+import { TargetType } from '@modules/notification/enums/target-type.enum';
+import { PushNotificationService } from '@modules/notification/service/push-notification.service';
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
+import { CommentAction, CommentScope } from '../events';
 
 @Injectable()
 export class CommentService {
@@ -26,6 +33,7 @@ export class CommentService {
     private readonly memberInGroupService: MemberInGroupService,
     private readonly postService: PostService,
     private readonly groupSocketGateway: GroupSocketGateway,
+    private readonly pushNotificationService: PushNotificationService,
   ) {}
 
   async commentPost(userId: Uuid, postId: Uuid, dto: CommentPostReqDto) {
@@ -52,6 +60,8 @@ export class CommentService {
       GroupEvent.COMMENT_POST,
       response,
     );
+
+    await this.pushNotificationComment(userId, post, commentPost, dto);
     return response;
   }
 
@@ -107,6 +117,7 @@ export class CommentService {
     await this.commentPostRepository.softDelete({ id: commentId });
   }
 
+  @OnEvent(`${CommentScope}.${CommentAction.getCommentEntity}`)
   async findById(id: Uuid) {
     return Optional.of(
       await this.commentPostRepository.findOne({
@@ -167,5 +178,49 @@ export class CommentService {
       }),
       meta,
     );
+  }
+
+  private async pushNotificationComment(
+    userId: Uuid,
+    post: PostEntity,
+    commentPost: CommentPostEntity,
+    dto: CommentPostReqDto,
+  ) {
+    if (dto.parentCommentId === undefined || dto.parentCommentId === null) {
+      if (userId !== post.memberId) {
+        const notificationDto = new CreateNotificationDto();
+        notificationDto.content = `commented to your post.`;
+        notificationDto.objectId = commentPost.id;
+        notificationDto.notificationType = NotificationType.COMMENT;
+        notificationDto.agentId = userId;
+        notificationDto.receiverId = post.memberId;
+        notificationDto.targetId = post.groupId;
+        notificationDto.targetType = TargetType.GROUP;
+        notificationDto.description = commentPost.content;
+
+        await this.pushNotificationService.pushNotificationToUser(
+          notificationDto,
+          post.memberId,
+        );
+      }
+    } else {
+      const parentComment = await this.findById(dto.parentCommentId);
+      if (parentComment.memberId !== userId) {
+        const notificationDto = new CreateNotificationDto();
+        notificationDto.content = `replied to your post.`;
+        notificationDto.objectId = commentPost.id;
+        notificationDto.notificationType = NotificationType.COMMENT;
+        notificationDto.agentId = userId;
+        notificationDto.receiverId = parentComment.memberId;
+        notificationDto.targetId = post.groupId;
+        notificationDto.targetType = TargetType.GROUP;
+        notificationDto.description = commentPost.content;
+
+        await this.pushNotificationService.pushNotificationToUser(
+          notificationDto,
+          parentComment.memberId,
+        );
+      }
+    }
   }
 }

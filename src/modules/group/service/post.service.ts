@@ -1,3 +1,5 @@
+import { CreateNotificationDto } from '@/modules/notification/dto/request/create-notification.dto';
+import { NotificationType } from '@/modules/notification/enums/notification-type.enum';
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
@@ -8,16 +10,20 @@ import { CreatePostReqDto } from '@modules/group/dto/request/create-post.req.dto
 import { InfoPostResDto } from '@modules/group/dto/response/info-post.res.dto';
 import { PostEntity } from '@modules/group/entity/post.entity';
 import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
+import { PostAction, PostScope } from '@modules/group/events';
 import { PostRepository } from '@modules/group/repository/post.repository';
 import { ReactPostRepository } from '@modules/group/repository/react-post.repository';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { GroupEvent } from '@modules/group/socket/enums/group-event.enum';
 import { GroupSocketGateway } from '@modules/group/socket/group-socket.gateway';
+import { TargetType } from '@modules/notification/enums/target-type.enum';
+import { PushNotificationService } from '@modules/notification/service/push-notification.service';
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
 
 @Injectable()
@@ -27,6 +33,7 @@ export class PostService {
     private readonly reactPostRepository: ReactPostRepository,
     private readonly memberInGroupService: MemberInGroupService,
     private readonly groupSocketGateway: GroupSocketGateway,
+    private readonly pushNotificationService: PushNotificationService,
   ) {}
 
   async createPost(userId: Uuid, groupId: Uuid, dto: CreatePostReqDto) {
@@ -48,9 +55,33 @@ export class PostService {
       GroupEvent.CREATE_POST,
       response,
     );
+
+    const groupMembers =
+      await this.memberInGroupService.getMemberInGroup(groupId);
+
+    const notifications: CreateNotificationDto[] = [];
+
+    for (const member of groupMembers) {
+      if (member.id !== userId) {
+        notifications.push({
+          content: `A new post has been created in your group.`,
+          objectId: post.id,
+          notificationType: NotificationType.POST,
+          agentId: userId,
+          receiverId: member.id,
+          targetId: post.groupId,
+          targetType: TargetType.GROUP,
+        });
+      }
+    }
+
+    if (notifications.length > 0) {
+      await this.pushNotificationService.pushNotifcationToUsers(notifications);
+    }
     return response;
   }
 
+  @OnEvent(`${PostScope}.${PostAction.getPostEntity}`)
   async findById(id: Uuid) {
     return Optional.of(
       await this.postRepository.findOne({
@@ -155,6 +186,22 @@ export class PostService {
         GroupEvent.REACT_POST,
         post.toDto(InfoPostResDto),
       );
+
+      if (userId !== post.memberId) {
+        const notificationDto = new CreateNotificationDto();
+        notificationDto.content = `reacted to your post.`;
+        notificationDto.objectId = post.id;
+        notificationDto.notificationType = NotificationType.POST;
+        notificationDto.agentId = userId;
+        notificationDto.receiverId = post.memberId;
+        notificationDto.targetType = TargetType.GROUP;
+        notificationDto.targetId = post.groupId;
+
+        await this.pushNotificationService.pushNotificationToUser(
+          notificationDto,
+          post.memberId,
+        );
+      }
     }
   }
 }
