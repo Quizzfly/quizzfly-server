@@ -10,6 +10,7 @@ import {
   UpdateManyQuizEvent,
   UpdatePositionQuizEvent,
 } from '@modules/quiz/events';
+import { AdminQueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/admin-query-quizzfly.req.dto';
 import { ChangePositionQuestionReqDto } from '@modules/quizzfly/dto/request/change-position-question.req';
 import { ChangeThemeQuizzflyReqDto } from '@modules/quizzfly/dto/request/change-theme-quizzfly.req';
 import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
@@ -37,6 +38,7 @@ import {
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
+import { IsNull, Not } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -95,6 +97,28 @@ export class QuizzflyService {
     );
 
     return new OffsetPaginatedDto(items, meta);
+  }
+
+  async getListQuizzfly(filterOptions: AdminQueryQuizzflyReqDto) {
+    const quizzfly: Array<any> = await this.quizzflyRepository.getListQuizzfly(
+      filterOptions,
+      filterOptions.isDeleted,
+    );
+
+    const totalRecords = await this.quizzflyRepository.count({
+      where: filterOptions.isDeleted
+        ? { deletedAt: Not(IsNull()) }
+        : { deletedAt: IsNull() },
+      withDeleted: true,
+    });
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
+
+    return new OffsetPaginatedDto(
+      plainToInstance(QuizzflyDetailResDto, quizzfly, {
+        excludeExtraneousValues: true,
+      }),
+      meta,
+    );
   }
 
   async findById(quizzflyId: Uuid) {
@@ -207,6 +231,42 @@ export class QuizzflyService {
     }
 
     await this.quizzflyRepository.softDelete({ id: quizzflyId });
+  }
+
+  async deleteQuizzfly(quizzflyId: Uuid) {
+    const quizzfly = await this.findById(quizzflyId);
+    if (quizzfly.deletedAt === null) {
+      await this.quizzflyRepository.softDelete({ id: quizzflyId });
+    }
+  }
+
+  async restoreQuizzfly(quizzflyId: Uuid) {
+    const quizzfly = await this.quizzflyRepository.findOne({
+      where: {
+        id: quizzflyId,
+      },
+      withDeleted: true,
+    });
+    if (quizzfly.deletedAt !== null) {
+      quizzfly.deletedAt = null;
+      await this.quizzflyRepository.save(quizzfly);
+    }
+  }
+
+  async publicQuizzfly(quizzflyId: Uuid) {
+    const quizzfly = await this.findById(quizzflyId);
+    if (quizzfly.isPublic === false) {
+      quizzfly.isPublic = true;
+      await this.quizzflyRepository.save(quizzfly);
+    }
+  }
+
+  async unpublicQuizzfly(quizzflyId: Uuid) {
+    const quizzfly = await this.findById(quizzflyId);
+    if (quizzfly.isPublic === true) {
+      quizzfly.isPublic = false;
+      await this.quizzflyRepository.save(quizzfly);
+    }
   }
 
   @Transactional()

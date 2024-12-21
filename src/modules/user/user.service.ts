@@ -1,6 +1,5 @@
 import { CommonFunction } from '@common/common.function';
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
-import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { CacheKey } from '@core/constants/cache.constant';
@@ -12,6 +11,7 @@ import { MailService } from '@libs/mail/mail.service';
 import { CacheTTL } from '@libs/redis/utils/cache-ttl.utils';
 import { CreateCacheKey } from '@libs/redis/utils/create-cache-key.utils';
 import { SessionService } from '@modules/session/session.service';
+import { AdminQueryUserReqDto } from '@modules/user/dto/request/admin-query-user.req.dto';
 import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
 import { CreateUserDto } from '@modules/user/dto/request/create-user.req.dto';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
@@ -29,6 +29,7 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
+import { IsNull, Not } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -166,10 +167,13 @@ export class UserService {
     await this.sessionService.deleteByUserId({ userId: user.id });
   }
 
-  async getListUser(filter: PageOptionsDto) {
+  async getListUser(filter: AdminQueryUserReqDto) {
     const users: Array<any> = await this.userRepository.getListUser(filter);
     const totalRecords = await this.userRepository.count({
-      where: { role: ROLE.USER },
+      where: {
+        role: ROLE.USER,
+        deletedAt: filter.isDeleted ? Not(IsNull()) : IsNull(),
+      },
       withDeleted: true,
     });
     const meta = new OffsetPaginationDto(totalRecords, filter);
