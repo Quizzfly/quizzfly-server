@@ -1,9 +1,9 @@
-import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
 import { ROLE } from '@core/constants/entity.enum';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
 import { RolesGuard } from '@core/guards/role.guard';
+import { AdminQueryUserReqDto } from '@modules/user/dto/request/admin-query-user.req.dto';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
 import { UserService } from '@modules/user/user.service';
 import {
@@ -13,7 +13,7 @@ import {
   Get,
   Param,
   Patch,
-  Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -37,7 +37,7 @@ export class AdminUserController {
   })
   @UseGuards(RolesGuard)
   @Get()
-  async getListUser(@Query() filterOptions: PageOptionsDto) {
+  async getListUser(@Query() filterOptions: AdminQueryUserReqDto) {
     return await this.userService.getListUser(filterOptions);
   }
 
@@ -66,7 +66,7 @@ export class AdminUserController {
     type: 'string',
   })
   @UseGuards(RolesGuard)
-  @Post(':userId/restore')
+  @Put(':userId/restore')
   async restoreUser(@Param('userId', ValidateUuid) userId: Uuid) {
     return await this.userService.restoreUser(userId);
   }

@@ -8,27 +8,40 @@ import {
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
+import { Expose } from 'class-transformer';
 
+@Expose()
 export class QuizzflyDetailResDto extends BaseResDto {
   @StringField()
+  @Expose()
   title: string;
 
   @StringField({ name: 'cover_image' })
+  @Expose()
   coverImage: string;
 
+  @StringField({ name: 'description' })
+  @Expose()
+  description: string;
+
   @BooleanField({ name: 'is_public' })
+  @Expose()
   isPublic: boolean;
 
   @StringField({ name: 'quizzfly_status' })
+  @Expose()
   quizzflyStatus: QuizzflyStatus;
 
   @UUIDField({ name: 'user_id' })
+  @Expose()
   userId: Uuid;
 
   @StringField()
+  @Expose()
   username: string;
 
   @StringField()
+  @Expose()
   avatar: string;
 
   static toInfoQuizzflyResponse(

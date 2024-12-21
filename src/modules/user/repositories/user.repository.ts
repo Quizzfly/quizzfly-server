@@ -1,7 +1,7 @@
-import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
 import { ROLE } from '@core/constants/entity.enum';
 import { convertSnakeToCamel } from '@core/helpers';
+import { AdminQueryUserReqDto } from '@modules/user/dto/request/admin-query-user.req.dto';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
@@ -27,7 +27,7 @@ export class UserRepository extends Repository<UserEntity> {
       .getOne();
   }
 
-  async getListUser(filterOptions: PageOptionsDto) {
+  async getListUser(filterOptions: AdminQueryUserReqDto) {
     const skip = filterOptions.page
       ? (filterOptions.page - 1) * filterOptions.limit
       : 0;
@@ -43,8 +43,14 @@ export class UserRepository extends Repository<UserEntity> {
       ])
       .leftJoinAndSelect('user.userInfo', 'user_info')
       .where('user.role = :role', { role: ROLE.USER })
+      .andWhere(
+        filterOptions.isDeleted
+          ? 'user.deletedAt IS NOT NULL'
+          : 'user.deletedAt IS NULL',
+      )
       .orderBy('user.createdAt', filterOptions.order)
       .offset(skip)
+      .withDeleted()
       .limit(filterOptions.limit);
 
     return convertSnakeToCamel(await query.getRawMany());
