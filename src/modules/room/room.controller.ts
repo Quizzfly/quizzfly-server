@@ -2,7 +2,7 @@ import { Uuid } from '@common/types/common.type';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
-import { ICurrentUser } from '@modules/auth/types/jwt-payload.type';
+import { ICurrentUser } from '@core/interfaces';
 import { CreateRoomReqDto } from '@modules/room/dto/request/create-room.req';
 import { FilterRoomReqDto } from '@modules/room/dto/request/filter-room.req.dto';
 import { GetParticipantReqDto } from '@modules/room/dto/request/get-participant.req.dto';

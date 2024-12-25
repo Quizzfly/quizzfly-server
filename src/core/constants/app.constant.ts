@@ -50,3 +50,22 @@ export const defaultCreateEntity = Object.freeze({
 
 export const GOOGLE_URL =
   'https://www.googleapis.com/oauth2/v1/userinfo?access_token=';
+
+export enum ResourceList {
+  USER = 'user',
+  ROLE = 'role',
+  PERMISSION = 'permission',
+  QUIZZFLY = 'quizzfly',
+  ROOM = 'room',
+  GROUP = 'group',
+  NOTIFICATION = 'notification',
+}
+
+export enum ActionList {
+  CREATE = 'create',
+  READ = 'read',
+  READ_ALL = 'readAll',
+  UPDATE = 'update',
+  UPDATE_ANY = 'updateAny',
+  DELETE = 'delete',
+}
