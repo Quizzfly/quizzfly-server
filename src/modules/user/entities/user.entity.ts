@@ -1,5 +1,4 @@
 import { Uuid } from '@common/types/common.type';
-import { ROLE } from '@core/constants/entity.enum';
 import { hashPassword as hashPass } from '@core/utils/password.util';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { CommentPostEntity } from '@modules/group/entity/comment-post.entity';
@@ -7,6 +6,7 @@ import { MemberInGroupEntity } from '@modules/group/entity/member-in-group.entit
 import { PostEntity } from '@modules/group/entity/post.entity';
 import { ReactPostEntity } from '@modules/group/entity/react-post.entity';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
+import { RoleEntity } from '@modules/role/entities/role.entity';
 import { ParticipantInRoomEntity } from '@modules/room/entities/participant-in-room.entity';
 import { RoomEntity } from '@modules/room/entities/room.entity';
 import { SessionEntity } from '@modules/session/entities/session.entity';
@@ -16,6 +16,7 @@ import {
   Column,
   Entity,
   Index,
+  JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -39,14 +40,22 @@ export class UserEntity extends AbstractEntity {
   @Column()
   password!: string;
 
-  @Column({ type: 'enum', name: 'role', enum: ROLE, default: ROLE.USER })
-  role?: ROLE;
-
   @Column({ name: 'is_active', type: 'boolean', default: false })
   isActive?: boolean;
 
   @Column({ name: 'is_confirmed', type: 'boolean', default: false })
   isConfirmed?: boolean;
+
+  @Column({ name: 'role_id', type: 'uuid' })
+  roleId: Uuid;
+
+  @OneToOne(() => RoleEntity)
+  @JoinColumn({
+    name: 'role_id',
+    referencedColumnName: 'id',
+    foreignKeyConstraintName: 'FK_user_role',
+  })
+  role: RoleEntity;
 
   @OneToMany(() => SessionEntity, (session) => session.user)
   sessions?: SessionEntity[];

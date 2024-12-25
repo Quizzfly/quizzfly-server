@@ -1,4 +1,3 @@
-import { ROLE } from '@core/constants/entity.enum';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { DataSource } from 'typeorm';
 import { Seeder, SeederFactoryManager } from 'typeorm-extension';
@@ -18,7 +17,6 @@ export class UserSeeder1722335726360 implements Seeder {
         new UserEntity({
           email: 'admin@gmail.com',
           password: '12345678',
-          role: ROLE.ADMIN,
           isActive: true,
           isConfirmed: true,
         }),

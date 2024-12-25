@@ -3,7 +3,6 @@ import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagina
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { CacheKey } from '@core/constants/cache.constant';
-import { ROLE } from '@core/constants/entity.enum';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
@@ -120,7 +119,14 @@ export class UserService {
   async findOneByCondition(
     condition: Pick<UserEntity, 'email' | 'isConfirmed' | 'isActive'>,
   ) {
-    return this.userRepository.findOne({ where: condition });
+    return this.userRepository.findOne({
+      where: condition,
+      relations: {
+        role: {
+          permissions: true,
+        },
+      },
+    });
   }
 
   async changePassword(dto: ChangePasswordReqDto, userId: Uuid) {
@@ -170,10 +176,7 @@ export class UserService {
   async getListUser(filter: AdminQueryUserReqDto) {
     const users: Array<any> = await this.userRepository.getListUser(filter);
     const totalRecords = await this.userRepository.count({
-      where: {
-        role: ROLE.USER,
-        deletedAt: filter.isDeleted ? Not(IsNull()) : IsNull(),
-      },
+      where: { deletedAt: filter.isDeleted ? Not(IsNull()) : IsNull() },
       withDeleted: true,
     });
     const meta = new OffsetPaginationDto(totalRecords, filter);

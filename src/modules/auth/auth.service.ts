@@ -54,7 +54,7 @@ export class AuthService {
       throw new NotFoundException(ErrorCode.ACCOUNT_NOT_REGISTER);
     }
 
-    if (forAdmin && user.role !== ROLE.ADMIN) {
+    if (forAdmin && user.role.name !== ROLE.ADMIN) {
       throw new UnauthorizedException(ErrorCode.ACCESS_DENIED);
     }
 
@@ -238,7 +238,7 @@ export class AuthService {
       id: user.id,
       sessionId: session.id,
       hash,
-      role: user.role,
+      role: user.role.name,
     });
 
     return plainToInstance(LoginResDto, {

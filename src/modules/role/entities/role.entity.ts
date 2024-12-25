@@ -5,10 +5,10 @@ import {
   Column,
   Entity,
   Index,
+  JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { JoinTable } from 'typeorm/browser';
 
 @Entity('role', { schema: 'public' })
 export class RoleEntity extends BaseEntity {
@@ -27,7 +27,7 @@ export class RoleEntity extends BaseEntity {
   @Column()
   description: string;
 
-  @ManyToMany(() => PermissionEntity, (permission) => permission.role)
+  @ManyToMany('PermissionEntity', 'roles')
   @JoinTable({
     name: 'role_permission',
     joinColumn: {
@@ -39,5 +39,5 @@ export class RoleEntity extends BaseEntity {
       referencedColumnName: 'id',
     },
   })
-  permission: PermissionEntity[];
+  permissions: Array<PermissionEntity>;
 }
