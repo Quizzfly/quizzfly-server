@@ -3,11 +3,11 @@ import { TOKEN_TYPE } from '@core/constants/token-type.enum';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
 import { RolesGuard } from '@core/guards/role.guard';
+import { ICurrentUser } from '@core/interfaces';
 import { AuthConfirmEmailDto } from '@modules/auth/dto/request/auth-confirm-email.dto';
 import { AuthResetPasswordDto } from '@modules/auth/dto/request/auth-reset-password.dto';
 import { EmailDto } from '@modules/auth/dto/request/email.dto';
 import { LoginWithGoogleReqDto } from '@modules/auth/dto/request/login-with-google.req.dto';
-import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
 import {
   Body,
   Controller,
@@ -166,7 +166,7 @@ export class AuthController {
     statusCode: HttpStatus.NO_CONTENT,
   })
   @Delete('auth/revoke-token')
-  revokeToken(@CurrentUser() user: JwtPayloadType) {
+  revokeToken(@CurrentUser() user: ICurrentUser) {
     return this.authService.revokeTokens(user);
   }
 }

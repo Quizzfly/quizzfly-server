@@ -28,7 +28,7 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
-import { IsNull, Not } from 'typeorm';
+import { FindOptionsWhere, IsNull, Not } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -116,9 +116,7 @@ export class UserService {
     return this.userRepository.findOne({ where: { id: userId } });
   }
 
-  async findOneByCondition(
-    condition: Pick<UserEntity, 'email' | 'isConfirmed' | 'isActive'>,
-  ) {
+  async findOneByCondition(condition: FindOptionsWhere<UserEntity>) {
     return this.userRepository.findOne({
       where: condition,
       relations: {

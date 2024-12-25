@@ -3,6 +3,7 @@ import { GOOGLE_URL } from '@core/constants/app.constant';
 import { ROLE } from '@core/constants/entity.enum';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { TOKEN_TYPE } from '@core/constants/token-type.enum';
+import { ICurrentUser } from '@core/interfaces';
 import { JwtUtil } from '@core/utils/jwt.util';
 import { Optional } from '@core/utils/optional';
 import { hashPassword, verifyPassword } from '@core/utils/password.util';
@@ -11,6 +12,7 @@ import { AuthResetPasswordDto } from '@modules/auth/dto/request/auth-reset-passw
 import { EmailDto } from '@modules/auth/dto/request/email.dto';
 import { LoginWithGoogleReqDto } from '@modules/auth/dto/request/login-with-google.req.dto';
 import { JwtPayloadType } from '@modules/auth/types/jwt-payload.type';
+import { preparePermissionPayload } from '@modules/permission/helpers';
 import { SessionEntity } from '@modules/session/entities/session.entity';
 import { SessionService } from '@modules/session/session.service';
 import { UserEntity } from '@modules/user/entities/user.entity';
@@ -49,11 +51,13 @@ export class AuthService {
     forAdmin: boolean = false,
   ): Promise<LoginResDto> {
     const { email, password } = dto;
-    const user = await this.userService.findOneByCondition({ email });
-    if (!user) {
-      throw new NotFoundException(ErrorCode.ACCOUNT_NOT_REGISTER);
-    }
+    const user = Optional.of(
+      await this.userService.findOneByCondition({ email }),
+    )
+      .throwIfNullable(new NotFoundException(ErrorCode.ACCOUNT_NOT_REGISTER))
+      .get() as UserEntity;
 
+    console.log(user);
     if (forAdmin && user.role.name !== ROLE.ADMIN) {
       throw new UnauthorizedException(ErrorCode.ACCESS_DENIED);
     }
@@ -133,8 +137,10 @@ export class AuthService {
       throw new UnauthorizedException(ErrorCode.REFRESH_TOKEN_INVALID);
     }
 
-    const user = await this.userService.findById(session.userId);
-    if (forAdmin && user.role !== ROLE.ADMIN) {
+    const user = await this.userService.findOneByCondition({
+      id: session.userId,
+    });
+    if (forAdmin && user.role.name !== ROLE.ADMIN) {
       throw new UnauthorizedException(ErrorCode.ACCESS_DENIED);
     }
 
@@ -149,7 +155,8 @@ export class AuthService {
       id: user.id,
       sessionId: session.id,
       hash: newHash,
-      role: user.role,
+      role: user.role.name,
+      permissions: preparePermissionPayload(user.role.permissions),
     });
   }
 
@@ -213,15 +220,15 @@ export class AuthService {
     });
   }
 
-  async revokeTokens(payload: JwtPayloadType) {
+  async revokeTokens(user: ICurrentUser) {
     const session: SessionEntity = Optional.of(
-      await this.sessionService.findById(payload.sessionId as Uuid),
+      await this.sessionService.findById(user.sessionId as Uuid),
     )
       .throwIfNullable(new BadRequestException('Session not found'))
       .get();
 
     await this.sessionService.deleteByUserIdWithExclude({
-      userId: payload.id as Uuid,
+      userId: user.id as Uuid,
       excludeSessionId: session.id,
     });
   }
@@ -239,6 +246,7 @@ export class AuthService {
       sessionId: session.id,
       hash,
       role: user.role.name,
+      permissions: preparePermissionPayload(user.role.permissions),
     });
 
     return plainToInstance(LoginResDto, {

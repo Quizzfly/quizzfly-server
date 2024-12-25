@@ -123,7 +123,10 @@ export const ApiAuth = (options: IApiAuthOptions = {}): MethodDecorator => {
   });
 
   const permissions: PermissionPayload[] = options?.permissions ?? [
-    { actions: [ActionList.READ], resource: ResourceList.USER },
+    {
+      resource: ResourceList.USER,
+      actions: [ActionList.READ, ActionList.UPDATE],
+    },
   ];
   const permissionHandlers = permissions.map(
     (permission) => new PermissionHandler(permission),
