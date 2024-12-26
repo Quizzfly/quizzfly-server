@@ -120,13 +120,11 @@ export class RoomGateway
     @MessageBody(new WsValidationPipe()) payload: CreateRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    Optional.of(this.rooms[payload.roomPin])
-      .throwIfPresent(
-        new WsException(
-          'The room PIN you entered already exists. Please choose a different one.',
-        ),
-      )
-      .get();
+    Optional.of(this.rooms[payload.roomPin]).throwIfPresent(
+      new WsException(
+        'The room PIN you entered already exists. Please choose a different one.',
+      ),
+    );
 
     this.rooms[payload.roomPin] = {
       roomId: payload.roomId,
