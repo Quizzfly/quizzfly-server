@@ -11,6 +11,7 @@ import {
 
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
+import { RangeDateDto } from '@common/dto/range-date.dto';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { MailService } from '@libs/mail/mail.service';
@@ -124,6 +125,16 @@ export class GroupService {
     return group.toDto(InfoGroupResDto);
   }
 
+  async getListGroupByAdmin(filterOptions: PageOptionsDto) {
+    const groups =
+      await this.groupRepository.getListGroupByAdmin(filterOptions);
+
+    const totalRecords = await this.groupRepository.count();
+
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
+    return new OffsetPaginatedDto(groups, meta);
+  }
+
   async deleteGroup(groupId: Uuid, userId: Uuid) {
     const isUserHasRoleHostInGroup =
       await this.memberInGroupService.isUserHasRoleHostInGroup(userId, groupId);
@@ -132,5 +143,17 @@ export class GroupService {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     await this.groupRepository.softDelete({ id: groupId });
+  }
+
+  async deleteGroupByAdmin(groupId: Uuid) {
+    const group = await this.findById(groupId);
+    await this.groupRepository.softDelete({ id: groupId });
+  }
+
+  async countGroupByAdmin(rangeDate: RangeDateDto, isTotal: boolean) {
+    if (isTotal) {
+      return;
+    } else {
+    }
   }
 }
