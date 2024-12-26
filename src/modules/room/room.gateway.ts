@@ -158,50 +158,14 @@ export class RoomGateway
     @MessageBody(new WsValidationPipe()) payload: JoinRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
-    const room = Optional.of(this.rooms[payload.roomPin])
-      .throwIfNotPresent(new WsException('Room not found.'))
-      .get() as RoomModel;
-
-    if (room.locked) throw new WsException('Room is locked.');
-
-    const newParticipant = await this.participantInRoomService.joinRoom({
-      socketId: client.id,
-      userId: payload.userId,
-      nickName: payload.nickName,
-      roomId: room.roomId,
-      roomPin: payload.roomPin,
-    });
-
-    room.participants.add(newParticipant.id);
-    this.participants[newParticipant.id] = {
-      id: newParticipant.id,
-      socketId: client.id,
-      userId: payload.userId,
-      nickName: payload.nickName,
-      roomPin: payload.roomPin,
-      answers: {},
-      totalScore: 0,
-      timeJoin: new Date(),
-    };
-    this.clients.set(newParticipant.id, client);
-    client.join(payload.roomPin);
-
-    const participant = this.participants[newParticipant.id];
-    this.logger.log(
-      `Participant [${participant.socketId} - ${participant.userId} - ${participant.nickName}] joined room ${payload.roomPin}.`,
-    );
-
-    this.server.to(payload.roomPin).emit(
-      RoomEvent.PARTICIPANT_JOINED,
-      convertCamelToSnake({
-        newParticipant: participant,
-        totalParticipant: room.participants.size,
-      }),
-    );
-
-    client.data.roomPin = payload.roomPin;
-    client.data.userId = payload.userId;
-    client.data.participantId = newParticipant.id;
+    if (payload.participantId) {
+      await this.handleParticipantReconnect(
+        { roomPin: payload.roomPin, participantId: payload.participantId },
+        client,
+      );
+    } else {
+      await this.handleNewParticipantJoinRoom(payload, client);
+    }
   }
 
   @SubscribeMessage(RoomEvent.LEAVE_ROOM)
@@ -787,115 +751,6 @@ export class RoomGateway
     );
   }
 
-  @SubscribeMessage(RoomEvent.PARTICIPANT_RECONNECT)
-  async handleParticipantReconnect(
-    @ConnectedSocket() client: Socket,
-    @MessageBody(new WsValidationPipe()) payload: ParticipantDto,
-  ) {
-    const room = Optional.of(this.rooms[payload.roomPin])
-      .throwIfNotPresent(new WsException('Room not found.'))
-      .get() as RoomModel;
-
-    const participant = <ParticipantModel>Optional.of(
-      await this.getParticipantInfoFromCache(payload.participantId),
-    )
-      .throwIfNotPresent(
-        new WsException('Participant invalid or time out reconnect.'),
-      )
-      .get();
-
-    this.participants[payload.participantId] = participant;
-
-    participant.socketId = client.id;
-    room.participants.add(payload.participantId);
-    this.server.to(payload.roomPin).emit(
-      RoomEvent.PARTICIPANT_RECONNECTED,
-      convertCamelToSnake({
-        participant,
-        totalParticipant: room.participants.size,
-      }),
-    );
-
-    client.join(payload.roomPin);
-    this.clients.set(payload.participantId, client);
-
-    const responseData: any = { participant, roomPin: payload.roomPin };
-    // phase lobby
-    if (!room.startTime) {
-      responseData.state = RoomPhase.LOBBY;
-    }
-    // phase question in progress
-    else if (!room.currentQuestion.done && room.currentQuestion.startTime) {
-      responseData.state = RoomPhase.QUESTION_STARTED;
-
-      if (room.currentQuestion.type === 'QUIZ') {
-        const question = JSON.parse(
-          JSON.stringify(room.currentQuestion),
-        ) as Question;
-        delete question.correctAnswerId;
-        Object.values(question.answers).forEach((answer) => {
-          delete answer.isCorrect;
-        });
-
-        responseData.question = {
-          ...plainToInstance(QuestionDto, question),
-          timeLeft:
-            new Date(question.startTime).getTime() +
-            question.timeLimit * 60 -
-            Date.now(),
-        };
-      } else {
-        responseData.question = plainToInstance(
-          QuestionDto,
-          room.currentQuestion,
-        );
-      }
-    }
-    // phase question done
-    else if (
-      room.currentQuestion.done &&
-      room.currentQuestion.type === 'QUIZ' &&
-      !room.currentQuestion.endTime
-    ) {
-      responseData.state = RoomPhase.QUESTION_END;
-      const answerOfParticipantWithQuestion =
-        participant.answers[room.currentQuestion.id];
-
-      responseData.result = {
-        score: answerOfParticipantWithQuestion?.score ?? 0,
-        totalScore: participant?.totalScore ?? 0,
-        isCorrect: answerOfParticipantWithQuestion?.isCorrect ?? false,
-        questionId: room.currentQuestion.roomId,
-        correctAnswerId: room.currentQuestion?.correctAnswerId ?? null,
-        chosenAnswerId: answerOfParticipantWithQuestion?.chosenAnswerId ?? null,
-      };
-    }
-    // phase show leaderboard
-    else if (room.currentQuestion.endTime) {
-      responseData.state = RoomPhase.UPDATE_RANK;
-      const leaderBoard: Partial<ParticipantModel & { score: number }>[] = [];
-      Array.from(room.participants).forEach((participantId: string) => {
-        const participant = this.participants[participantId];
-        leaderBoard.push({
-          id: participant.id,
-          userId: participant.userId,
-          socketId: participant.socketId,
-          nickName: participant.nickName,
-          score: participant.answers[room.currentQuestion.id]?.score ?? 0,
-          totalScore: participant?.totalScore ?? 0,
-          rank: 0,
-        });
-      });
-
-      responseData.leaderBoard = updateRank(leaderBoard);
-    }
-
-    client.emit(
-      RoomEvent.PARTICIPANT_RECONNECTED_SUCCESS,
-      convertCamelToSnake(responseData),
-    );
-  }
-
   @SubscribeMessage(RoomEvent.FINISH_QUIZ)
   async handleFinishQuiz(
     @ConnectedSocket() client: Socket,
@@ -1046,5 +901,157 @@ export class RoomGateway
         score: 0,
       };
     });
+  }
+
+  async handleNewParticipantJoinRoom(payload: JoinRoomDto, client: Socket) {
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
+
+    if (room.locked) throw new WsException('Room is locked.');
+
+    const newParticipant = await this.participantInRoomService.joinRoom({
+      socketId: client.id,
+      userId: payload.userId,
+      nickName: payload.nickName,
+      roomId: room.roomId,
+      roomPin: payload.roomPin,
+    });
+
+    room.participants.add(newParticipant.id);
+    this.participants[newParticipant.id] = {
+      id: newParticipant.id,
+      socketId: client.id,
+      userId: payload.userId,
+      nickName: payload.nickName,
+      roomPin: payload.roomPin,
+      answers: {},
+      totalScore: 0,
+      timeJoin: new Date(),
+    };
+    this.clients.set(newParticipant.id, client);
+    client.join(payload.roomPin);
+
+    const participant = this.participants[newParticipant.id];
+    this.logger.log(
+      `Participant [${participant.socketId} - ${participant.userId} - ${participant.nickName}] joined room ${payload.roomPin}.`,
+    );
+
+    this.server.to(payload.roomPin).emit(
+      RoomEvent.PARTICIPANT_JOINED,
+      convertCamelToSnake({
+        newParticipant: participant,
+        totalParticipant: room.participants.size,
+      }),
+    );
+
+    client.data.roomPin = payload.roomPin;
+    client.data.userId = payload.userId;
+    client.data.participantId = newParticipant.id;
+  }
+
+  async handleParticipantReconnect(payload: ParticipantDto, client: Socket) {
+    const room = Optional.of(this.rooms[payload.roomPin])
+      .throwIfNotPresent(new WsException('Room not found.'))
+      .get() as RoomModel;
+
+    const participant = <ParticipantModel>Optional.of(
+      await this.getParticipantInfoFromCache(payload.participantId),
+    )
+      .throwIfNotPresent(
+        new WsException('Participant invalid or time out reconnect.'),
+      )
+      .get();
+
+    this.participants[payload.participantId] = participant;
+
+    participant.socketId = client.id;
+    room.participants.add(payload.participantId);
+    this.server.to(payload.roomPin).emit(
+      RoomEvent.PARTICIPANT_RECONNECTED,
+      convertCamelToSnake({
+        participant,
+        totalParticipant: room.participants.size,
+      }),
+    );
+
+    client.join(payload.roomPin);
+    this.clients.set(payload.participantId, client);
+
+    const responseData: any = { participant, roomPin: payload.roomPin };
+    // phase lobby
+    if (!room.startTime) {
+      responseData.state = RoomPhase.LOBBY;
+    }
+    // phase question in progress
+    else if (!room.currentQuestion.done && room.currentQuestion.startTime) {
+      responseData.state = RoomPhase.QUESTION_STARTED;
+
+      if (room.currentQuestion.type === 'QUIZ') {
+        const question = JSON.parse(
+          JSON.stringify(room.currentQuestion),
+        ) as Question;
+        delete question.correctAnswerId;
+        Object.values(question.answers).forEach((answer) => {
+          delete answer.isCorrect;
+        });
+
+        responseData.question = {
+          ...plainToInstance(QuestionDto, question),
+          timeLeft:
+            new Date(question.startTime).getTime() +
+            question.timeLimit * 60 -
+            Date.now(),
+        };
+      } else {
+        responseData.question = plainToInstance(
+          QuestionDto,
+          room.currentQuestion,
+        );
+      }
+    }
+    // phase question done
+    else if (
+      room.currentQuestion.done &&
+      room.currentQuestion.type === 'QUIZ' &&
+      !room.currentQuestion.endTime
+    ) {
+      responseData.state = RoomPhase.QUESTION_END;
+      const answerOfParticipantWithQuestion =
+        participant.answers[room.currentQuestion.id];
+
+      responseData.result = {
+        score: answerOfParticipantWithQuestion?.score ?? 0,
+        totalScore: participant?.totalScore ?? 0,
+        isCorrect: answerOfParticipantWithQuestion?.isCorrect ?? false,
+        questionId: room.currentQuestion.roomId,
+        correctAnswerId: room.currentQuestion?.correctAnswerId ?? null,
+        chosenAnswerId: answerOfParticipantWithQuestion?.chosenAnswerId ?? null,
+      };
+    }
+    // phase show leaderboard
+    else if (room.currentQuestion.endTime) {
+      responseData.state = RoomPhase.UPDATE_RANK;
+      const leaderBoard: Partial<ParticipantModel & { score: number }>[] = [];
+      Array.from(room.participants).forEach((participantId: string) => {
+        const participant = this.participants[participantId];
+        leaderBoard.push({
+          id: participant.id,
+          userId: participant.userId,
+          socketId: participant.socketId,
+          nickName: participant.nickName,
+          score: participant.answers[room.currentQuestion.id]?.score ?? 0,
+          totalScore: participant?.totalScore ?? 0,
+          rank: 0,
+        });
+      });
+
+      responseData.leaderBoard = updateRank(leaderBoard);
+    }
+
+    client.emit(
+      RoomEvent.PARTICIPANT_RECONNECTED_SUCCESS,
+      convertCamelToSnake(responseData),
+    );
   }
 }

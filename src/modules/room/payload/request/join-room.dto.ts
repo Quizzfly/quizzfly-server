@@ -17,4 +17,8 @@ export class JoinRoomDto {
   @StringField()
   @Expose({ name: 'nick_name' })
   nickName: string;
+
+  @UUIDFieldOptional()
+  @Expose({ name: 'participant_id' })
+  participantId?: Uuid;
 }
