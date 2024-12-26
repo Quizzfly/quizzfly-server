@@ -117,6 +117,31 @@ export class CommentService {
     await this.commentPostRepository.softDelete({ id: commentId });
   }
 
+  async deleteCommentPostByAdmin(commentId: Uuid) {
+    const comment = await this.findById(commentId);
+
+    if (comment.parentCommentId === null) {
+      const replyComments = await this.commentPostRepository.findBy({
+        parentCommentId: commentId,
+      });
+
+      const replyCommentIds = replyComments.map((comment) => comment.id);
+
+      if (replyCommentIds.length > 0) {
+        await this.commentPostRepository.softDelete(replyCommentIds);
+      }
+    }
+
+    this.groupSocketGateway.sendToGroup(
+      comment.post.groupId,
+      GroupEvent.DELETE_COMMENT_POST,
+      plainToInstance(InfoCommentPostResDto, comment, {
+        excludeExtraneousValues: true,
+      }),
+    );
+    await this.commentPostRepository.softDelete({ id: commentId });
+  }
+
   @OnEvent(`${CommentScope}.${CommentAction.getCommentEntity}`)
   async findById(id: Uuid) {
     return Optional.of(
@@ -152,6 +177,23 @@ export class CommentService {
     );
   }
 
+  async getCommentPostByAdmin(postId: Uuid, filterOptions: PageOptionsDto) {
+    const comments: Array<any> =
+      await this.commentPostRepository.getCommentInPost(postId, filterOptions);
+
+    const totalRecords = await this.commentPostRepository.countBy({
+      postId: postId,
+    });
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
+
+    return new OffsetPaginatedDto(
+      plainToInstance(InfoCommentPostResDto, comments, {
+        excludeExtraneousValues: true,
+      }),
+      meta,
+    );
+  }
+
   async getReplyCommentInPost(
     userId: Uuid,
     parentCommentId: Uuid,
@@ -161,6 +203,29 @@ export class CommentService {
     const post = await this.postService.findById(parentComment.postId);
 
     await this.memberInGroupService.isUserInGroup(userId, post.groupId);
+    const comments: Array<any> =
+      await this.commentPostRepository.getReplyComment(
+        parentCommentId,
+        filterOptions,
+      );
+
+    const totalRecords = await this.commentPostRepository.countBy({
+      parentCommentId: parentCommentId,
+    });
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
+
+    return new OffsetPaginatedDto(
+      plainToInstance(InfoCommentPostResDto, comments, {
+        excludeExtraneousValues: true,
+      }),
+      meta,
+    );
+  }
+
+  async getReplyCommentByAdmin(
+    parentCommentId: Uuid,
+    filterOptions: PageOptionsDto,
+  ) {
     const comments: Array<any> =
       await this.commentPostRepository.getReplyComment(
         parentCommentId,

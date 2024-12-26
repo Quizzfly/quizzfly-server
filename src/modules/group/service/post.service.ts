@@ -101,12 +101,30 @@ export class PostService {
     });
   }
 
+  async getInfoPostByAdmin(postId: Uuid) {
+    const post = await this.postRepository.getDetailPost(postId);
+    return plainToInstance(InfoPostResDto, post, {
+      excludeExtraneousValues: true,
+    });
+  }
+
   async deletePost(postId: Uuid, userId: Uuid) {
     const post = await this.findById(postId);
 
     if (post.memberId !== userId) {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
+    await this.postRepository.softDelete({ id: postId });
+    this.groupSocketGateway.sendToGroup(
+      post.groupId,
+      GroupEvent.DELETE_POST,
+      post,
+    );
+  }
+
+  async deletePostByAdmin(postId: Uuid) {
+    const post = await this.findById(postId);
+
     await this.postRepository.softDelete({ id: postId });
     this.groupSocketGateway.sendToGroup(
       post.groupId,
@@ -143,6 +161,22 @@ export class PostService {
   ) {
     await this.memberInGroupService.isUserInGroup(userId, groupId);
 
+    const posts: Array<any> = await this.postRepository.getListPost(
+      groupId,
+      filterOptions,
+    );
+
+    const totalRecords = await this.postRepository.countBy({
+      groupId: groupId,
+    });
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
+    return new OffsetPaginatedDto(
+      plainToInstance(InfoPostResDto, posts, { excludeExtraneousValues: true }),
+      meta,
+    );
+  }
+
+  async getListPostByAdmin(groupId: Uuid, filterOptions: PageOptionsDto) {
     const posts: Array<any> = await this.postRepository.getListPost(
       groupId,
       filterOptions,

@@ -1,3 +1,4 @@
+import { AdminGroupController } from '@modules/group/controller/admin-group.controller';
 import { CommentController } from '@modules/group/controller/comment.controller';
 import { GroupController } from '@modules/group/controller/group.controller';
 import { PostController } from '@modules/group/controller/post.controller';
@@ -31,7 +32,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     UserModule,
     NotificationModule,
   ],
-  controllers: [GroupController, PostController, CommentController],
+  controllers: [
+    GroupController,
+    PostController,
+    CommentController,
+    AdminGroupController,
+  ],
   providers: [
     GroupService,
     GroupRepository,

@@ -11,6 +11,7 @@ import {
 
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
+import { RangeDateDto } from '@common/dto/range-date.dto';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { MailService } from '@libs/mail/mail.service';
@@ -21,6 +22,7 @@ import { GroupEntity } from '@modules/group/entity/group.entity';
 import { RoleInGroup } from '@modules/group/enums/role-in-group.enum';
 import { MemberInGroupRepository } from '@modules/group/repository/member-in-group.repository';
 import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
+import { FindManyOptions } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -124,6 +126,21 @@ export class GroupService {
     return group.toDto(InfoGroupResDto);
   }
 
+  async getListGroupByAdmin(filterOptions: PageOptionsDto) {
+    const findOptions: FindManyOptions = {};
+
+    findOptions.take = filterOptions.limit;
+    findOptions.skip = filterOptions.page
+      ? (filterOptions.page - 1) * filterOptions.limit
+      : 0;
+    findOptions.order = { createdAt: filterOptions.order };
+    const [groups, totalRecords] =
+      await this.groupRepository.findAndCount(findOptions);
+
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
+    return new OffsetPaginatedDto(groups, meta);
+  }
+
   async deleteGroup(groupId: Uuid, userId: Uuid) {
     const isUserHasRoleHostInGroup =
       await this.memberInGroupService.isUserHasRoleHostInGroup(userId, groupId);
@@ -132,5 +149,17 @@ export class GroupService {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     await this.groupRepository.softDelete({ id: groupId });
+  }
+
+  async deleteGroupByAdmin(groupId: Uuid) {
+    const group = await this.findById(groupId);
+    await this.groupRepository.softDelete({ id: groupId });
+  }
+
+  async countGroupByAdmin(rangeDate: RangeDateDto, isTotal: boolean) {
+    if (isTotal) {
+      return;
+    } else {
+    }
   }
 }
