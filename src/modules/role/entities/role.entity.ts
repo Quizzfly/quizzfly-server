@@ -1,7 +1,7 @@
 import { Uuid } from '@common/types/common.type';
+import { AbstractEntity } from '@database/entities/abstract.entity';
 import { PermissionEntity } from '@modules/permission/entities/permission.entity';
 import {
-  BaseEntity,
   Column,
   Entity,
   Index,
@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 
 @Entity('role', { schema: 'public' })
-export class RoleEntity extends BaseEntity {
+export class RoleEntity extends AbstractEntity {
   constructor(data?: Partial<RoleEntity>) {
     super();
     Object.assign(this, data);
