@@ -4,6 +4,7 @@ import {
   StringFieldOptional,
   UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
+import { IsArrayDistinct } from '@core/decorators/validators/is-array-disctinct.validator';
 import { Transform } from 'class-transformer';
 
 export class CreateRoleDto {
@@ -14,10 +15,11 @@ export class CreateRoleDto {
   description?: string;
 
   @UUIDFieldOptional({ each: true, uniqueItems: true })
+  @IsArrayDistinct({ message: 'permission id must contain unique values' })
   @Transform(({ obj }) => {
-    return obj.permissions && typeof obj.permissions === 'string'
-      ? [obj.permissions]
-      : obj.permissions;
+    return obj.permission_ids && typeof obj.permission_ids === 'string'
+      ? [obj.permission_ids]
+      : obj.permission_ids;
   })
-  permissions?: Array<Uuid>;
+  permission_ids?: Array<Uuid>;
 }
