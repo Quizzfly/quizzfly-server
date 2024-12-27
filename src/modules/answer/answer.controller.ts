@@ -1,6 +1,8 @@
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { CreateAnswerReqDto } from '@modules/answer/dto/request/create-answer.req.dto';
 import { UpdateAnswerReqDto } from '@modules/answer/dto/request/update-answer.req.dto';
 import { AnswerResDto } from '@modules/answer/dto/response/answer.res.dto';
@@ -13,12 +15,14 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { AnswerService } from './answer.service';
 
 @ApiTags('Answer APIs')
 @Controller({ version: '1' })
+@UseGuards(PermissionGuard)
 export class AnswerController {
   constructor(private readonly answerService: AnswerService) {}
 
@@ -26,6 +30,9 @@ export class AnswerController {
     summary: 'Create a answer for a quiz',
     statusCode: HttpStatus.CREATED,
     type: AnswerResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.CREATE] },
+    ],
   })
   @ApiParam({
     name: 'quizId',
@@ -42,6 +49,9 @@ export class AnswerController {
   @ApiAuth({
     summary: 'Get a answer',
     type: AnswerResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.READ] },
+    ],
   })
   @ApiParam({
     name: 'answerId',
@@ -56,6 +66,9 @@ export class AnswerController {
     summary: 'Get answers by quiz id',
     type: AnswerResDto,
     isArray: true,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.READ] },
+    ],
   })
   @ApiParam({
     name: 'quizId',
@@ -69,6 +82,9 @@ export class AnswerController {
   @ApiAuth({
     summary: 'Update a answer',
     type: AnswerResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'answerId',
@@ -85,6 +101,9 @@ export class AnswerController {
   @ApiAuth({
     summary: 'Delete a answer',
     statusCode: HttpStatus.NO_CONTENT,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.DELETE] },
+    ],
   })
   @ApiParam({
     name: 'answerId',

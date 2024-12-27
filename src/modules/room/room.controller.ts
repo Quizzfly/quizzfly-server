@@ -1,7 +1,9 @@
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { ICurrentUser } from '@core/interfaces';
 import { CreateRoomReqDto } from '@modules/room/dto/request/create-room.req';
 import { FilterRoomReqDto } from '@modules/room/dto/request/filter-room.req.dto';
@@ -17,7 +19,16 @@ import { ParticipantAnswerService } from '@modules/room/services/participant-ans
 import { ParticipantInRoomService } from '@modules/room/services/participant-in-room.service';
 import { QuestionService } from '@modules/room/services/question.service';
 import { RoomService } from '@modules/room/services/room.service';
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Room APIs')
@@ -25,6 +36,7 @@ import { ApiParam, ApiTags } from '@nestjs/swagger';
   path: 'rooms',
   version: '1',
 })
+@UseGuards(PermissionGuard)
 export class RoomController {
   constructor(
     private readonly roomService: RoomService,
@@ -36,6 +48,9 @@ export class RoomController {
   @ApiAuth({
     summary: 'Create room',
     type: InfoRoomResDto,
+    permissions: [
+      { resource: ResourceList.ROOM, actions: [ActionList.CREATE] },
+    ],
   })
   @Post()
   async createRoom(
@@ -48,6 +63,9 @@ export class RoomController {
   @ApiAuth({
     summary: 'Setting room',
     type: InfoRoomResDto,
+    permissions: [
+      { resource: ResourceList.ROOM, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'roomId',
@@ -82,6 +100,7 @@ export class RoomController {
     isPaginated: true,
     paginationType: 'offset',
     type: RoomReportResDto,
+    permissions: [{ resource: ResourceList.ROOM, actions: [ActionList.READ] }],
   })
   @Get()
   getListRoomForReport(
@@ -94,6 +113,7 @@ export class RoomController {
   @ApiAuth({
     summary: 'Get list room summary',
     type: RoomSummaryResDto,
+    permissions: [{ resource: ResourceList.ROOM, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'roomId',
@@ -109,6 +129,7 @@ export class RoomController {
     summary: 'Get list participant in room',
     isArray: true,
     type: ParticipantResDto,
+    permissions: [{ resource: ResourceList.ROOM, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'roomId',
@@ -130,6 +151,7 @@ export class RoomController {
     summary: 'Get result of one participant in room',
     isArray: true,
     type: ParticipantResultResDto,
+    permissions: [{ resource: ResourceList.ROOM, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'roomId',
@@ -155,6 +177,7 @@ export class RoomController {
     summary: 'Get list question in room',
     isArray: true,
     type: QuestionResDto,
+    permissions: [{ resource: ResourceList.ROOM, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'roomId',
@@ -169,6 +192,7 @@ export class RoomController {
   @ApiAuth({
     summary: 'Get one question and result in room',
     isArray: true,
+    permissions: [{ resource: ResourceList.ROOM, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'roomId',

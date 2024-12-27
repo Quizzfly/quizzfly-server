@@ -1,8 +1,10 @@
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { CreatePostReqDto } from '@modules/group/dto/request/create-post.req.dto';
 import { InfoPostResDto } from '@modules/group/dto/response/info-post.res.dto';
 import { PostService } from '@modules/group/service/post.service';
@@ -16,11 +18,13 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 
 @Controller({ version: '1' })
 @ApiTags('Post APIs')
+@UseGuards(PermissionGuard)
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
@@ -28,6 +32,9 @@ export class PostController {
     summary: 'Create a post',
     statusCode: HttpStatus.CREATED,
     type: InfoPostResDto,
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.CREATE] },
+    ],
   })
   @ApiParam({
     name: 'groupId',
@@ -48,6 +55,7 @@ export class PostController {
     type: InfoPostResDto,
     isPaginated: true,
     paginationType: 'offset',
+    permissions: [{ resource: ResourceList.GROUP, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'groupId',
@@ -65,6 +73,7 @@ export class PostController {
 
   @ApiAuth({
     summary: 'Get info detail post',
+    permissions: [{ resource: ResourceList.GROUP, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'groupId',
@@ -87,6 +96,9 @@ export class PostController {
 
   @ApiAuth({
     summary: 'Delete a post',
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.DELETE] },
+    ],
   })
   @ApiParam({
     name: 'postId',
@@ -103,6 +115,9 @@ export class PostController {
 
   @ApiAuth({
     summary: 'Update info post',
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'postId',
@@ -120,6 +135,9 @@ export class PostController {
 
   @ApiAuth({
     summary: 'React post',
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'postId',

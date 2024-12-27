@@ -1,7 +1,9 @@
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { CreateMultipleQuizGeneratedReqDto } from '@modules/quiz/dto/request/create-multiple-quiz-generated.req.dto';
 import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto';
 import { SettingQuizReqDto } from '@modules/quiz/dto/request/setting-quiz.req.dto';
@@ -16,12 +18,14 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { QuizService } from './quiz.service';
 
 @Controller({ version: '1' })
 @ApiTags('Quiz APIs')
+@UseGuards(PermissionGuard)
 export class QuizController {
   constructor(private readonly quizService: QuizService) {}
 
@@ -29,6 +33,9 @@ export class QuizController {
     summary: 'Create a quiz for a quizzfly',
     statusCode: HttpStatus.CREATED,
     type: QuizResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -49,6 +56,9 @@ export class QuizController {
     statusCode: HttpStatus.CREATED,
     type: QuizResDto,
     isArray: true,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -68,6 +78,9 @@ export class QuizController {
     summary: 'Duplicate a quiz',
     statusCode: HttpStatus.CREATED,
     type: QuizResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -91,6 +104,9 @@ export class QuizController {
   @ApiAuth({
     summary: 'Find a quiz',
     type: QuizResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.READ] },
+    ],
   })
   @ApiParam({
     name: 'quizId',
@@ -105,6 +121,9 @@ export class QuizController {
   @ApiAuth({
     summary: 'Update a quiz',
     type: QuizResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -129,6 +148,9 @@ export class QuizController {
   @ApiAuth({
     summary: 'Setting a quiz',
     type: QuizResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -153,6 +175,9 @@ export class QuizController {
   @ApiAuth({
     summary: 'Delete a quiz',
     statusCode: HttpStatus.NO_CONTENT,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.DELETE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
