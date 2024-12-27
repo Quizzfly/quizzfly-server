@@ -30,7 +30,7 @@ export class GroupSocketGateway
   ) {}
 
   afterInit(server: Server) {
-    this.logger.log(server);
+    this.logger.log('Group gateway has been initialized');
   }
 
   async handleConnection(client: Socket, ...args: any[]) {

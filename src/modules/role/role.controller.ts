@@ -49,18 +49,6 @@ export class RoleController {
   }
 
   @ApiAuth({
-    summary: 'Get role information',
-    permissions: [{ resource: ResourceList.ROLE, actions: [ActionList.READ] }],
-  })
-  @ApiParam({
-    name: 'roleId',
-    description: 'The UUID of the role',
-    type: 'string',
-  })
-  @Get(':roleId')
-  getRoleInformation(@Param('roleId', ValidateUuid) roleId: Uuid) {}
-
-  @ApiAuth({
     summary: 'Get role information and permissions',
     permissions: [{ resource: ResourceList.ROLE, actions: [ActionList.READ] }],
   })
@@ -70,7 +58,9 @@ export class RoleController {
     type: 'string',
   })
   @Get(':roleId/permissions')
-  getRoleAndPermission(@Param('roleId', ValidateUuid) roleId: Uuid) {}
+  getRoleAndPermission(@Param('roleId', ValidateUuid) roleId: Uuid) {
+    return this.roleService.findOneRole({ id: roleId });
+  }
 
   @ApiAuth({
     summary: 'Assign permissions for role',

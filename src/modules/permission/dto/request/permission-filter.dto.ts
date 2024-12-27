@@ -3,7 +3,6 @@ import { ResourceList } from '@core/constants/app.constant';
 import { EnumFieldOptional } from '@core/decorators/field.decorators';
 import { IsArrayDistinct } from '@core/decorators/validators/is-array-disctinct.validator';
 import { Expose, Transform } from 'class-transformer';
-import { In } from 'typeorm';
 
 @Expose()
 export class PermissionFilterDto extends PageOptionsDto {
@@ -16,12 +15,4 @@ export class PermissionFilterDto extends PageOptionsDto {
   })
   @Expose()
   resource?: ResourceList[];
-
-  prepareCondition() {
-    return this.resource?.length > 0
-      ? {
-          resource: In(this.resource),
-        }
-      : {};
-  }
 }

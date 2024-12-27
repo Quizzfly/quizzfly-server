@@ -29,7 +29,7 @@ export class NotificationSocketGateway
   constructor() {}
 
   afterInit(server: Server) {
-    this.logger.log(server);
+    this.logger.log('Notification gateway has been initialized');
   }
 
   handleConnection(client: Socket, ...args: any[]) {

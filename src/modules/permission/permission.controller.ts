@@ -24,6 +24,17 @@ export class PermissionController {
   }
 
   @ApiAuth({
+    summary: 'Get all permission and group by resource',
+    permissions: [
+      { resource: ResourceList.PERMISSION, actions: [ActionList.READ_ALL] },
+    ],
+  })
+  @Get('group-resource')
+  getPermissionGroupByResource() {
+    return this.permissionService.getPermissionGroupByResource();
+  }
+
+  @ApiAuth({
     summary: 'Get all resource',
     permissions: [
       { resource: ResourceList.PERMISSION, actions: [ActionList.READ_ALL] },
