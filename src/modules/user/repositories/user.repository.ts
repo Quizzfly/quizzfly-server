@@ -22,6 +22,7 @@ export class UserRepository extends Repository<UserEntity> {
         'user.updatedAt',
         'user.deletedAt',
       ])
+      .leftJoinAndSelect('user.role', 'role')
       .leftJoinAndSelect('user.userInfo', 'user_info')
       .where('user.id = :id', { id: userId })
       .getOne();

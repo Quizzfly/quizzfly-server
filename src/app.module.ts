@@ -7,7 +7,6 @@ import { NotificationModule } from '@modules/notification/notification.module';
 import { PermissionModule } from '@modules/permission/permission.module';
 import { QuizModule } from '@modules/quiz/quiz.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
-import { ReportModule } from '@modules/report/report.module';
 import { RoleModule } from '@modules/role/role.module';
 import { RoomModule } from '@modules/room/room.module';
 import { SessionModule } from '@modules/session/session.module';
@@ -38,7 +37,6 @@ const modulesGenerate = generateModulesSet();
     AnswerModule,
     RoomModule,
     GroupModule,
-    ReportModule,
     NotificationModule,
   ],
 })

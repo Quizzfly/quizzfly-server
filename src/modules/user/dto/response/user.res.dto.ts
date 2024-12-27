@@ -16,6 +16,7 @@ export class UserResDto {
   email: string;
 
   @StringField()
+  @Transform(({ obj }) => (obj.role ? obj.role.name : ROLE.USER))
   @Expose()
   role: ROLE;
 
