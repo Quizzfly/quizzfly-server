@@ -49,7 +49,7 @@ export class UserEntity extends AbstractEntity {
   @Column({ name: 'role_id', type: 'uuid' })
   roleId: Uuid;
 
-  @OneToOne(() => RoleEntity, { eager: true })
+  @OneToOne(() => RoleEntity)
   @JoinColumn({
     name: 'role_id',
     referencedColumnName: 'id',

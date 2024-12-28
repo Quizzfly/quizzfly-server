@@ -29,7 +29,7 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
-import { FindManyOptions, FindOptionsWhere, ILike, IsNull, Not } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, ILike, Not } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -177,13 +177,12 @@ export class UserService {
     findOptions.take = filter.limit;
     findOptions.skip = filter.page ? (filter.page - 1) * filter.limit : 0;
     findOptions.where = {
-      deletedAt: filter.isDeleted ? Not(IsNull()) : IsNull(),
-      role: { name: ILike(ROLE.USER) },
+      role: { name: Not(ILike(ROLE.ADMIN)) },
       email: filter.keywords ? ILike(`%${filter.keywords}%`) : undefined,
     };
     findOptions.order = { createdAt: filter.order };
     findOptions.relations = { userInfo: true, role: true };
-    findOptions.withDeleted = true;
+    findOptions.withDeleted = filter.includeDeleted;
 
     const [users, totalRecords] =
       await this.userRepository.findAndCount(findOptions);

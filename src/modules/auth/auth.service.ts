@@ -57,7 +57,6 @@ export class AuthService {
       .throwIfNullable(new NotFoundException(ErrorCode.ACCOUNT_NOT_REGISTER))
       .get() as UserEntity;
 
-    console.log(user);
     if (forAdmin && user.role.name !== ROLE.ADMIN) {
       throw new UnauthorizedException(ErrorCode.ACCESS_DENIED);
     }

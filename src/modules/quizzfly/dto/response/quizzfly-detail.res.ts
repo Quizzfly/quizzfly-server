@@ -8,7 +8,7 @@ import {
 import { QuizzflyStatus } from '@modules/quizzfly/entity/enums/quizzfly-status.enum';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { UserEntity } from '@modules/user/entities/user.entity';
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 
 @Expose()
 export class QuizzflyDetailResDto extends BaseResDto {
@@ -37,10 +37,12 @@ export class QuizzflyDetailResDto extends BaseResDto {
   userId: Uuid;
 
   @StringField()
+  @Transform(({ obj }) => obj?.user?.userInfo?.username ?? null)
   @Expose()
   username: string;
 
   @StringField()
+  @Transform(({ obj }) => obj?.user?.userInfo?.avatar ?? null)
   @Expose()
   avatar: string;
 

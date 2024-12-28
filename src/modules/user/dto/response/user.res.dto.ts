@@ -1,3 +1,4 @@
+import { BaseResDto } from '@common/dto/base.res.dto';
 import { WrapperType } from '@common/types/types';
 import { ROLE } from '@core/constants/entity.enum';
 import { ClassField, StringField } from '@core/decorators/field.decorators';
@@ -6,11 +7,7 @@ import { Exclude, Expose, Transform } from 'class-transformer';
 
 @Exclude()
 @Expose({ toPlainOnly: true })
-export class UserResDto {
-  @StringField()
-  @Expose()
-  id: string;
-
+export class UserResDto extends BaseResDto {
   @StringField()
   @Expose()
   email: string;
@@ -19,14 +16,6 @@ export class UserResDto {
   @Transform(({ obj }) => (obj.role ? obj.role.name : ROLE.USER))
   @Expose()
   role: ROLE;
-
-  @ClassField(() => Date)
-  @Expose()
-  createdAt: Date;
-
-  @ClassField(() => Date)
-  @Expose()
-  updatedAt: Date;
 
   @ClassField(() => UserInfoResDto)
   @Expose()
