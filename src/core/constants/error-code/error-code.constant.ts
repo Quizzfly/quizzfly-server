@@ -57,6 +57,12 @@ export enum ErrorCode {
 
   // Notification Errors
   NOTIFICATION_NOT_FOUND = 'NOTIFICATION_001',
+
+  // Subscription Errors
+  SUBSCRIPTION_PLAN_NOT_FOUND = 'SUBSCRIPTION_001',
+
+  // Resource limit Errors
+  RESOURCE_LIMIT_NOT_FOUND = 'RESOURCE_LIMIT_001',
 }
 
 export const CommonError: Record<string, string> = {
