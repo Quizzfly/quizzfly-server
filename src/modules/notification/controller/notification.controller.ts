@@ -1,9 +1,18 @@
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { NotificationService } from '@modules/notification/service/notification.service';
-import { Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { NotificationResDto } from '../dto/response/notification.res.dto';
 
@@ -12,6 +21,7 @@ import { NotificationResDto } from '../dto/response/notification.res.dto';
   version: '1',
 })
 @ApiTags('Notification APIs')
+@UseGuards(PermissionGuard)
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
@@ -20,6 +30,9 @@ export class NotificationController {
     summary: 'Get list of notifications',
     isPaginated: true,
     paginationType: 'offset',
+    permissions: [
+      { resource: ResourceList.NOTIFICATION, actions: [ActionList.READ] },
+    ],
   })
   @Get()
   async getNotifications(
@@ -34,6 +47,9 @@ export class NotificationController {
 
   @ApiAuth({
     summary: 'Get list of unread notifications',
+    permissions: [
+      { resource: ResourceList.NOTIFICATION, actions: [ActionList.READ] },
+    ],
   })
   @Get('/unread-count')
   async getUnreadNotifications(@CurrentUser('id') userId: Uuid) {
@@ -42,6 +58,9 @@ export class NotificationController {
 
   @ApiAuth({
     summary: 'Mark specific notification as read',
+    permissions: [
+      { resource: ResourceList.NOTIFICATION, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'notificationId',
@@ -61,6 +80,9 @@ export class NotificationController {
 
   @ApiAuth({
     summary: 'Mark all notification as read',
+    permissions: [
+      { resource: ResourceList.NOTIFICATION, actions: [ActionList.UPDATE] },
+    ],
   })
   @Patch('/read-all')
   async markReadAllNotification(@CurrentUser('id') userId: Uuid) {

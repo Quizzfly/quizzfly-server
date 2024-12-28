@@ -85,7 +85,7 @@ export class RoomGateway
   ) {}
 
   afterInit(server: Server) {
-    this.logger.log(server);
+    this.logger.log('Room gateway has been initialized');
   }
 
   handleConnection(client: Socket, ...args: any[]) {

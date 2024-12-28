@@ -25,7 +25,7 @@ export class PageOptionsDto {
   readonly page?: number = DEFAULT_CURRENT_PAGE;
 
   @StringFieldOptional()
-  readonly q?: string;
+  readonly keywords?: string;
 
   @EnumFieldOptional(() => Order, { default: Order.DESC })
   readonly order?: Order = Order.DESC;

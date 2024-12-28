@@ -1,3 +1,4 @@
+import { ROLE } from '@core/constants/entity.enum';
 import * as process from 'process';
 
 export const getEnvFilePath = (): string => {
@@ -58,4 +59,9 @@ export const convertSnakeToCamel = (data: any): any => {
 
 export const snakeToCamel = (key: string): string => {
   return key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+};
+
+export const isRoleCoreSystem = (key: string) => {
+  // @ts-ignore
+  return Object.values(ROLE).includes(key);
 };

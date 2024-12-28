@@ -1,6 +1,8 @@
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { CreateSlideReqDto } from '@modules/slide/dto/request/create-slide.req.dto';
 import { UpdateSlideReqDto } from '@modules/slide/dto/request/update-slide.req';
 import { InfoSlideResDto } from '@modules/slide/dto/response/info-slide.res';
@@ -13,6 +15,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 
@@ -20,6 +23,7 @@ import { ApiParam, ApiTags } from '@nestjs/swagger';
 @Controller({
   version: '1',
 })
+@UseGuards(PermissionGuard)
 export class SlideController {
   constructor(private readonly slideService: SlideService) {}
 
@@ -28,6 +32,9 @@ export class SlideController {
     summary: 'Create a slide quizzfly',
     statusCode: HttpStatus.CREATED,
     type: InfoSlideResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.CREATE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -47,6 +54,9 @@ export class SlideController {
     summary: 'Duplicate a slide quizzfly',
     statusCode: HttpStatus.CREATED,
     type: InfoSlideResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.CREATE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -70,6 +80,9 @@ export class SlideController {
   @ApiAuth({
     summary: 'Update a slide quizzfly',
     type: InfoSlideResDto,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -94,6 +107,9 @@ export class SlideController {
   @ApiAuth({
     summary: 'Delete a slide quizzfly',
     statusCode: HttpStatus.NO_CONTENT,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.DELETE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',

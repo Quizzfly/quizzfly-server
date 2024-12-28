@@ -1,7 +1,9 @@
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { ROLE } from '@core/constants/entity.enum';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { RolesGuard } from '@core/guards/role.guard';
 import { AdminQueryUserReqDto } from '@modules/user/dto/request/admin-query-user.req.dto';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
@@ -11,6 +13,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Put,
@@ -25,6 +28,7 @@ import { UserResDto } from '../dto/response/user.res.dto';
   path: '/admin/users',
   version: '1',
 })
+@UseGuards(PermissionGuard)
 export class AdminUserController {
   constructor(private readonly userService: UserService) {}
 
@@ -34,26 +38,30 @@ export class AdminUserController {
     type: UserResDto,
     isPaginated: true,
     paginationType: 'offset',
+    permissions: [
+      { resource: ResourceList.USER, actions: [ActionList.READ_ALL] },
+    ],
   })
-  @UseGuards(RolesGuard)
   @Get()
   async getListUser(@Query() filterOptions: AdminQueryUserReqDto) {
-    return await this.userService.getListUser(filterOptions);
+    return this.userService.getListUser(filterOptions);
   }
 
   @ApiAuth({
     summary: 'Soft delete user',
-    roles: [ROLE.ADMIN],
+    statusCode: HttpStatus.NO_CONTENT,
+    permissions: [
+      { resource: ResourceList.USER, actions: [ActionList.DELETE] },
+    ],
   })
   @ApiParam({
     name: 'userId',
     description: 'The UUID of the User',
     type: 'string',
   })
-  @UseGuards(RolesGuard)
   @Delete(':userId')
-  async deleteUser(@Param('userId', ValidateUuid) userId: Uuid) {
-    return await this.userService.deleteUser(userId);
+  deleteUser(@Param('userId', ValidateUuid) userId: Uuid) {
+    return this.userService.deleteUser(userId);
   }
 
   @ApiAuth({
@@ -67,8 +75,8 @@ export class AdminUserController {
   })
   @UseGuards(RolesGuard)
   @Put(':userId/restore')
-  async restoreUser(@Param('userId', ValidateUuid) userId: Uuid) {
-    return await this.userService.restoreUser(userId);
+  restoreUser(@Param('userId', ValidateUuid) userId: Uuid) {
+    return this.userService.restoreUser(userId);
   }
 
   @ApiAuth({

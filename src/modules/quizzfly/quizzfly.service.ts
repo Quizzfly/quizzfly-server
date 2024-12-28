@@ -38,7 +38,7 @@ import {
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
-import { IsNull, Not } from 'typeorm';
+import { FindManyOptions, ILike } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -100,21 +100,31 @@ export class QuizzflyService {
   }
 
   async getListQuizzfly(filterOptions: AdminQueryQuizzflyReqDto) {
-    const quizzfly: Array<any> = await this.quizzflyRepository.getListQuizzfly(
-      filterOptions,
-      filterOptions.isDeleted,
-    );
+    const findOptions: FindManyOptions = {};
+    const searchCriteria = ['title', 'description'];
+    const orWhereOption = [];
 
-    const totalRecords = await this.quizzflyRepository.count({
-      where: filterOptions.isDeleted
-        ? { deletedAt: Not(IsNull()) }
-        : { deletedAt: IsNull() },
-      withDeleted: true,
-    });
+    if (filterOptions.keywords) {
+      for (const key of searchCriteria) {
+        orWhereOption.push({
+          [key]: ILike(`%${filterOptions.keywords}%`),
+        });
+      }
+    }
+    findOptions.take = filterOptions.limit;
+    findOptions.skip = filterOptions.page
+      ? (filterOptions.page - 1) * filterOptions.limit
+      : 0;
+    findOptions.where = orWhereOption;
+    findOptions.order = { createdAt: filterOptions.order };
+    findOptions.withDeleted = true;
+
+    const [items, totalRecords] =
+      await this.quizzflyRepository.findAndCount(findOptions);
+
     const meta = new OffsetPaginationDto(totalRecords, filterOptions);
-
     return new OffsetPaginatedDto(
-      plainToInstance(QuizzflyDetailResDto, quizzfly, {
+      plainToInstance(QuizzflyDetailResDto, items, {
         excludeExtraneousValues: true,
       }),
       meta,

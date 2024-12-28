@@ -29,7 +29,7 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
-import { IsNull, Not } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, ILike, IsNull, Not } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -99,7 +99,7 @@ export class UserService {
       }),
     )
       .throwIfNotPresent(new NotFoundException(ErrorCode.USER_NOT_FOUND))
-      .get();
+      .get() as UserEntity;
   }
 
   async getUserInfo(userId: Uuid) {
@@ -117,10 +117,15 @@ export class UserService {
     return this.userRepository.findOne({ where: { id: userId } });
   }
 
-  async findOneByCondition(
-    condition: Pick<UserEntity, 'email' | 'isConfirmed' | 'isActive'>,
-  ) {
-    return this.userRepository.findOne({ where: condition });
+  async findOneByCondition(condition: FindOptionsWhere<UserEntity>) {
+    return this.userRepository.findOne({
+      where: condition,
+      relations: {
+        role: {
+          permissions: true,
+        },
+      },
+    });
   }
 
   async changePassword(dto: ChangePasswordReqDto, userId: Uuid) {
@@ -168,16 +173,22 @@ export class UserService {
   }
 
   async getListUser(filter: AdminQueryUserReqDto) {
-    const users: Array<any> = await this.userRepository.getListUser(filter);
-    const totalRecords = await this.userRepository.count({
-      where: {
-        role: ROLE.USER,
-        deletedAt: filter.isDeleted ? Not(IsNull()) : IsNull(),
-      },
-      withDeleted: true,
-    });
-    const meta = new OffsetPaginationDto(totalRecords, filter);
+    const findOptions: FindManyOptions<UserEntity> = {};
+    findOptions.take = filter.limit;
+    findOptions.skip = filter.page ? (filter.page - 1) * filter.limit : 0;
+    findOptions.where = {
+      deletedAt: filter.isDeleted ? Not(IsNull()) : IsNull(),
+      role: { name: ILike(ROLE.USER) },
+      email: filter.keywords ? ILike(`%${filter.keywords}%`) : undefined,
+    };
+    findOptions.order = { createdAt: filter.order };
+    findOptions.relations = { userInfo: true, role: true };
+    findOptions.withDeleted = true;
 
+    const [users, totalRecords] =
+      await this.userRepository.findAndCount(findOptions);
+
+    const meta = new OffsetPaginationDto(totalRecords, filter);
     return new OffsetPaginatedDto(
       plainToInstance(UserResDto, users, { excludeExtraneousValues: true }),
       meta,

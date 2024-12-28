@@ -1,7 +1,9 @@
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
 import { UpdateUserInfoDto } from '@modules/user/dto/request/update-user-info.req.dto';
 import {
@@ -9,10 +11,12 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { UserResDto } from '../dto/response/user.res.dto';
@@ -23,12 +27,14 @@ import { UserService } from '../user.service';
   path: 'users',
   version: '1',
 })
+@UseGuards(PermissionGuard)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiAuth({
-    type: UserResDto,
     summary: 'Get current user',
+    type: UserResDto,
+    permissions: [{ resource: ResourceList.USER, actions: [ActionList.READ] }],
   })
   @Get('me')
   async getCurrentUser(@CurrentUser('id') userId: Uuid) {
@@ -36,8 +42,9 @@ export class UserController {
   }
 
   @ApiAuth({
-    type: UserResDto,
     summary: 'Get info detail user by id',
+    type: UserResDto,
+    permissions: [{ resource: ResourceList.USER, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'userId',
@@ -50,7 +57,13 @@ export class UserController {
   }
 
   @Patch('profile/me')
-  @ApiAuth({ type: UserResDto, summary: 'Update my profile' })
+  @ApiAuth({
+    summary: 'Update my profile',
+    type: UserResDto,
+    permissions: [
+      { resource: ResourceList.USER, actions: [ActionList.UPDATE] },
+    ],
+  })
   updateMyInfo(
     @CurrentUser('id') userId: Uuid,
     @Body() dto: UpdateUserInfoDto,
@@ -58,7 +71,13 @@ export class UserController {
     return this.userService.updateUserInfo(userId, dto);
   }
 
-  @ApiAuth({ summary: 'Change password' })
+  @ApiAuth({
+    summary: 'Change password',
+    statusCode: HttpStatus.NO_CONTENT,
+    permissions: [
+      { resource: ResourceList.USER, actions: [ActionList.UPDATE] },
+    ],
+  })
   @Post('change-password')
   async changePassword(
     @Body() dto: ChangePasswordReqDto,
@@ -67,13 +86,25 @@ export class UserController {
     return this.userService.changePassword(dto, userId);
   }
 
-  @ApiAuth({ summary: 'Request delete account' })
+  @ApiAuth({
+    summary: 'Request delete account',
+    statusCode: HttpStatus.NO_CONTENT,
+    permissions: [
+      { resource: ResourceList.USER, actions: [ActionList.UPDATE] },
+    ],
+  })
   @Post('request-delete')
   async requestDeleteAccount(@CurrentUser('id') userId: Uuid) {
     return await this.userService.requestDeleteAccount(userId);
   }
 
-  @ApiAuth({ summary: 'Verify delete account' })
+  @ApiAuth({
+    summary: 'Verify delete account',
+    statusCode: HttpStatus.NO_CONTENT,
+    permissions: [
+      { resource: ResourceList.USER, actions: [ActionList.UPDATE] },
+    ],
+  })
   @Delete('verify-delete')
   async verifyDeleteAccount(
     @CurrentUser('id') userId: Uuid,

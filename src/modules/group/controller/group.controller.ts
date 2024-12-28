@@ -1,8 +1,10 @@
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { CreateGroupReqDto } from '@modules/group/dto/request/create-group.req.dto';
 import { InviteMemberToGroupReqDto } from '@modules/group/dto/request/invite-member-to-group.req.dto';
 import { InfoGroupResDto } from '@modules/group/dto/response/info-group.res.dto';
@@ -16,11 +18,13 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 
 @Controller({ version: '1' })
 @ApiTags('Group APIs')
+@UseGuards(PermissionGuard)
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
@@ -28,6 +32,9 @@ export class GroupController {
     summary: 'Create a group',
     statusCode: HttpStatus.CREATED,
     type: InfoGroupResDto,
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.CREATE] },
+    ],
   })
   @Post('groups')
   async createGroup(
@@ -42,6 +49,7 @@ export class GroupController {
     type: InfoGroupResDto,
     isPaginated: true,
     paginationType: 'offset',
+    permissions: [{ resource: ResourceList.GROUP, actions: [ActionList.READ] }],
   })
   @Get('groups')
   async getGroups(
@@ -53,6 +61,9 @@ export class GroupController {
 
   @ApiAuth({
     summary: 'Invite member to group',
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'groupId',
@@ -70,6 +81,7 @@ export class GroupController {
 
   @ApiAuth({
     summary: 'Get member in group',
+    permissions: [{ resource: ResourceList.GROUP, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'groupId',
@@ -86,6 +98,9 @@ export class GroupController {
 
   @ApiAuth({
     summary: 'Member joins group',
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'groupId',
@@ -102,6 +117,7 @@ export class GroupController {
 
   @ApiAuth({
     summary: 'Get info detail group',
+    permissions: [{ resource: ResourceList.GROUP, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'groupId',
@@ -118,6 +134,9 @@ export class GroupController {
 
   @ApiAuth({
     summary: 'Delete group',
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.DELETE] },
+    ],
   })
   @ApiParam({
     name: 'groupId',

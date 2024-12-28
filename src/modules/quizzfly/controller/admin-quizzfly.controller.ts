@@ -1,8 +1,8 @@
 import { Uuid } from '@common/types/common.type';
-import { ROLE } from '@core/constants/entity.enum';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
-import { RolesGuard } from '@core/guards/role.guard';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { AdminQueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/admin-query-quizzfly.req.dto';
 import { QuizzflyDetailResDto } from '@modules/quizzfly/dto/response/quizzfly-detail.res';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
@@ -10,6 +10,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Patch,
   Put,
@@ -23,32 +24,36 @@ import { ApiParam, ApiTags } from '@nestjs/swagger';
   path: 'admin/quizzfly',
   version: '1',
 })
+@UseGuards(PermissionGuard)
 export class AdminQuizzflyController {
   constructor(private readonly quizzflyService: QuizzflyService) {}
 
   @ApiAuth({
     summary: 'Get list quizzfly',
-    roles: [ROLE.ADMIN],
     type: QuizzflyDetailResDto,
     isPaginated: true,
     paginationType: 'offset',
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.READ_ALL] },
+    ],
   })
-  @UseGuards(RolesGuard)
   @Get()
-  async getListQuizzfly(@Query() filterOptions: AdminQueryQuizzflyReqDto) {
-    return await this.quizzflyService.getListQuizzfly(filterOptions);
+  getListQuizzfly(@Query() filterOptions: AdminQueryQuizzflyReqDto) {
+    return this.quizzflyService.getListQuizzfly(filterOptions);
   }
 
   @ApiAuth({
     summary: 'Delete quizzfly',
-    roles: [ROLE.ADMIN],
+    statusCode: HttpStatus.NO_CONTENT,
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.DELETE] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
     description: 'The UUID of the Quizzfly',
     type: 'string',
   })
-  @UseGuards(RolesGuard)
   @Delete(':quizzflyId')
   async deleteQuizzfly(@Param('quizzflyId', ValidateUuid) quizzflyId: Uuid) {
     return await this.quizzflyService.deleteQuizzfly(quizzflyId);
@@ -56,14 +61,15 @@ export class AdminQuizzflyController {
 
   @ApiAuth({
     summary: 'Restore quizzfly',
-    roles: [ROLE.ADMIN],
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE_ANY] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
     description: 'The UUID of the Quizzfly',
     type: 'string',
   })
-  @UseGuards(RolesGuard)
   @Put(':quizzflyId/restore')
   async restoreQuizzfly(@Param('quizzflyId', ValidateUuid) quizzflyId: Uuid) {
     return await this.quizzflyService.restoreQuizzfly(quizzflyId);
@@ -72,7 +78,9 @@ export class AdminQuizzflyController {
   @Patch(':quizzflyId/public')
   @ApiAuth({
     summary: 'Public quizzfly',
-    roles: [ROLE.ADMIN],
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE_ANY] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',
@@ -86,7 +94,9 @@ export class AdminQuizzflyController {
   @Patch(':quizzflyId/un-public')
   @ApiAuth({
     summary: 'Unpublic quizzfly',
-    roles: [ROLE.ADMIN],
+    permissions: [
+      { resource: ResourceList.QUIZZFLY, actions: [ActionList.UPDATE_ANY] },
+    ],
   })
   @ApiParam({
     name: 'quizzflyId',

@@ -1,0 +1,6 @@
+{
+  "error": {
+    "permission_invalid": "Invalid permission.",
+    "permission_already_exists_in_role": "Permission already exists in role."
+  }
+}

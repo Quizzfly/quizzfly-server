@@ -1,8 +1,10 @@
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { PermissionGuard } from '@core/guards/permission.guard';
 import { CommentPostReqDto } from '@modules/group/dto/request/comment-post.req.dto';
 import { InfoCommentPostResDto } from '@modules/group/dto/response/info-comment-post.res.dto';
 import { CommentService } from '@modules/group/service/comment.service';
@@ -15,17 +17,22 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 
 @Controller({ version: '1' })
 @ApiTags('Comment APIs')
+@UseGuards(PermissionGuard)
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   @ApiAuth({
     summary: 'Comment post',
     type: InfoCommentPostResDto,
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.CREATE] },
+    ],
   })
   @ApiParam({
     name: 'postId',
@@ -44,6 +51,9 @@ export class CommentController {
   @ApiAuth({
     summary: 'Edit comment post',
     type: InfoCommentPostResDto,
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.UPDATE] },
+    ],
   })
   @ApiParam({
     name: 'commentId',
@@ -61,6 +71,9 @@ export class CommentController {
 
   @ApiAuth({
     summary: 'Delete comment post',
+    permissions: [
+      { resource: ResourceList.GROUP, actions: [ActionList.DELETE] },
+    ],
   })
   @ApiParam({
     name: 'commentId',
@@ -80,6 +93,7 @@ export class CommentController {
     type: InfoCommentPostResDto,
     isPaginated: true,
     paginationType: 'offset',
+    permissions: [{ resource: ResourceList.GROUP, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'postId',
@@ -100,6 +114,7 @@ export class CommentController {
     type: InfoCommentPostResDto,
     isPaginated: true,
     paginationType: 'offset',
+    permissions: [{ resource: ResourceList.GROUP, actions: [ActionList.READ] }],
   })
   @ApiParam({
     name: 'parentCommentId',
