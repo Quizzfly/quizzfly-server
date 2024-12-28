@@ -146,7 +146,7 @@ export class UserService {
       throw new BadRequestException(ErrorCode.REQUEST_DELETE_ACCOUNT_INVALID);
     }
     const user = await this.findByUserId(userId);
-    const code = await CommonFunction.generateCode();
+    const code = await CommonFunction.generateCode(6);
     await this.cacheManager.set(
       CreateCacheKey(CacheKey.REQUEST_DELETE, userId),
       code,

@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { ResourceLimitEntity } from '@modules/subscription/entity/resource-limit.entity';
+import { UserPlanEntity } from '@modules/subscription/entity/user-plan.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('subscription_plan', { schema: 'public' })
@@ -29,4 +30,7 @@ export class SubscriptionPlanEntity extends AbstractEntity {
 
   @OneToMany('ResourceLimitEntity', 'subscriptionPlan')
   resourceLimits?: ResourceLimitEntity[];
+
+  @OneToMany('UserPlanEntity', 'subscriptionPlan')
+  userPlans?: UserPlanEntity[];
 }

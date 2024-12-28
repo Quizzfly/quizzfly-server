@@ -10,6 +10,7 @@ import { RoleEntity } from '@modules/role/entities/role.entity';
 import { ParticipantInRoomEntity } from '@modules/room/entities/participant-in-room.entity';
 import { RoomEntity } from '@modules/room/entities/room.entity';
 import { SessionEntity } from '@modules/session/entities/session.entity';
+import { UserPlanEntity } from '@modules/subscription/entity/user-plan.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -77,6 +78,9 @@ export class UserEntity extends AbstractEntity {
 
   @OneToMany('CommentPostEntity', 'member')
   commentPosts?: CommentPostEntity[];
+
+  @OneToMany('UserPlanEntity', 'user')
+  userPlans?: UserPlanEntity[];
 
   @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user, { eager: true })
   userInfo?: UserInfoEntity;
