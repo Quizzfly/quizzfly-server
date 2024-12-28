@@ -1,6 +1,8 @@
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { isRoleCoreSystem } from '@core/helpers';
 import { Optional } from '@core/utils/optional';
@@ -11,6 +13,8 @@ import { UpdateRoleDto } from '@modules/role/dto/request/update-role.dto';
 import { RoleResDto } from '@modules/role/dto/response/role.res.dto';
 import { RoleEntity } from '@modules/role/entities/role.entity';
 import { RoleRepository } from '@modules/role/repositories/role.repository';
+import { UserResDto } from '@modules/user/dto/response/user.res.dto';
+import { UserService } from '@modules/user/user.service';
 import {
   BadRequestException,
   ConflictException,
@@ -18,6 +22,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { plainToInstance } from 'class-transformer';
 import { FindManyOptions, FindOptionsWhere, ILike, Not } from 'typeorm';
 
@@ -26,6 +31,7 @@ export class RoleService {
   constructor(
     private readonly repository: RoleRepository,
     private readonly permissionsService: PermissionService,
+    private readonly userService: UserService,
   ) {}
 
   async createRole(dto: CreateRoleDto) {
@@ -50,6 +56,7 @@ export class RoleService {
     return plainToInstance(RoleResDto, role);
   }
 
+  @OnEvent(`${ResourceList.ROLE}.${ActionList.READ}`)
   async findOneRole(filter: FindOptionsWhere<RoleEntity>) {
     return Optional.of(
       await this.repository.findOne({
@@ -57,7 +64,7 @@ export class RoleService {
         relations: { permissions: true },
       }),
     )
-      .throwIfNullable(new NotFoundException(''))
+      .throwIfNullable(new NotFoundException(ErrorCode.ROLE_NOT_FOUND))
       .get() as RoleEntity;
   }
 
@@ -68,6 +75,10 @@ export class RoleService {
     }
 
     return this.repository.findOneBy(condition);
+  }
+
+  async getRoleAndUserAssigned(roleId: Uuid, filterOptions: PageOptionsDto) {
+    return this.userService.getListUserByRole(roleId, filterOptions);
   }
 
   async findAllRole(filter: RoleFilterDto) {
@@ -105,6 +116,9 @@ export class RoleService {
     }
 
     const role = await this.findOneRole({ id: roleId });
+    if (dto.name && isRoleCoreSystem(role.name)) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
     Object.assign(role, { ...dto, permission_ids: undefined });
     await this.repository.save(role);
 
@@ -205,6 +219,24 @@ export class RoleService {
     }
 
     return plainToInstance(RoleResDto, role);
+  }
+
+  async assignRoleForUser(roleId: Uuid, userId: Uuid) {
+    const [role, user] = await Promise.all([
+      this.findOneRole({ id: roleId }),
+      this.userService.findByUserId(userId),
+    ]);
+
+    if (user.roleId !== roleId) {
+      await this.userService.updateUser(userId, {
+        roleId: roleId,
+      });
+      user.roleId = roleId;
+    }
+
+    if (!user.role) user.role = role;
+
+    return plainToInstance(UserResDto, user, { excludeExtraneousValues: true });
   }
 
   checkPermissionsExistInRole(
