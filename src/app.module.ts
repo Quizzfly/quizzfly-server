@@ -10,6 +10,7 @@ import { ReportModule } from '@modules/report/report.module';
 import { RoomModule } from '@modules/room/room.module';
 import { SessionModule } from '@modules/session/session.module';
 import { SlideModule } from '@modules/slide/slide.module';
+import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { UserModule } from '@modules/user/user.module';
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -36,6 +37,7 @@ const modulesGenerate = generateModulesSet();
     GroupModule,
     ReportModule,
     NotificationModule,
+    SubscriptionModule,
   ],
 })
 export class AppModule {}
