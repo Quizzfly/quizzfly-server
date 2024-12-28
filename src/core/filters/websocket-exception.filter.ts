@@ -33,9 +33,12 @@ export class WebsocketExceptionFilter extends BaseWsExceptionFilter {
       message = exception.message;
     }
 
+    const messageDetail = ErrorCodeDetails[message] ?? message;
+
     client.emit('exception', {
       status: 'error',
-      message,
+      message: messageDetail ?? message,
+      errorCode: message ?? 'Internal Server Error',
     });
   }
 

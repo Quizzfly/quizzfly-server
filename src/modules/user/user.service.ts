@@ -1,9 +1,6 @@
 import { CommonFunction } from '@common/common.function';
-import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
-import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { CacheKey } from '@core/constants/cache.constant';
-import { ROLE } from '@core/constants/entity.enum';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
@@ -29,7 +26,7 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { plainToInstance } from 'class-transformer';
-import { FindManyOptions, FindOptionsWhere, ILike, IsNull, Not } from 'typeorm';
+import { FindOptionsWhere } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -173,26 +170,7 @@ export class UserService {
   }
 
   async getListUser(filter: AdminQueryUserReqDto) {
-    const findOptions: FindManyOptions<UserEntity> = {};
-    findOptions.take = filter.limit;
-    findOptions.skip = filter.page ? (filter.page - 1) * filter.limit : 0;
-    findOptions.where = {
-      role: { name: Not(ILike(ROLE.ADMIN)) },
-      email: filter.keywords ? ILike(`%${filter.keywords}%`) : undefined,
-      deletedAt: filter.onlyDeleted ? Not(IsNull()) : IsNull(),
-    };
-    findOptions.order = { createdAt: filter.order };
-    findOptions.relations = { userInfo: true, role: true };
-    findOptions.withDeleted = true;
-
-    const [users, totalRecords] =
-      await this.userRepository.findAndCount(findOptions);
-
-    const meta = new OffsetPaginationDto(totalRecords, filter);
-    return new OffsetPaginatedDto(
-      plainToInstance(UserResDto, users, { excludeExtraneousValues: true }),
-      meta,
-    );
+    return this.userRepository.getListUser(filter);
   }
 
   async deleteUser(userId: Uuid) {

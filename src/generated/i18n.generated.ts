@@ -62,6 +62,28 @@ export type I18nTranslations = {
     "room": {
         "error": {
             "not_found": string;
+            "pin_already_exists": string;
+            "participant_not_found": string;
+            "only_host_can_kick_participant": string;
+            "only_host_can_lock_room": string;
+            "only_host_can_unlock_room": string;
+            "only_host_can_setting_room": string;
+            "quiz_session_ended_cannot_modify_settings": string;
+            "only_host_can_start_quiz": string;
+            "quiz_already_started": string;
+            "question_set_not_found": string;
+            "only_host_can_get_next_question": string;
+            "quiz_not_started": string;
+            "previous_question_not_finished": string;
+            "quiz_out_of_questions": string;
+            "participant_invalid": string;
+            "not_allowed": string;
+            "question_over": string;
+            "question_already_answered": string;
+            "only_owner_can_perform_action": string;
+            "unfinished_question": string;
+            "room_locked": string;
+            "participant_invalid_or_timeout": string;
         };
     };
     "slide": {
