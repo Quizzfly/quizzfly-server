@@ -1,5 +1,27 @@
 {
   "error": {
-    "not_found": "The room could not be found."
+    "not_found": "The room could not be found.",
+    "pin_already_exists": "The room PIN you entered already exists. Please choose a different one.",
+    "participant_not_found": "Participant not found.",
+    "only_host_can_kick_participant": "Only the host can kick participant in the room.",
+    "only_host_can_lock_room": "Only the host can lock the room.",
+    "only_host_can_unlock_room": "Only the host can unlock the room.",
+    "only_host_can_setting_room": "Only the host can modify settings in the room.",
+    "quiz_session_ended_cannot_modify_settings": "The quiz session has already ended. Settings cannot be modified.",
+    "only_host_can_start_quiz": "Only the host can start the quiz.",
+    "quiz_already_started": "The quiz has already started.",
+    "question_set_not_found": "Question set not found. Please check the ID and try again.",
+    "only_host_can_get_next_question": "Only the host can get the next question.",
+    "quiz_not_started": "The quiz has not started.",
+    "previous_question_not_finished": "The previous question has not finished.",
+    "quiz_out_of_questions": "The quiz has run out of questions.",
+    "participant_invalid": "Participant invalid.",
+    "not_allowed": "You are not allowed to perform this action.",
+    "question_over": "The question is over.",
+    "question_already_answered": "You have already answered this question.",
+    "only_owner_can_perform_action": "Only the room owner is allowed to perform this action.",
+    "unfinished_question": "The question is not finished yet.",
+    "room_locked": "The room is locked.",
+    "participant_invalid_or_timeout": "Participant is invalid or has timed out while reconnecting."
   }
 }
