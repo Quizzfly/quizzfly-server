@@ -1,12 +1,16 @@
 import { CommonFunction } from '@common/common.function';
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
 import { CacheKey } from '@core/constants/cache.constant';
+import { ROLE } from '@core/constants/entity.enum';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
+import { EventService } from '@core/events/event.service';
 import { Optional } from '@core/utils/optional';
 import { verifyPassword } from '@core/utils/password.util';
 import { MailService } from '@libs/mail/mail.service';
 import { CacheTTL } from '@libs/redis/utils/cache-ttl.utils';
 import { CreateCacheKey } from '@libs/redis/utils/create-cache-key.utils';
+import { GetRoleEvent } from '@modules/role/events/get-role.event';
 import { SessionService } from '@modules/session/session.service';
 import { AdminQueryUserReqDto } from '@modules/user/dto/request/admin-query-user.req.dto';
 import { ChangePasswordReqDto } from '@modules/user/dto/request/change-password.req';
@@ -35,6 +39,7 @@ export class UserService {
     private readonly userInfoRepository: UserInfoRepository,
     private readonly mailService: MailService,
     private readonly sessionService: SessionService,
+    private readonly eventService: EventService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -46,6 +51,15 @@ export class UserService {
       isConfirmed: false,
       isActive: false,
     });
+
+    const role = await this.eventService.emitAsync(
+      new GetRoleEvent({ name: ROLE.USER }),
+    );
+
+    if (role) {
+      newUser.roleId = role.id;
+      newUser.role = role;
+    }
     const savedUser = await this.userRepository.save(newUser);
 
     const newUserInfo = new UserInfoEntity({
@@ -71,6 +85,15 @@ export class UserService {
       isConfirmed: true,
       isActive: true,
     });
+
+    const role = await this.eventService.emitAsync(
+      new GetRoleEvent({ name: ROLE.USER }),
+    );
+
+    if (role) {
+      newUser.roleId = role.id;
+      newUser.role = role;
+    }
     const savedUser = await this.userRepository.save(newUser);
 
     const newUserInfo = new UserInfoEntity({
@@ -171,6 +194,10 @@ export class UserService {
 
   async getListUser(filter: AdminQueryUserReqDto) {
     return this.userRepository.getListUser(filter);
+  }
+
+  async getListUserByRole(roleId: Uuid, filterOptions: PageOptionsDto) {
+    return this.userRepository.getRoleAndUserAssigned(roleId, filterOptions);
   }
 
   async deleteUser(userId: Uuid) {

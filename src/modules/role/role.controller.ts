@@ -1,3 +1,4 @@
+import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
 import { ActionList, ResourceList } from '@core/constants/app.constant';
 import { ApiAuth } from '@core/decorators/http.decorators';
@@ -8,6 +9,7 @@ import { CreateRoleDto } from '@modules/role/dto/request/create-role.dto';
 import { RoleFilterDto } from '@modules/role/dto/request/role-filter.dto';
 import { UpdateRoleDto } from '@modules/role/dto/request/update-role.dto';
 import { RoleResDto } from '@modules/role/dto/response/role.res.dto';
+import { UserResDto } from '@modules/user/dto/response/user.res.dto';
 import {
   Body,
   Controller,
@@ -75,6 +77,24 @@ export class RoleController {
   }
 
   @ApiAuth({
+    summary: 'Get list user assigned by role id',
+    type: RoleResDto,
+    permissions: [{ resource: ResourceList.ROLE, actions: [ActionList.READ] }],
+  })
+  @ApiParam({
+    name: 'roleId',
+    description: 'The UUID of the role',
+    type: 'string',
+  })
+  @Get(':roleId/users-assigned')
+  getRoleAndUserAssigned(
+    @Param('roleId', ValidateUuid) roleId: Uuid,
+    @Query() query: PageOptionsDto,
+  ) {
+    return this.roleService.getRoleAndUserAssigned(roleId, query);
+  }
+
+  @ApiAuth({
     summary: 'Assign permissions for role',
     type: RoleResDto,
     permissions: [
@@ -95,6 +115,32 @@ export class RoleController {
       roleId,
       body.permission_ids,
     );
+  }
+
+  @ApiAuth({
+    summary: 'Assign role for user',
+    type: UserResDto,
+    permissions: [
+      { resource: ResourceList.ROLE, actions: [ActionList.READ] },
+      { resource: ResourceList.USER, actions: [ActionList.UPDATE_ANY] },
+    ],
+  })
+  @ApiParam({
+    name: 'roleId',
+    description: 'The UUID of the role',
+    type: 'string',
+  })
+  @ApiParam({
+    name: 'userId',
+    description: 'The UUID of the user',
+    type: 'string',
+  })
+  @Post(':roleId/users/:userId/assign')
+  assignRoleForUser(
+    @Param('roleId', ValidateUuid) roleId: Uuid,
+    @Param('userId', ValidateUuid) userId: Uuid,
+  ) {
+    return this.roleService.assignRoleForUser(roleId, userId);
   }
 
   @ApiAuth({
