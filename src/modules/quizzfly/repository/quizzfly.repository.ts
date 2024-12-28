@@ -1,12 +1,63 @@
+import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
+import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
+import { AdminQueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/admin-query-quizzfly.req.dto';
+import { QuizzflyDetailResDto } from '@modules/quizzfly/dto/response/quizzfly-detail.res';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Brackets, DataSource, Repository } from 'typeorm';
 
 @Injectable()
 export class QuizzflyRepository extends Repository<QuizzflyEntity> {
   constructor(private readonly dataSource: DataSource) {
     super(QuizzflyEntity, dataSource.createEntityManager());
+  }
+
+  async getListQuizzfly(filterOptions: AdminQueryQuizzflyReqDto) {
+    const searchCriteria = ['title', 'description'];
+    const queryBuilder = this.createQueryBuilder('quizzfly')
+      .leftJoinAndSelect('quizzfly.user', 'user')
+      .leftJoinAndSelect('user.userInfo', 'userInfo')
+      .withDeleted()
+      .take(filterOptions.limit)
+      .skip(
+        filterOptions.page ? (filterOptions.page - 1) * filterOptions.limit : 0,
+      )
+      .orderBy('quizzfly.createdAt', filterOptions.order);
+
+    if (filterOptions.onlyDeleted) {
+      queryBuilder.andWhere('quizzfly.deletedAt IS NOT NULL');
+    }
+
+    if (filterOptions.keywords) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          for (const key of searchCriteria) {
+            qb.orWhere(`quizzfly.${key} ILIKE :keywords`, {
+              keywords: `%${filterOptions.keywords}%`,
+            });
+          }
+        }),
+      );
+    }
+
+    queryBuilder.select([
+      'quizzfly',
+      'user.id',
+      'userInfo.username',
+      'userInfo.avatar',
+    ]);
+
+    const [items, totalRecords] = await queryBuilder.getManyAndCount();
+
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
+    return new OffsetPaginatedDto(
+      plainToInstance(QuizzflyDetailResDto, items, {
+        excludeExtraneousValues: true,
+      }),
+      meta,
+    );
   }
 
   async getQuestionsByQuizzflyId(quizzflyId: Uuid) {
