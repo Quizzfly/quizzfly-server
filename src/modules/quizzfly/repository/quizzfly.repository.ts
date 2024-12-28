@@ -1,44 +1,12 @@
-import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
-import { QueryQuizzflyReqDto } from '@modules/quizzfly/dto/request/query-quizzfly.req.dto';
 import { QuizzflyEntity } from '@modules/quizzfly/entity/quizzfly.entity';
 import { Injectable } from '@nestjs/common';
-import { DataSource, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
 export class QuizzflyRepository extends Repository<QuizzflyEntity> {
   constructor(private readonly dataSource: DataSource) {
     super(QuizzflyEntity, dataSource.createEntityManager());
-  }
-
-  async getMyQuizzfly(userId: Uuid, filterOptions: QueryQuizzflyReqDto) {
-    const skip = filterOptions.page
-      ? (filterOptions.page - 1) * filterOptions.limit
-      : 0;
-    return this.find({
-      where: { userId: userId },
-      skip,
-      take: filterOptions.limit,
-      order: {
-        createdAt: filterOptions.order,
-      },
-    });
-  }
-
-  async getListQuizzfly(filterOptions: PageOptionsDto, isDeleted: boolean) {
-    const skip = filterOptions.page
-      ? (filterOptions.page - 1) * filterOptions.limit
-      : 0;
-
-    return this.find({
-      where: isDeleted ? { deletedAt: Not(IsNull()) } : { deletedAt: IsNull() },
-      skip,
-      take: filterOptions.limit,
-      withDeleted: true,
-      order: {
-        createdAt: filterOptions.order,
-      },
-    });
   }
 
   async getQuestionsByQuizzflyId(quizzflyId: Uuid) {

@@ -1,5 +1,4 @@
 import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
-import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
@@ -81,26 +80,38 @@ export class QuizzflyService {
   }
 
   async getMyQuizzfly(userId: Uuid, filterOptions: QueryQuizzflyReqDto) {
-    const quizzflys = await this.quizzflyRepository.getMyQuizzfly(
-      userId,
-      filterOptions,
-    );
     const user = await this.userService.findByUserId(userId);
+    const findOptions: FindManyOptions<QuizzflyEntity> = {};
+    const searchCriteria = ['title', 'description'];
+    const orWhereOption = [];
 
-    const items = quizzflys.map((quizzfly) =>
+    if (filterOptions.keywords) {
+      for (const key of searchCriteria) {
+        orWhereOption.push({
+          [key]: ILike(`%${filterOptions.keywords}%`),
+        });
+      }
+    }
+    findOptions.take = filterOptions.limit;
+    findOptions.skip = filterOptions.page
+      ? (filterOptions.page - 1) * filterOptions.limit
+      : 0;
+    findOptions.where = { userId: userId };
+    findOptions.order = { createdAt: filterOptions.order };
+
+    const [results, totalRecords] =
+      await this.quizzflyRepository.findAndCount(findOptions);
+
+    const items = results.map((quizzfly) =>
       QuizzflyDetailResDto.toInfoQuizzflyResponse(quizzfly, user),
     );
-    const totalRecords = await this.quizzflyRepository.countBy({ userId });
-    const meta = new OffsetPaginationDto(
-      totalRecords,
-      filterOptions as PageOptionsDto,
-    );
 
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
     return new OffsetPaginatedDto(items, meta);
   }
 
   async getListQuizzfly(filterOptions: AdminQueryQuizzflyReqDto) {
-    const findOptions: FindManyOptions = {};
+    const findOptions: FindManyOptions<QuizzflyEntity> = {};
     const searchCriteria = ['title', 'description'];
     const orWhereOption = [];
 
@@ -117,7 +128,11 @@ export class QuizzflyService {
       : 0;
     findOptions.where = orWhereOption;
     findOptions.order = { createdAt: filterOptions.order };
-    findOptions.withDeleted = true;
+    findOptions.withDeleted = filterOptions.includeDeleted;
+    findOptions.relations = { user: { userInfo: true } };
+    findOptions.select = {
+      user: { id: true, userInfo: { username: true, avatar: true } },
+    };
 
     const [items, totalRecords] =
       await this.quizzflyRepository.findAndCount(findOptions);

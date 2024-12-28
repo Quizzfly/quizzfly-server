@@ -1,12 +1,10 @@
-import { ClassField, StringField } from '@core/decorators/field.decorators';
+import { BaseResDto } from '@common/dto/base.res.dto';
+import { StringField } from '@core/decorators/field.decorators';
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
-export class UserInfoResDto {
-  @StringField()
-  @Expose()
-  id: string;
-
+@Expose()
+export class UserInfoResDto extends BaseResDto {
   @StringField()
   @Expose()
   username: string;
@@ -18,12 +16,4 @@ export class UserInfoResDto {
   @StringField()
   @Expose()
   avatar: string;
-
-  @ClassField(() => Date)
-  @Expose()
-  createdAt: Date;
-
-  @ClassField(() => Date)
-  @Expose()
-  updatedAt: Date;
 }
