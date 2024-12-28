@@ -594,9 +594,9 @@ export class RoomGateway
     });
     const score = calculateScore.score;
 
-    Optional.of(participant.answers[payload.questionId]).throwIfPresent(
-      new WsException('You have answered this question.'),
-    );
+    Optional.of(
+      participant.answers[payload.questionId].chosenAnswerId,
+    ).throwIfPresent(new WsException('You have answered this question.'));
     participant.answers[payload.questionId] = {
       questionId: payload.questionId,
       chosenAnswerId: payload.answerId,
