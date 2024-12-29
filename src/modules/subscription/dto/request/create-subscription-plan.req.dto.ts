@@ -22,7 +22,7 @@ export class CreateSubscriptionPlanReqDto {
   @Expose()
   duration: number;
 
-  @NumberField({ isPositive: true })
+  @NumberField({ min: 0 })
   @Expose()
   price: number;
 

@@ -30,6 +30,6 @@ export class SubscriptionPlanResDto extends BaseResDto {
     each: true,
     name: 'resource_limits',
   })
-  @Expose({ name: 'resource_limits' })
+  @Expose()
   resourceLimits: ResourceLimitResDto[];
 }

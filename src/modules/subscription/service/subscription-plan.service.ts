@@ -1,4 +1,5 @@
 import { Uuid } from '@common/types/common.type';
+import { Order } from '@core/constants/app.constant';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
 import { CreateSubscriptionPlanReqDto } from '@modules/subscription/dto/request/create-subscription-plan.req.dto';
@@ -69,8 +70,11 @@ export class SubscriptionPlanService {
   }
 
   async getListSubscriptionPlan() {
-    const subscriptions = await this.subscriptionPlanRepository.findBy({
-      resourceLimits: true,
+    const subscriptions = await this.subscriptionPlanRepository.find({
+      relations: { resourceLimits: true },
+      order: {
+        price: Order.ASC,
+      },
     });
 
     return plainToInstance(SubscriptionPlanResDto, subscriptions, {
