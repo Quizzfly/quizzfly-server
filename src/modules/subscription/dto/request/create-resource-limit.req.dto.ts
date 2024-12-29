@@ -5,9 +5,12 @@ import {
 } from '@core/decorators/field.decorators';
 import { ResourceType } from '@modules/subscription/enum/resource-type.enum';
 import { Expose } from 'class-transformer';
+import { IsInt } from 'class-validator';
 
+@Expose()
 export class CreateResourceLimitReqDto {
   @StringField()
+  @Expose()
   name: string;
 
   @Expose({ name: 'resource_type' })
@@ -17,6 +20,8 @@ export class CreateResourceLimitReqDto {
   })
   resourceType: ResourceType;
 
-  @NumberField()
+  @NumberField({ isPositive: true })
+  @IsInt()
+  @Expose()
   limit: number;
 }

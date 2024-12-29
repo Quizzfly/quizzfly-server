@@ -85,6 +85,7 @@ export enum ErrorCode {
 
   // Resource limit Errors
   RESOURCE_LIMIT_NOT_FOUND = 'RESOURCE_LIMIT_001',
+  RESOURCE_LIMIT_ALREADY_EXISTS = 'RESOURCE_LIMIT_002',
 }
 
 export const CommonError: Record<string, string> = {

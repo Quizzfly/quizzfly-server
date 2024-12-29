@@ -38,14 +38,11 @@ export class ResourceLimitController {
   })
   @UseGuards(RolesGuard)
   @Post('subscriptions/:subscriptionId/resource-limits')
-  async createResourceLimit(
+  createResourceLimit(
     @Body() dto: CreateResourceLimitReqDto,
     @Param('subscriptionId', ValidateUuid) subscriptionId: Uuid,
   ) {
-    return await this.resourceLimitService.createResourceLimit(
-      subscriptionId,
-      dto,
-    );
+    return this.resourceLimitService.createResourceLimit(subscriptionId, dto);
   }
 
   @ApiAuth({
@@ -60,14 +57,11 @@ export class ResourceLimitController {
   })
   @UseGuards(RolesGuard)
   @Put('resource-limits/:resourceLimitId')
-  async updateResourceLimit(
+  updateResourceLimit(
     @Body() dto: CreateResourceLimitReqDto,
     @Param('resourceLimitId', ValidateUuid) resourceLimitId: Uuid,
   ) {
-    return await this.resourceLimitService.updateResourceLimit(
-      resourceLimitId,
-      dto,
-    );
+    return this.resourceLimitService.updateResourceLimit(resourceLimitId, dto);
   }
 
   @ApiAuth({
@@ -81,10 +75,10 @@ export class ResourceLimitController {
   })
   @UseGuards(RolesGuard)
   @Delete('resource-limits/:resourceLimitId')
-  async deleteResourceLimit(
+  deleteResourceLimit(
     @Param('resourceLimitId', ValidateUuid) resourceLimitId: Uuid,
   ) {
-    return await this.resourceLimitService.deleteResourceLimit(resourceLimitId);
+    return this.resourceLimitService.deleteResourceLimit(resourceLimitId);
   }
 
   @ApiPublic({
@@ -97,9 +91,11 @@ export class ResourceLimitController {
     type: 'string',
   })
   @Get('subscriptions/:subscriptionId/resource-limits')
-  async getListResourceLimit(
+  getListResourceLimit(
     @Param('subscriptionId', ValidateUuid) subscriptionId: Uuid,
   ) {
-    return await this.resourceLimitService.getListResourceLimit(subscriptionId);
+    return this.resourceLimitService.getListResourceLimitBySubscriptionId(
+      subscriptionId,
+    );
   }
 }
