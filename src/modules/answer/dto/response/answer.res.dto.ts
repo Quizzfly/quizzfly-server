@@ -23,4 +23,7 @@ export class AnswerResDto extends BaseResDto {
 
   @UUIDField({ name: 'quiz_id' })
   quizId: string;
+
+  @NumberField({ name: 'answer_count' })
+  answerCount: number;
 }

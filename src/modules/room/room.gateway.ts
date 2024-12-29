@@ -106,7 +106,7 @@ export class RoomGateway
     }
 
     if (this.isHostInRoom(userId, client.id, room)) {
-      this.handleHostDisconnect(room);
+      await this.handleHostDisconnect(room);
     } else {
       const participant = this.participants[client.data.participantId];
       if (!participant) {
@@ -790,7 +790,7 @@ export class RoomGateway
     );
   }
 
-  handleHostDisconnect(room: RoomModel) {
+  async handleHostDisconnect(room: RoomModel) {
     this.server.to(room.roomPin).emit(
       RoomEvent.ROOM_CANCELED,
       convertCamelToSnake({
@@ -814,6 +814,10 @@ export class RoomGateway
     this.server.in(room.roomPin).socketsLeave(room.roomPin);
     delete this.rooms[room.roomPin];
     this.clients.delete(room.host.socketId);
+
+    await this.roomService.updateRoom(room.roomId, {
+      roomStatus: RoomStatus.CANCELED,
+    });
   }
 
   async handleParticipantDisconnect(

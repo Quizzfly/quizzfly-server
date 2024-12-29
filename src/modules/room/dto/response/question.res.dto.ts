@@ -17,6 +17,7 @@ import { QuizType } from '@modules/quiz/enums/quiz-type.enum';
 import { QuizzflyContentType } from '@modules/quizzfly/enums/quizzfly-content-type.enum';
 import { Expose, Transform } from 'class-transformer';
 
+@Expose()
 export class QuestionResDto extends BaseResDto {
   @Expose()
   roomId: Uuid;
@@ -72,7 +73,17 @@ export class QuestionResDto extends BaseResDto {
   questionIndex: number;
 
   @ClassFieldOptional(() => AnswerResDto, { isArray: true, each: true })
-  @Transform(({ obj }) => Object.values(obj.answers))
+  @Transform(({ obj }) => {
+    const recordAnswer = obj?.answers as Record<Uuid, AnswerResDto>;
+    const recordChoice = obj?.choices as Record<Uuid, number>;
+    if (recordAnswer && recordChoice) {
+      Object.entries(recordChoice).forEach(([key, value]) => {
+        recordAnswer[key].answerCount = value;
+      });
+      return Object.values(recordAnswer);
+    }
+    return [];
+  })
   @Expose()
   answers?: AnswerResDto[];
 
