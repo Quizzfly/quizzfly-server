@@ -69,7 +69,9 @@ export class SubscriptionPlanService {
   }
 
   async getListSubscriptionPlan() {
-    const subscriptions = await this.subscriptionPlanRepository.find();
+    const subscriptions = await this.subscriptionPlanRepository.findBy({
+      resourceLimits: true,
+    });
 
     return plainToInstance(SubscriptionPlanResDto, subscriptions, {
       excludeExtraneousValues: true,
