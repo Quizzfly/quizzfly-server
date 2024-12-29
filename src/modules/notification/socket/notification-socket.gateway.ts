@@ -42,10 +42,10 @@ export class NotificationSocketGateway
     this.logger.log(`Disconnected: ${client.id}`);
   }
 
-  pushNotificationToUser<T>(userId: Uuid, data: T) {
+  pushNotificationToUser<T>(userId: Uuid, data: T, event: NotificationEvent) {
     const client = this.users[userId];
     if (client) {
-      client.emit(NotificationEvent.NOTIFICATION, convertCamelToSnake(data));
+      client.emit(event, convertCamelToSnake(data));
       this.logger.log(`Notification sent to user ${userId}`);
     } else {
       this.logger.warn(`User ${userId} is not connected`);

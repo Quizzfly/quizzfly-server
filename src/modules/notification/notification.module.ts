@@ -17,6 +17,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     PushNotificationService,
     NotificationSocketGateway,
   ],
-  exports: [PushNotificationService],
+  exports: [PushNotificationService, NotificationSocketGateway],
 })
 export class NotificationModule {}

@@ -1,11 +1,11 @@
 export class CommonFunction {
-  static async generateCode() {
+  static async generateCode(lengthCode: number) {
     let result = '';
     const characters =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
     let counter = 0;
-    while (counter < 6) {
+    while (counter < lengthCode) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
       counter += 1;
     }
