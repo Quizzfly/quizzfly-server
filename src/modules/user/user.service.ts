@@ -111,11 +111,12 @@ export class UserService {
     return plainToInstance(UserResDto, user);
   }
 
-  async findByUserId(id: Uuid) {
+  async findByUserId(id: Uuid, withDeleted: boolean = false) {
     return Optional.of(
       await this.userRepository.findOne({
         where: { id },
         relations: ['userInfo'],
+        withDeleted,
       }),
     )
       .throwIfNotPresent(new NotFoundException(ErrorCode.USER_NOT_FOUND))
@@ -132,7 +133,7 @@ export class UserService {
     return this.getUserInfo(userId);
   }
 
-  async updateUser(userId: Uuid, dto: any) {
+  async updateUser(userId: Uuid, dto: Partial<UserEntity>) {
     await this.userRepository.update({ id: userId }, dto);
     return this.userRepository.findOne({ where: { id: userId } });
   }
@@ -208,7 +209,7 @@ export class UserService {
   }
 
   async restoreUser(userId: Uuid) {
-    const user = await this.findByUserId(userId);
+    const user = await this.findByUserId(userId, true);
     if (user.deletedAt !== null) {
       user.deletedAt = null;
       await this.userRepository.save(user);
