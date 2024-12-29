@@ -53,6 +53,12 @@ export type I18nTranslations = {
             "not_found": string;
         };
     };
+    "resourceLimit": {
+        "error": {
+            "not_found": string;
+            "already_exists": string;
+        };
+    };
     "role": {
         "error": {
             "role_name_exist": string;
@@ -87,6 +93,11 @@ export type I18nTranslations = {
         };
     };
     "slide": {
+        "error": {
+            "not_found": string;
+        };
+    };
+    "subscriptionPlan": {
         "error": {
             "not_found": string;
         };

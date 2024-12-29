@@ -4,6 +4,7 @@ import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
 import { RolesGuard } from '@core/guards/role.guard';
 import { CreateSubscriptionPlanReqDto } from '@modules/subscription/dto/request/create-subscription-plan.req.dto';
+import { UpdateSubscriptionPlanReqDto } from '@modules/subscription/dto/request/update-subscription-plan.req.dto';
 import { SubscriptionPlanService } from '@modules/subscription/service/subscription-plan.service';
 import {
   Body,
@@ -20,7 +21,7 @@ import { SubscriptionPlanResDto } from '../dto/response/subscription-plan.res.dt
 
 @ApiTags('Subscription Plan APIs')
 @Controller({
-  path: '/subscriptions',
+  path: 'subscriptions',
   version: '1',
 })
 export class SubscriptionPlanController {
@@ -35,8 +36,27 @@ export class SubscriptionPlanController {
   })
   @UseGuards(RolesGuard)
   @Post()
-  async createSubscriptionPlan(@Body() dto: CreateSubscriptionPlanReqDto) {
-    return await this.subscriptionPlanService.createSubscriptionPlan(dto);
+  createSubscriptionPlan(@Body() dto: CreateSubscriptionPlanReqDto) {
+    return this.subscriptionPlanService.createSubscriptionPlan(dto);
+  }
+
+  @ApiPublic({
+    summary: 'Get Information subscription plan',
+    type: SubscriptionPlanResDto,
+    isArray: true,
+  })
+  @ApiParam({
+    name: 'subscriptionId',
+    description: 'The UUID of the subscription',
+    type: 'string',
+  })
+  @Get(':subscriptionId')
+  getSubscriptionInfo(
+    @Param('subscriptionId', ValidateUuid) subscriptionId: Uuid,
+  ) {
+    return this.subscriptionPlanService.findById(subscriptionId, {
+      resourceLimits: true,
+    });
   }
 
   @ApiAuth({
@@ -51,11 +71,11 @@ export class SubscriptionPlanController {
   })
   @UseGuards(RolesGuard)
   @Put(':subscriptionId')
-  async updateSubscriptionPlan(
-    @Body() dto: CreateSubscriptionPlanReqDto,
+  updateSubscriptionPlan(
+    @Body() dto: UpdateSubscriptionPlanReqDto,
     @Param('subscriptionId', ValidateUuid) subscriptionId: Uuid,
   ) {
-    return await this.subscriptionPlanService.updateSubscriptionPlan(
+    return this.subscriptionPlanService.updateSubscriptionPlan(
       subscriptionId,
       dto,
     );
@@ -73,12 +93,10 @@ export class SubscriptionPlanController {
   })
   @UseGuards(RolesGuard)
   @Delete(':subscriptionId')
-  async deleteSubscriptionPlan(
+  deleteSubscriptionPlan(
     @Param('subscriptionId', ValidateUuid) subscriptionId: Uuid,
   ) {
-    return await this.subscriptionPlanService.deleteSubscriptionPlan(
-      subscriptionId,
-    );
+    return this.subscriptionPlanService.deleteSubscriptionPlan(subscriptionId);
   }
 
   @ApiPublic({
@@ -86,7 +104,7 @@ export class SubscriptionPlanController {
     type: SubscriptionPlanResDto,
   })
   @Get()
-  async getListSubscriptionPlan() {
-    return await this.subscriptionPlanService.getListSubscriptionPlan();
+  getListSubscriptionPlan() {
+    return this.subscriptionPlanService.getListSubscriptionPlan();
   }
 }

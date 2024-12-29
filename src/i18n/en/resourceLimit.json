@@ -1,0 +1,6 @@
+{
+  "error": {
+    "not_found": "The resource limit could not be found.",
+    "already_exists": "A resource limit for the given subscription plan and resource type already exists."
+  }
+}
