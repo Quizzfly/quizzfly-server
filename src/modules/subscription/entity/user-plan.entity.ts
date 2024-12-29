@@ -1,6 +1,7 @@
 import { Uuid } from '@common/types/common.type';
 import { AbstractEntity } from '@database/entities/abstract.entity';
 import { SubscriptionPlanEntity } from '@modules/subscription/entity/subscription-plan.entity';
+import { UsageResourceEntity } from '@modules/subscription/entity/usage-resource.entity';
 import { UserPlanStatus } from '@modules/subscription/enum/user-plan-status.enum';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import {
@@ -8,6 +9,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -40,7 +42,7 @@ export class UserPlanEntity extends AbstractEntity {
   userPlanStatus: UserPlanStatus;
 
   @Column({ name: 'paymented_at' })
-  paymentedAt: Date;
+  paymentedAt: string;
 
   @Column({ name: 'subscription_expired_at' })
   subscriptionExpiredAt: Date;
@@ -56,10 +58,13 @@ export class UserPlanEntity extends AbstractEntity {
   userId: Uuid;
 
   @JoinColumn({ name: 'subscription_plan_id' })
-  @ManyToOne('SubscriptionPlanEntity', 'userPlans')
+  @ManyToOne('SubscriptionPlanEntity', 'userPlans', { eager: true })
   subscriptionPlan: SubscriptionPlanEntity;
 
   @JoinColumn({ name: 'user_id' })
   @ManyToOne('UserEntity', 'userPlans')
   user: UserEntity;
+
+  @OneToMany('UsageResourceEntity', 'userPlan')
+  usageResources?: UsageResourceEntity[];
 }

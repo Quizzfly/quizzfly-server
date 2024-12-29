@@ -56,8 +56,6 @@ export class ResourceLimitService {
       subscriptionPlanId: subscriptionId,
     });
 
-    console.log(resourceLimits);
-
     return plainToInstance(ResourceLimitResDto, resourceLimits);
   }
 }

@@ -1,6 +1,7 @@
 import { NotificationService } from '@/modules/notification/service/notification.service';
 import { Uuid } from '@common/types/common.type';
 import { CreateNotificationDto } from '@modules/notification/dto/request/create-notification.dto';
+import { NotificationEvent } from '@modules/notification/socket/enums/notification-event.enum';
 import { NotificationSocketGateway } from '@modules/notification/socket/notification-socket.gateway';
 import { Injectable } from '@nestjs/common';
 
@@ -22,6 +23,7 @@ export class PushNotificationService {
     this.notificationSocketGateway.pushNotificationToUser(
       userId,
       savedNotification,
+      NotificationEvent.NOTIFICATION,
     );
   }
 
@@ -37,6 +39,7 @@ export class PushNotificationService {
       this.notificationSocketGateway.pushNotificationToUser(
         notification.receiverId,
         savedNotification,
+        NotificationEvent.NOTIFICATION,
       );
     }
   }
