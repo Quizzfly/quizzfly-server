@@ -8,7 +8,9 @@ import { WebhookPaymentUpdateReqDto } from '@modules/subscription/dto/request/we
 import { UserPlanResDto } from '@modules/subscription/dto/response/user-plan.res.dto';
 import { UserPlanEntity } from '@modules/subscription/entity/user-plan.entity';
 import { UserPlanStatus } from '@modules/subscription/enum/user-plan-status.enum';
+import { UsageResourceRepository } from '@modules/subscription/repository/usage-resource.repository';
 import { UserPlanRepository } from '@modules/subscription/repository/user-plan.repository';
+import { SubscriptionPlanService } from '@modules/subscription/service/subscription-plan.service';
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 
@@ -16,15 +18,21 @@ import { plainToInstance } from 'class-transformer';
 export class UserPlanService {
   constructor(
     private readonly userPlanRepository: UserPlanRepository,
+    private readonly usageResourceRepository: UsageResourceRepository,
+    private readonly subscriptionPlanService: SubscriptionPlanService,
     private readonly notificationSocketGateway: NotificationSocketGateway,
   ) {}
 
   async paySubscriptionPlan(userId: Uuid, subscriptionId: Uuid) {
+    const subscriptionPlan =
+      await this.subscriptionPlanService.findById(subscriptionId);
+
     const userPlan = new UserPlanEntity({
       subscriptionPlanId: subscriptionId,
       userId: userId,
       userPlanStatus: UserPlanStatus.WAITING,
       code: await this.generatePaymentCode(),
+      amount: subscriptionPlan.price,
     });
 
     await this.userPlanRepository.save(userPlan);
@@ -37,11 +45,26 @@ export class UserPlanService {
       userId,
       filterOptions,
     );
-    console.log(userPlans);
 
     const totalRecords = await this.userPlanRepository.countBy({
       userId: userId,
     });
+
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
+
+    return new OffsetPaginatedDto(
+      plainToInstance(UserPlanResDto, userPlans, {
+        excludeExtraneousValues: true,
+      }),
+      meta,
+    );
+  }
+
+  async getUserPlanByAdmin(filterOptions: PageOptionsDto) {
+    const userPlans: Array<any> =
+      await this.userPlanRepository.getUserPlanByAdmin(filterOptions);
+
+    const totalRecords = await this.userPlanRepository.count();
 
     const meta = new OffsetPaginationDto(totalRecords, filterOptions);
 

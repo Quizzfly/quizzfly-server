@@ -69,3 +69,6 @@ export enum ActionList {
   UPDATE_ANY = 'updateAny',
   DELETE = 'delete',
 }
+
+export const GENERATE_QUIZ_AI_URL =
+  'https://quizzfly-ai.vercel.app/api/ai/quizzes';
