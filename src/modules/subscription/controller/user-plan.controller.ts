@@ -1,11 +1,21 @@
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
 import { Uuid } from '@common/types/common.type';
+import { ROLE } from '@core/constants/entity.enum';
 import { CurrentUser } from '@core/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@core/decorators/http.decorators';
 import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
+import { RolesGuard } from '@core/guards/role.guard';
 import { WebhookPaymentUpdateReqDto } from '@modules/subscription/dto/request/webhook-payment-update.req.dto';
 import { UserPlanService } from '@modules/subscription/service/user-plan.service';
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { UserPlanResDto } from '../dto/response/user-plan.res.dto';
 
@@ -48,6 +58,19 @@ export class UserPlanController {
     @Query() filterOptions: PageOptionsDto,
   ) {
     return await this.userPlanService.getMyUserPlan(userId, filterOptions);
+  }
+
+  @ApiAuth({
+    summary: 'Get user subscription plan by admin',
+    type: UserPlanResDto,
+    roles: [ROLE.ADMIN],
+    isPaginated: true,
+    paginationType: 'offset',
+  })
+  @UseGuards(RolesGuard)
+  @Get('/admin/user-plans')
+  async getUserPlanByAdmin(@Query() filterOptions: PageOptionsDto) {
+    return await this.userPlanService.getUserPlanByAdmin(filterOptions);
   }
 
   @ApiPublic({

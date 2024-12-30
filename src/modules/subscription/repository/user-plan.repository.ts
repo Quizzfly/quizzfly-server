@@ -29,10 +29,27 @@ export class UserPlanRepository extends Repository<UserPlanEntity> {
       : 0;
 
     const query = this.createQueryBuilder('userPlan')
+      .leftJoinAndSelect('userPlan.usageResources', 'usageResource')
+      .leftJoinAndSelect('userPlan.subscriptionPlan', 'subscriptionPlan')
       .where('userPlan.userId = :userId', { userId })
       .orderBy('userPlan.createdAt', filterOptions.order)
-      .offset(skip)
-      .limit(filterOptions.limit);
+      .skip(skip)
+      .take(filterOptions.limit);
+
+    return await query.getMany();
+  }
+
+  async getUserPlanByAdmin(filterOptions: PageOptionsDto) {
+    const skip = filterOptions.page
+      ? (filterOptions.page - 1) * filterOptions.limit
+      : 0;
+
+    const query = this.createQueryBuilder('userPlan')
+      .leftJoinAndSelect('userPlan.usageResources', 'usageResource')
+      .leftJoinAndSelect('userPlan.subscriptionPlan', 'subscriptionPlan')
+      .orderBy('userPlan.createdAt', filterOptions.order)
+      .skip(skip)
+      .take(filterOptions.limit);
 
     return await query.getMany();
   }

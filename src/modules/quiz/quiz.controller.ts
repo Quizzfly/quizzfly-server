@@ -6,6 +6,7 @@ import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
 import { PermissionGuard } from '@core/guards/permission.guard';
 import { CreateMultipleQuizGeneratedReqDto } from '@modules/quiz/dto/request/create-multiple-quiz-generated.req.dto';
 import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto';
+import { GenerateQuizByAiReqDto } from '@modules/quiz/dto/request/generate-quiz-by-ai.req.dto';
 import { SettingQuizReqDto } from '@modules/quiz/dto/request/setting-quiz.req.dto';
 import { UpdateQuizReqDto } from '@modules/quiz/dto/request/update-quiz.req.dto';
 import { QuizResDto } from '@modules/quiz/dto/response/quiz.res.dto';
@@ -196,5 +197,16 @@ export class QuizController {
     @Param('quizId', ValidateUuid) quizId: Uuid,
   ) {
     return this.quizService.deleteOne(quizzflyId, quizId, userId);
+  }
+
+  @ApiAuth({
+    summary: 'Generate quizzes by AI',
+  })
+  @Post('quizzfly/quizzes/generate-by-ai')
+  async generateQuizByAI(
+    @CurrentUser('id') userId: Uuid,
+    @Body() dto: GenerateQuizByAiReqDto,
+  ) {
+    return this.quizService.generateQuizByAI(userId, dto);
   }
 }

@@ -1,3 +1,4 @@
+import { CommonFunction } from '@common/common.function';
 import { Uuid } from '@common/types/common.type';
 import { defaultInstanceEntity } from '@core/constants/app.constant';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
@@ -10,6 +11,7 @@ import {
 } from '@modules/answer/events';
 import { CreateMultipleQuizGeneratedReqDto } from '@modules/quiz/dto/request/create-multiple-quiz-generated.req.dto';
 import { CreateQuizReqDto } from '@modules/quiz/dto/request/create-quiz.req.dto';
+import { GenerateQuizByAiReqDto } from '@modules/quiz/dto/request/generate-quiz-by-ai.req.dto';
 import { QuizResDto } from '@modules/quiz/dto/response/quiz.res.dto';
 import { QuizEntity } from '@modules/quiz/entities/quiz.entity';
 import {
@@ -21,6 +23,7 @@ import {
 import { QuizRepository } from '@modules/quiz/repositories/quiz.repository';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { UpdatePositionSlideEvent } from '@modules/slide/events';
+import { HttpService } from '@nestjs/axios';
 import {
   ForbiddenException,
   Injectable,
@@ -39,6 +42,7 @@ export class QuizService {
     private readonly quizRepository: QuizRepository,
     private readonly quizzflyService: QuizzflyService,
     private readonly eventService: EventService,
+    private readonly httpService: HttpService,
   ) {}
 
   @Transactional()
@@ -244,5 +248,9 @@ export class QuizService {
     const quiz = await this.findOneDetailById(payload.quizId);
     quiz.prevElementId = payload.prevElementId;
     await this.quizRepository.save(quiz);
+  }
+
+  async generateQuizByAI(userId: Uuid, dto: GenerateQuizByAiReqDto) {
+    return CommonFunction.generateQuizByAI(dto);
   }
 }
