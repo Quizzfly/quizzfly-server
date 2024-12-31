@@ -215,4 +215,17 @@ export class UserService {
       await this.userRepository.save(user);
     }
   }
+
+  async isExistUserByEmail(email: string) {
+    const user = await this.userRepository.findOne({
+      where: { email },
+      withDeleted: true,
+    });
+
+    if (user) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
