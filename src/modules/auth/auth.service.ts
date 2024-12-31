@@ -86,6 +86,13 @@ export class AuthService {
     if (user !== null) {
       return this.createToken(user);
     } else {
+      const isDeletedUser = await this.userService.isExistUserByEmail(
+        googleResponse.email,
+      );
+      if (isDeletedUser) {
+        throw new BadRequestException(ErrorCode.ACCOUNT_LOCKED);
+      }
+
       const newUser = await this.userService.createUserWithGoogle(
         googleResponse.email,
         googleResponse.id,
