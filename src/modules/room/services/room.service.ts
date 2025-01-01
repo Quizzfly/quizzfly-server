@@ -5,6 +5,7 @@ import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto'
 import { Uuid } from '@common/types/common.type';
 import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { Optional } from '@core/utils/optional';
+import { MemberInGroupService } from '@modules/group/service/member-in-group.service';
 import { QuizzflyService } from '@modules/quizzfly/quizzfly.service';
 import { CreateRoomReqDto } from '@modules/room/dto/request/create-room.req';
 import { FilterRoomReqDto } from '@modules/room/dto/request/filter-room.req.dto';
@@ -29,13 +30,17 @@ export class RoomService {
   constructor(
     private readonly roomRepository: RoomRepository,
     private readonly quizzflyService: QuizzflyService,
+    private readonly groupService: MemberInGroupService,
   ) {}
 
   @Transactional()
   async createRoom(userId: Uuid, dto: CreateRoomReqDto) {
     let roomPin: string;
     const quizzfly = await this.quizzflyService.findById(dto.quizzflyId);
-    if (userId !== quizzfly.userId) {
+
+    if (dto.groupId) {
+      await this.groupService.isUserInGroup(userId, dto.groupId);
+    } else if (userId !== quizzfly.userId) {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 

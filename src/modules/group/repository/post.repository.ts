@@ -1,8 +1,13 @@
+import { OffsetPaginationDto } from '@common/dto/offset-pagination/offset-pagination.dto';
 import { PageOptionsDto } from '@common/dto/offset-pagination/page-options.dto';
+import { OffsetPaginatedDto } from '@common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@common/types/common.type';
 import { convertSnakeToCamel } from '@core/helpers';
+import { InfoSharedResDto } from '@modules/group/dto/response/info-shared.rest.dto';
 import { PostEntity } from '@modules/group/entity/post.entity';
+import { PostType } from '@modules/group/enums/post-type.enum';
 import { Injectable } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
@@ -138,5 +143,34 @@ export class PostRepository extends Repository<PostEntity> {
       .andWhere('post.deletedAt IS NULL');
 
     return convertSnakeToCamel(await query.getRawOne());
+  }
+
+  async getSharedQuizzfly(groupId: Uuid, filterOptions: PageOptionsDto) {
+    const skip = filterOptions.page
+      ? (filterOptions.page - 1) * filterOptions.limit
+      : 0;
+
+    const queryBuilder = this.createQueryBuilder('post')
+      .leftJoinAndSelect('post.quizzfly', 'quizzfly')
+      .where('post.groupId = :groupId', { groupId })
+      .andWhere('post.deletedAt IS NULL')
+      .andWhere('post.type = :postType', { postType: PostType.SHARE })
+      .orderBy('post.createdAt', filterOptions.order)
+      .offset(skip)
+      .limit(filterOptions.limit);
+
+    queryBuilder
+      .leftJoinAndSelect('post.member', 'member')
+      .leftJoinAndSelect('member.userInfo', 'memberInfo');
+
+    const [items, totalRecords] = await queryBuilder.getManyAndCount();
+    const meta = new OffsetPaginationDto(totalRecords, filterOptions);
+
+    return new OffsetPaginatedDto(
+      plainToInstance(InfoSharedResDto, items, {
+        excludeExtraneousValues: true,
+      }),
+      meta,
+    );
   }
 }

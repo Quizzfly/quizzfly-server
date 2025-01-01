@@ -3,6 +3,7 @@ import {
   BooleanField,
   StringField,
   UUIDField,
+  UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
 import { Expose } from 'class-transformer';
 
@@ -38,4 +39,12 @@ export class CreateRoomReqDto {
     name: 'lobby_music',
   })
   lobbyMusic: string;
+
+  @UUIDFieldOptional({
+    name: 'group_id',
+  })
+  @Expose({
+    name: 'group_id',
+  })
+  groupId?: Uuid;
 }

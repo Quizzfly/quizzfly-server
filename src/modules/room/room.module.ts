@@ -1,3 +1,4 @@
+import { GroupModule } from '@modules/group/group.module';
 import { QuizzflyModule } from '@modules/quizzfly/quizzfly.module';
 import { ParticipantAnswerEntity } from '@modules/room/entities/participant-answer.entity';
 import { ParticipantInRoomEntity } from '@modules/room/entities/participant-in-room.entity';
@@ -37,6 +38,7 @@ const providers = [
       ParticipantAnswerEntity,
     ]),
     QuizzflyModule,
+    GroupModule,
   ],
   controllers: [RoomController],
   providers: [
