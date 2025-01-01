@@ -7,6 +7,7 @@ import { ValidateUuid } from '@core/decorators/validators/uuid-validator';
 import { PermissionGuard } from '@core/guards/permission.guard';
 import { CreatePostReqDto } from '@modules/group/dto/request/create-post.req.dto';
 import { InfoPostResDto } from '@modules/group/dto/response/info-post.res.dto';
+import { InfoSharedResDto } from '@modules/group/dto/response/info-shared.rest.dto';
 import { PostService } from '@modules/group/service/post.service';
 import {
   Body,
@@ -150,5 +151,25 @@ export class PostController {
     @Param('postId', ValidateUuid) postId: Uuid,
   ) {
     return this.postService.reactPost(userId, postId);
+  }
+
+  @ApiAuth({
+    summary: 'Get shared in group',
+    isPaginated: true,
+    paginationType: 'offset',
+    type: InfoSharedResDto,
+  })
+  @ApiParam({
+    name: 'groupId',
+    description: 'The UUID of the Group',
+    type: 'string',
+  })
+  @Get('groups/:groupId/shared')
+  async getSharedGroup(
+    @CurrentUser('id') userId: Uuid,
+    @Param('groupId', ValidateUuid) groupId: Uuid,
+    @Query() filterOptions: PageOptionsDto,
+  ) {
+    return this.postService.getSharedGroup(groupId, userId, filterOptions);
   }
 }

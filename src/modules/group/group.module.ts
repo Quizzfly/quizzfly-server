@@ -50,6 +50,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     PostService,
     GroupSocketGateway,
   ],
-  exports: [GroupService],
+  exports: [GroupService, MemberInGroupService],
 })
 export class GroupModule {}

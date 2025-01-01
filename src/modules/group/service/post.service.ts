@@ -238,4 +238,14 @@ export class PostService {
       }
     }
   }
+
+  async getSharedGroup(
+    groupId: Uuid,
+    userId: Uuid,
+    filterOptions: PageOptionsDto,
+  ) {
+    await this.memberInGroupService.isUserInGroup(userId, groupId);
+
+    return this.postRepository.getSharedQuizzfly(groupId, filterOptions);
+  }
 }
