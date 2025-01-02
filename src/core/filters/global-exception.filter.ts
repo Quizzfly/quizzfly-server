@@ -131,7 +131,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             exception.message
           ] as unknown as keyof I18nTranslations,
         )
-      : exception.message;
+      : ErrorCodeDetails[exception.message] || exception.message;
     const errorRes = {
       timestamp: new Date().toISOString(),
       statusCode,
