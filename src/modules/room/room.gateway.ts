@@ -926,13 +926,14 @@ export class RoomGateway
       `Participant [${participant.socketId} - ${participant.userId} - ${participant.nickName}] joined room ${payload.roomPin}.`,
     );
 
-    this.server.to(payload.roomPin).emit(
-      RoomEvent.PARTICIPANT_JOINED,
-      convertCamelToSnake({
-        newParticipant: participant,
-        totalParticipant: room.participants.size,
-      }),
-    );
+    const data = convertCamelToSnake({
+      newParticipant: participant,
+      totalParticipant: room.participants.size,
+    });
+
+    const hostSocket = this.clients.get(room.host.userId);
+    hostSocket.emit(RoomEvent.PARTICIPANT_JOINED, data);
+    client.emit(RoomEvent.PARTICIPANT_JOINED, data);
 
     client.data.roomPin = payload.roomPin;
     client.data.userId = payload.userId;
@@ -956,13 +957,14 @@ export class RoomGateway
 
     participant.socketId = client.id;
     room.participants.add(payload.participantId);
-    this.server.to(payload.roomPin).emit(
-      RoomEvent.PARTICIPANT_RECONNECTED,
-      convertCamelToSnake({
-        participant,
-        totalParticipant: room.participants.size,
-      }),
-    );
+
+    const response = convertCamelToSnake({
+      participant,
+      totalParticipant: room.participants.size,
+    });
+    const hostSocket = this.clients.get(room.host.userId);
+    hostSocket.emit(RoomEvent.PARTICIPANT_RECONNECTED, response);
+    client.emit(RoomEvent.PARTICIPANT_RECONNECTED, response);
 
     client.join(payload.roomPin);
     this.clients.set(payload.participantId, client);

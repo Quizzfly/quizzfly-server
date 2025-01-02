@@ -8,6 +8,7 @@ import {
   NumberFieldOptional,
   StringField,
   StringFieldOptional,
+  UUIDField,
   UUIDFieldOptional,
 } from '@core/decorators/field.decorators';
 import { FileResDto } from '@modules/file/dto/file.res.dto';
@@ -17,6 +18,7 @@ import { Expose, Transform } from 'class-transformer';
 
 @Expose()
 export class QuestionDto extends BaseResDto {
+  @UUIDField()
   @Expose()
   roomId: Uuid;
 
@@ -81,7 +83,9 @@ export class QuestionDto extends BaseResDto {
   @Expose()
   choices?: Record<Uuid, number>;
 
-  @Transform(({ obj }) => Object.values(obj.answers))
+  @Transform(({ obj }) =>
+    Object.values(obj.answers).sort((a: any, b: any) => a.index - b.index),
+  )
   @Expose()
   answers?: Array<AnswerInRoom>;
 }
