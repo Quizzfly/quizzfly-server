@@ -116,7 +116,7 @@ export class RoleService {
     }
 
     const role = await this.findOneRole({ id: roleId });
-    if (dto.name && isRoleCoreSystem(role.name)) {
+    if (dto.name !== role.name && isRoleCoreSystem(role.name)) {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
     Object.assign(role, { ...dto, permission_ids: undefined });
