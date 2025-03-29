@@ -1,63 +1,50 @@
 services:
-  nestjs-boilerplate-api:
-    image: nestjs-boilerplate-api
-    container_name: nestjs-boilerplate-api
-    restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env.docker
-    ports:
-      - "3000:3000"
-    networks:
-      - nestjs-boilerplate-network
-
   db:
     image: postgres:16
-    container_name: nestjs-boilerplate-postgres
+    container_name: quizzfly-postgres
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: nestjs_boilerplate
+      POSTGRES_DB: quizzfly
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       TZ: "UTC"
     ports:
       - "25432:5432"
     networks:
-      - nestjs-boilerplate-network
+      - quizzfly-network
 
-  maildev:
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    hostname: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - quizzfly-network
+
+  quizzfly-api:
+    image: quizzfly-api
+    container_name: quizzfly-api
     build:
       context: .
-      dockerfile: maildev.Dockerfile
+      dockerfile: Dockerfile
+    env_file:
+      - .env
     ports:
-      - ${MAIL_CLIENT_PORT}:1080
-      - ${MAIL_PORT}:1025
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
     networks:
-      - nestjs-boilerplate-network
-
-  pgadmin:
-    container_name: pgadmin
-    image: dpage/pgadmin4
-    ports:
-      - "18080:80"
-    volumes:
-      - pgadmin_data:/root/.pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: 12345678
-      PGADMIN_CONFIG_WTF_CSRF_ENABLED: "False"
-      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
-    networks:
-      - nestjs-boilerplate-network
+      - quizzfly-network
 
 volumes:
   postgres_data:
-  pgadmin_data:
 
 networks:
-  nestjs-boilerplate-network:
+  quizzfly-network:
     driver: bridge

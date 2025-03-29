@@ -1,4 +1,3 @@
-import { SYSTEM_USER_ID } from '@core/constants/app.constant';
 import { UserEntity } from '@modules/user/entities/user.entity';
 import { DataSource } from 'typeorm';
 import { Seeder, SeederFactoryManager } from 'typeorm-extension';
@@ -12,22 +11,22 @@ export class UserSeeder1722335726360 implements Seeder {
   ): Promise<any> {
     const repository = dataSource.getRepository(UserEntity);
 
-    const adminUser = await repository.findOneBy({ username: 'admin' });
+    const adminUser = await repository.findOneBy({ email: 'admin@gmail.com' });
     if (!adminUser) {
       await repository.insert(
         new UserEntity({
-          username: 'admin',
-          email: 'admin@example.com',
+          email: 'admin@gmail.com',
           password: '12345678',
-          bio: "hello, i'm a backend developer",
-          image: 'https://example.com/avatar.png',
-          createdBy: SYSTEM_USER_ID,
-          updatedBy: SYSTEM_USER_ID,
+          isActive: true,
+          isConfirmed: true,
         }),
       );
     }
 
-    const userFactory = factoryManager.get(UserEntity);
-    await userFactory.saveMany(5);
+    const countRecord = await repository.count();
+    if (countRecord === 1) {
+      const userFactory = factoryManager.get(UserEntity);
+      await userFactory.saveMany(5);
+    }
   }
 }

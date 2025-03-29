@@ -25,12 +25,12 @@ export class PageOptionsDto {
   readonly page?: number = DEFAULT_CURRENT_PAGE;
 
   @StringFieldOptional()
-  readonly q?: string;
+  readonly keywords?: string;
 
-  @EnumFieldOptional(() => Order, { default: Order.ASC })
-  readonly order?: Order = Order.ASC;
+  @EnumFieldOptional(() => Order, { default: Order.DESC })
+  readonly order?: Order = Order.DESC;
 
-  get offset() {
+  get offset(): number {
     return this.page ? (this.page - 1) * this.limit : 0;
   }
 }

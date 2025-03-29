@@ -1,8 +1,10 @@
 import { type AllConfigType } from '@config/config.type';
 import { GlobalExceptionFilter } from '@core/filters/global-exception.filter';
 import { AuthGuard } from '@core/guards/auth.guard';
+import { CamelToSnakeInterceptor } from '@core/interceptors/camel-to-snake.interceptor';
+import { ResponseInterceptor } from '@core/interceptors/response.interceptor';
+import { JwtUtil } from '@core/utils/jwt.util';
 import setupSwagger from '@core/utils/setup-swagger';
-import { AuthService } from '@modules/auth/auth.service';
 import {
   ClassSerializerInterceptor,
   HttpStatus,
@@ -17,11 +19,15 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import compression from 'compression';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  initializeTransactionalContext();
+
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
+    cors: true,
   });
 
   app.useLogger(app.get(Logger));
@@ -39,11 +45,12 @@ async function bootstrap() {
   const corsOrigin = configService.getOrThrow('app.corsOrigin', {
     infer: true,
   });
+  const appUrl = configService.getOrThrow<string>('app.url', { infer: true });
 
   app.enableCors({
     origin: corsOrigin,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept',
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true,
   });
   console.info('CORS Origin:', corsOrigin);
@@ -55,7 +62,7 @@ async function bootstrap() {
     configService.getOrThrow('app.apiPrefix', { infer: true }),
     {
       exclude: [
-        // { method: RequestMethod.GET, path: '/' },
+        { method: RequestMethod.GET, path: '/' },
         { method: RequestMethod.GET, path: 'health' },
       ],
     },
@@ -65,7 +72,7 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
-  app.useGlobalGuards(new AuthGuard(reflector, app.get(AuthService)));
+  app.useGlobalGuards(new AuthGuard(reflector, app.get(JwtUtil)));
   app.useGlobalFilters(new GlobalExceptionFilter(configService));
   app.useGlobalPipes(
     new ValidationPipe({
@@ -77,16 +84,17 @@ async function bootstrap() {
       },
     }),
   );
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(reflector));
-
-  if (isDevelopment) {
-    setupSwagger(app);
-  }
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(reflector),
+    new CamelToSnakeInterceptor(),
+    new ResponseInterceptor(),
+  );
+  setupSwagger(app);
 
   await app.listen(configService.getOrThrow('app.port', { infer: true }));
 
   console.info(`Server running on ${await app.getUrl()}`);
-
+  console.log(`Api docs at: ${appUrl}/api-docs`);
   return app;
 }
 

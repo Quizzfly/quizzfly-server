@@ -1,17 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { ErrorDetailDto } from './error-detail.dto';
 
 export class ErrorDto {
   @ApiProperty()
   timestamp: string;
 
-  @ApiProperty()
+  @ApiProperty({ name: 'status_code' })
   statusCode: number;
 
   @ApiProperty()
   error: string;
 
   @ApiPropertyOptional()
+  @Expose()
   errorCode?: string;
 
   @ApiProperty()

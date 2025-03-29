@@ -28,6 +28,10 @@ class EnvironmentVariablesValidator {
   @IsOptional()
   APP_URL: string;
 
+  @IsUrl({ require_tld: false })
+  @IsOptional()
+  APP_CLIENT_URL: string;
+
   @IsInt()
   @Min(0)
   @Max(65535)
@@ -83,6 +87,7 @@ export default registerAs<AppConfig>('app', () => {
     nodeEnv: process.env.NODE_ENV || Environment.DEVELOPMENT,
     name: process.env.APP_NAME || 'app',
     url: process.env.APP_URL || `http://localhost:${port}`,
+    clientUrl: process.env.APP_CLIENT_URL,
     port,
     debug: process.env.APP_DEBUG === 'true',
     apiPrefix: process.env.API_PREFIX || 'api',

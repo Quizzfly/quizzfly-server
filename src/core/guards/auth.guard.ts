@@ -1,5 +1,6 @@
 import { IS_AUTH_OPTIONAL, IS_PUBLIC } from '@core/constants/app.constant';
-import { AuthService } from '@modules/auth/auth.service';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
+import { JwtUtil } from '@core/utils/jwt.util';
 import {
   CanActivate,
   ExecutionContext,
@@ -13,7 +14,7 @@ import { Request } from 'express';
 export class AuthGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private authService: AuthService,
+    private jwtUtil: JwtUtil,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -36,10 +37,10 @@ export class AuthGuard implements CanActivate {
       return true;
     }
     if (!accessToken) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException(ErrorCode.UNAUTHORIZED);
     }
 
-    request['user'] = this.authService.verifyAccessToken(accessToken);
+    request['user'] = await this.jwtUtil.verifyAccessToken(accessToken);
 
     return true;
   }

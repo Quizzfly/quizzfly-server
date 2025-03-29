@@ -1,10 +1,12 @@
-import { I18nTranslations } from '@/generated/i18n.generated';
 import { ErrorDetailDto } from '@common/dto/error-detail.dto';
 import { ErrorDto } from '@common/dto/error.dto';
+import { ResponseDataApi } from '@common/dto/general/response-data-api.dto';
 import { AllConfigType } from '@config/config.type';
-import { constraintErrors } from '@core/constants/constraint-errors';
-import { ErrorCode } from '@core/constants/error-code.constant';
+import { constraintErrors } from '@core/constants/error-code/constraint-errors';
+import { ErrorCodeDetails } from '@core/constants/error-code/error-code-detail.constant';
+import { ErrorCode } from '@core/constants/error-code/error-code.constant';
 import { ValidationException } from '@core/exceptions/validation.exception';
+import { I18nTranslations } from '@generated/i18n.generated';
 import {
   type ArgumentsHost,
   Catch,
@@ -16,7 +18,6 @@ import {
   ValidationError,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { type Response } from 'express';
 import { STATUS_CODES } from 'http';
 import { I18nContext } from 'nestjs-i18n';
 import { EntityNotFoundError, QueryFailedError } from 'typeorm';
@@ -30,10 +31,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   constructor(private readonly configService: ConfigService<AllConfigType>) {}
 
   catch(exception: any, host: ArgumentsHost): void {
-    this.i18n = I18nContext.current<I18nTranslations>(host);
-    this.debug = this.configService.getOrThrow('app.debug', { infer: true });
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
+    const response = ctx.getResponse();
+    const request = ctx.getRequest();
+
+    this.i18n = request.i18nContext;
+    this.debug = this.configService.getOrThrow('app.debug', { infer: true });
 
     let error: ErrorDto;
 
@@ -53,12 +56,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (this.debug) {
       error.stack = exception.stack;
-      error.trace = exception;
+      // error.trace = exception;
 
       this.logger.debug(error);
     }
 
-    response.status(error.statusCode).json(error);
+    response.status(error.statusCode).json(ResponseDataApi.failure(error));
   }
 
   /**
@@ -98,16 +101,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       message: string;
     };
     const statusCode = exception.getStatus();
+    const message =
+      r.message ||
+      this.i18n.t(r.errorCode as unknown as keyof I18nTranslations);
 
     const errorRes = {
       timestamp: new Date().toISOString(),
       statusCode,
       error: STATUS_CODES[statusCode],
-      errorCode:
-        Object.keys(ErrorCode)[Object.values(ErrorCode).indexOf(r.errorCode)],
-      message:
-        r.message ||
-        this.i18n.t(r.errorCode as unknown as keyof I18nTranslations),
+      errorCode: r.errorCode,
+      message,
     };
 
     this.logger.debug(exception);
@@ -122,12 +125,20 @@ export class GlobalExceptionFilter implements ExceptionFilter {
    */
   private handleHttpException(exception: HttpException): ErrorDto {
     const statusCode = exception.getStatus();
+    const message = ErrorCodeDetails[exception.message]
+      ? this.i18n.t(
+          ErrorCodeDetails[
+            exception.message
+          ] as unknown as keyof I18nTranslations,
+        )
+      : ErrorCodeDetails[exception.message] || exception.message;
     const errorRes = {
       timestamp: new Date().toISOString(),
       statusCode,
       error: STATUS_CODES[statusCode],
-      message: exception.message,
-    };
+      errorCode: exception.message ?? undefined,
+      message,
+    } as unknown as ErrorDto;
 
     this.logger.debug(exception);
 
@@ -197,7 +208,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       statusCode,
       error: STATUS_CODES[statusCode],
-      message: error?.message || 'An unexpected error occurred',
+      message:
+        this.i18n.t('common.error.internal_server_error') ||
+        'An unexpected error occurred',
     };
 
     this.logger.error(error);

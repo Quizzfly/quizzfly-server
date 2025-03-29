@@ -1,0 +1,6 @@
+{
+  "error": {
+    "role_name_exist": "Role name already exists.",
+    "role_not_found": "Role not found."
+  }
+}

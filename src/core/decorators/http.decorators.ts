@@ -1,9 +1,15 @@
 import { ErrorDto } from '@common/dto/error.dto';
+import { PermissionPayload } from '@config/permission.config';
+import { ActionList, ResourceList } from '@core/constants/app.constant';
+import { ROLE } from '@core/constants/entity.enum';
+import { CheckPermissions } from '@core/decorators/permission.decorator';
+import { Roles } from '@core/decorators/role.decorator';
+import { PermissionHandler } from '@core/utils/permission-handler';
 import {
+  applyDecorators,
   HttpCode,
   HttpStatus,
   type Type,
-  applyDecorators,
 } from '@nestjs/common';
 import {
   ApiBasicAuth,
@@ -29,6 +35,7 @@ interface IApiOptions<T extends Type<any>> {
   errorResponses?: ApiResponseType[];
   statusCode?: HttpStatus;
   isPaginated?: boolean;
+  isArray?: boolean;
   paginationType?: PaginationType;
 }
 
@@ -36,6 +43,8 @@ type IApiPublicOptions = IApiOptions<Type<any>>;
 
 interface IApiAuthOptions extends IApiOptions<Type<any>> {
   auths?: ApiAuthType[];
+  roles?: ROLE[];
+  permissions?: PermissionPayload[];
 }
 
 export const ApiPublic = (options: IApiPublicOptions = {}): MethodDecorator => {
@@ -52,6 +61,7 @@ export const ApiPublic = (options: IApiPublicOptions = {}): MethodDecorator => {
     type: options.type,
     description: options?.description ?? 'OK',
     paginationType: options.paginationType || 'offset',
+    isArray: options.isArray ?? undefined,
   };
 
   const errorResponses = (options.errorResponses || defaultErrorResponses)?.map(
@@ -87,8 +97,10 @@ export const ApiAuth = (options: IApiAuthOptions = {}): MethodDecorator => {
     type: options.type,
     description: options?.description ?? 'OK',
     paginationType: options.paginationType || 'offset',
+    isArray: options.isArray ?? undefined,
   };
   const auths = options.auths || ['jwt'];
+  const roles: ROLE[] = options?.roles || [ROLE.USER];
 
   const errorResponses = (options.errorResponses || defaultErrorResponses)?.map(
     (statusCode) =>
@@ -110,9 +122,21 @@ export const ApiAuth = (options: IApiAuthOptions = {}): MethodDecorator => {
     }
   });
 
+  const permissions: PermissionPayload[] = options?.permissions ?? [
+    {
+      resource: ResourceList.USER,
+      actions: [ActionList.READ, ActionList.UPDATE],
+    },
+  ];
+  const permissionHandlers = permissions.map(
+    (permission) => new PermissionHandler(permission),
+  );
+
   return applyDecorators(
     ApiOperation({ summary: options?.summary }),
     HttpCode(options.statusCode || defaultStatusCode),
+    Roles(...roles),
+    CheckPermissions(...permissionHandlers),
     isPaginated
       ? ApiPaginatedResponse(ok)
       : options.statusCode === 201

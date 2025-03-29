@@ -19,6 +19,7 @@ export const AppDataSource = new DataSource({
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
   migrationsTableName: 'migrations',
+  autoLoadEntities: true,
   poolSize: process.env.DATABASE_MAX_CONNECTIONS
     ? parseInt(process.env.DATABASE_MAX_CONNECTIONS, 10)
     : 100,
