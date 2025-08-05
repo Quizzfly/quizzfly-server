@@ -8,34 +8,45 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DB: quizzfly
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      TZ: "UTC"
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      TZ: ${TZ:-UTC}
+      PGTZ: ${PGTZ:-UTC}
     ports:
-      - "25432:5432"
+      - '25432:5432'
     networks:
       - quizzfly-network
 
   redis:
     image: redis:latest
-    container_name: redis-container
+    restart: unless-stopped
+    container_name: quizzfly-redis
     hostname: redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+    environment:
+      REDIS_ARGS: '--requirepass ${REDIS_PASSWORD}'
+    volumes:
+      - redis_data:/data
     networks:
       - quizzfly-network
 
   quizzfly-api:
     image: quizzfly-api
     container_name: quizzfly-api
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
     env_file:
       - .env
     ports:
-      - "3000:3000"
+      - '${APP_PORT}:${APP_PORT}'
+    expose:
+      - ${APP_PORT}
     depends_on:
       - db
       - redis
@@ -44,6 +55,7 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   quizzfly-network:

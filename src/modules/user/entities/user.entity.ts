@@ -21,6 +21,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 import { UserInfoEntity } from './user-info.entity';
 
@@ -59,37 +60,37 @@ export class UserEntity extends AbstractEntity {
   role: RoleEntity;
 
   @OneToMany(() => SessionEntity, (session) => session.user)
-  sessions?: SessionEntity[];
+  sessions?: Relation<SessionEntity>[];
 
   @OneToMany('QuizzflyEntity', 'user')
-  quizzflies?: QuizzflyEntity[];
+  quizzflies?: Relation<QuizzflyEntity>[];
 
   @OneToMany('RoomEntity', 'user')
-  rooms?: RoomEntity[];
+  rooms?: Relation<RoomEntity>[];
 
   @OneToMany(() => MemberInGroupEntity, (member) => member.member)
-  memberInGroups?: MemberInGroupEntity[];
+  memberInGroups?: Relation<MemberInGroupEntity>[];
 
   @OneToMany('PostEntity', 'member')
-  posts?: PostEntity[];
+  posts?: Relation<PostEntity>[];
 
   @OneToMany('ReactPostEntity', 'member')
-  reactPosts?: ReactPostEntity[];
+  reactPosts?: Relation<ReactPostEntity>[];
 
   @OneToMany('CommentPostEntity', 'member')
-  commentPosts?: CommentPostEntity[];
+  commentPosts?: Relation<CommentPostEntity>[];
 
   @OneToMany('UserPlanEntity', 'user')
-  userPlans?: UserPlanEntity[];
+  userPlans?: Relation<UserPlanEntity>[];
 
   @OneToOne(() => UserInfoEntity, (userInfo) => userInfo.user, { eager: true })
-  userInfo?: UserInfoEntity;
+  userInfo?: Relation<UserInfoEntity>;
 
   @OneToMany(
     () => ParticipantInRoomEntity,
     (participantInRoom) => participantInRoom.user,
   )
-  participantInRooms?: ParticipantInRoomEntity[];
+  participantInRooms?: Relation<ParticipantInRoomEntity>[];
 
   @BeforeInsert()
   @BeforeUpdate()
