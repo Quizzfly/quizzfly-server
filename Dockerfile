@@ -57,4 +57,4 @@ COPY --chown=node:node --from=builder /app/.env .env
 USER node
 
 # Start the server using the production build
-CMD npm run migration:up && npm run start:prod
+CMD npm run migration:up && npm run seed:run:prod && npm run start:prod

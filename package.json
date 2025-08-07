@@ -31,6 +31,7 @@
     "db:create": "env-cmd ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:create -d src/database/data-source.ts",
     "db:drop": "env-cmd ts-node ./node_modules/typeorm-extension/bin/cli.cjs db:drop -d src/database/data-source.ts",
     "seed:run": "env-cmd ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d src/database/data-source.ts",
+    "seed:run:prod": "env-cmd ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d dist/database/data-source.js",
     "seed:run-explicit": "env-cmd ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:run -d src/database/data-source.ts --name src/database/seeds/$npm_config_name",
     "seed:create": "env-cmd ts-node ./node_modules/typeorm-extension/bin/cli.cjs seed:create --name src/database/seeds/$npm_config_name",
     "prepare": "husky || true"
