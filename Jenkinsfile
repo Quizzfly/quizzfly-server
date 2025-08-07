@@ -10,7 +10,7 @@ pipeline {
 
         stage('Build & Deploy with Docker Compose') {
             steps {
-                sh 'docker-compose up --build -d'
+                sh 'docker compose up --build -d'
             }
         }
 
@@ -24,7 +24,7 @@ pipeline {
     post {
         always {
             echo '=== Docker Compose Logs ==='
-            sh 'docker-compose logs'
+            sh 'docker compose logs'
         }
     }
 }
