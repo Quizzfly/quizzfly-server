@@ -30,12 +30,12 @@ export class UserResDto extends BaseResDto {
           updatedAt: obj.userInfoUpdatedAt,
         }
       : {
-          id: obj.userInfo.id,
-          username: obj.userInfo.username,
-          name: obj.userInfo.name,
-          avatar: obj.userInfo.avatar,
-          createdAt: obj.userInfo.createdAt,
-          updatedAt: obj.userInfo.updatedAt,
+          id: obj.userInfo?.id,
+          username: obj.userInfo?.username,
+          name: obj.userInfo?.name,
+          avatar: obj.userInfo?.avatar,
+          createdAt: obj.userInfo?.createdAt,
+          updatedAt: obj.userInfo?.updatedAt,
         };
   })
   userInfo?: WrapperType<UserInfoResDto>;
