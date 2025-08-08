@@ -1,0 +1,6 @@
+{
+  "error": {
+    "not_found": "Không tìm thấy nhóm.",
+    "user_is_already_in_group": "Người dùng đã là thành viên của nhóm."
+  }
+}
