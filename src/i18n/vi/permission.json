@@ -1,0 +1,6 @@
+{
+  "error": {
+    "permission_invalid": "Quyền không hợp lệ.",
+    "permission_already_exists_in_role": "Quyền đã tồn tại trong vai trò."
+  }
+}

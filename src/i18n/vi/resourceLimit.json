@@ -1,0 +1,6 @@
+{
+  "error": {
+    "not_found": "Không tìm thấy giới hạn tài nguyên.",
+    "already_exists": "Giới hạn tài nguyên cho gói đăng ký và loại tài nguyên đã tồn tại."
+  }
+}

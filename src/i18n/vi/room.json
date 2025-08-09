@@ -1,0 +1,27 @@
+{
+  "error": {
+    "not_found": "Không tìm thấy phòng.",
+    "pin_already_exists": "Mã PIN phòng bạn nhập đã tồn tại. Vui lòng chọn mã khác.",
+    "participant_not_found": "Không tìm thấy người tham gia.",
+    "only_host_can_kick_participant": "Chỉ chủ phòng mới có thể loại người tham gia khỏi phòng.",
+    "only_host_can_lock_room": "Chỉ chủ phòng mới có thể khóa phòng.",
+    "only_host_can_unlock_room": "Chỉ chủ phòng mới có thể mở khóa phòng.",
+    "only_host_can_setting_room": "Chỉ chủ phòng mới có thể thay đổi cài đặt phòng.",
+    "quiz_session_ended_cannot_modify_settings": "Phiên kiểm tra đã kết thúc. Không thể thay đổi cài đặt.",
+    "only_host_can_start_quiz": "Chỉ chủ phòng mới có thể bắt đầu bài kiểm tra.",
+    "quiz_already_started": "Bài kiểm tra đã được bắt đầu.",
+    "question_set_not_found": "Không tìm thấy bộ câu hỏi. Vui lòng kiểm tra lại ID.",
+    "only_host_can_get_next_question": "Chỉ chủ phòng mới có thể lấy câu hỏi tiếp theo.",
+    "quiz_not_started": "Bài kiểm tra chưa được bắt đầu.",
+    "previous_question_not_finished": "Câu hỏi trước chưa kết thúc.",
+    "quiz_out_of_questions": "Bài kiểm tra đã hết câu hỏi.",
+    "participant_invalid": "Người tham gia không hợp lệ.",
+    "not_allowed": "Bạn không được phép thực hiện hành động này.",
+    "question_over": "Câu hỏi đã kết thúc.",
+    "question_already_answered": "Bạn đã trả lời câu hỏi này rồi.",
+    "only_owner_can_perform_action": "Chỉ chủ sở hữu phòng mới được thực hiện hành động này.",
+    "unfinished_question": "Câu hỏi chưa kết thúc.",
+    "room_locked": "Phòng đã bị khóa.",
+    "participant_invalid_or_timeout": "Người tham gia không hợp lệ hoặc đã hết thời gian khi kết nối lại."
+  }
+}

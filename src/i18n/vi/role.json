@@ -1,0 +1,6 @@
+{
+  "error": {
+    "role_name_exist": "Tên vai trò đã tồn tại.",
+    "role_not_found": "Không tìm thấy vai trò."
+  }
+}

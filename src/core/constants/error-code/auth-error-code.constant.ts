@@ -10,7 +10,7 @@ export const AuthErrorCode: Record<string, string> = {
   [ErrorCode.ACCOUNT_LOCKED]: 'auth.error.account_locked',
   [ErrorCode.ACCOUNT_DISABLED]: 'auth.error.account_disabled',
   [ErrorCode.FORBIDDEN]: 'auth.error.forbidden',
-  [ErrorCode.ACCOUNT_NOT_ACTIVATED]: 'auth.error.account_not_activate',
+  [ErrorCode.ACCOUNT_NOT_ACTIVATED]: 'auth.error.account_not_activated',
   [ErrorCode.ACCOUNT_ALREADY_ACTIVATED]: 'auth.error.account_already_activated',
   [ErrorCode.ACCOUNT_NOT_REGISTER]: 'auth.error.account_not_registered',
   [ErrorCode.OLD_PASSWORD_INCORRECT]: 'auth.error.old_password_is_incorrect',
