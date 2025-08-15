@@ -2,12 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Pull code from develop') {
-            steps {
-                git branch: 'develop', url: 'https://github.com/Quizzfly/quizzfly-server.git'
-            }
-        }
-
         stage('Build & Deploy with Docker Compose') {
             steps {
                 sh 'docker compose up --build -d'
