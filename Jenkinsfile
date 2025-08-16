@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build & Deploy with Docker Compose') {
             steps {
-                sh 'docker compose up --build -d quizzfly-api'
+                sh 'docker compose up --build -d'
             }
         }
 

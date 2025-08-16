@@ -53,8 +53,24 @@ services:
     networks:
       - quizzfly-network
 
+  pgadmin:
+    container_name: quizzfly-pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - '18080:80'
+    volumes:
+      - pgadmin_data:/root/.pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_WTF_CSRF_ENABLED: 'False'
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'False'
+    networks:
+      - quizzfly-network
+
 volumes:
   postgres_data:
+  pgadmin_data:
   redis_data:
 
 networks:
