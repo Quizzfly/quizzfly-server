@@ -59,6 +59,7 @@ export enum ResourceList {
   ROOM = 'room',
   GROUP = 'group',
   NOTIFICATION = 'notification',
+  FOLDER = 'folder',
 }
 
 export enum ActionList {

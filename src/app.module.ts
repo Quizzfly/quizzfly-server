@@ -1,6 +1,7 @@
 import { AuthModule } from '@modules//auth/auth.module';
 import { AnswerModule } from '@modules/answer/answer.module';
 import { FileModule } from '@modules/file/file.module';
+import { FolderModule } from '@modules/folder/folder.module';
 import { GroupModule } from '@modules/group/group.module';
 import { HealthModule } from '@modules/health/health.module';
 import { NotificationModule } from '@modules/notification/notification.module';
@@ -40,6 +41,7 @@ const modulesGenerate = generateModulesSet();
     GroupModule,
     NotificationModule,
     SubscriptionModule,
+    FolderModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -84,6 +84,17 @@ export const PermissionConfiguration: Array<RolePayload> = [
         ],
       },
       {
+        resource: ResourceList.FOLDER,
+        actions: [
+          ActionList.CREATE,
+          ActionList.READ,
+          ActionList.READ_ALL,
+          ActionList.UPDATE,
+          ActionList.UPDATE_ANY,
+          ActionList.DELETE,
+        ],
+      },
+      {
         resource: ResourceList.NOTIFICATION,
         actions: [
           ActionList.CREATE,
@@ -191,6 +202,15 @@ export const PermissionConfiguration: Array<RolePayload> = [
       },
       {
         resource: ResourceList.GROUP,
+        actions: [
+          ActionList.CREATE,
+          ActionList.READ,
+          ActionList.UPDATE,
+          ActionList.DELETE,
+        ],
+      },
+      {
+        resource: ResourceList.FOLDER,
         actions: [
           ActionList.CREATE,
           ActionList.READ,
