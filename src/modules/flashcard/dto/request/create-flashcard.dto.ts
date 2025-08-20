@@ -1,5 +1,4 @@
 import {
-  NumberField,
   StringField,
   StringFieldOptional,
   UUIDField,
@@ -8,9 +7,6 @@ import {
 export class CreateFlashcardDto {
   @UUIDField()
   set_id: string;
-
-  @NumberField({ int: true, min: 0 })
-  rank: number;
 
   @StringField()
   question: string;

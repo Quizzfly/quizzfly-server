@@ -1,12 +1,19 @@
+import { OffsetPaginationDto } from '@/common/dto/offset-pagination/offset-pagination.dto';
+import { OffsetPaginatedDto } from '@/common/dto/offset-pagination/paginated.dto';
 import { Uuid } from '@/common/types/common.type';
+import { ErrorCode } from '@/core/constants/error-code/error-code.constant';
 import { Optional } from '@/core/utils/optional';
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Not } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 import { CreateFlashcardSetDto } from '../dto/request/create-flashcard-set.dto';
+import { FilterFlashcardSetDto } from '../dto/request/filter-flashcard-set.dto';
+import { UpdateFlashcardSetDto } from '../dto/request/update-flashcard-set.dto';
 import { FlashcardSetEntity } from '../entities/flashcard-set.entity';
 import { FlashcardEntity } from '../entities/flashcard.entity';
 import { FlashcardSetRepository } from '../repositories/flashcard-set.repository';
@@ -20,8 +27,7 @@ export class FlashcardSetService {
     await this.checkFlashCardSetExit(userId, dto.title);
 
     const flashcards = dto.flashcards.map(
-      (item, index) =>
-        new FlashcardEntity({ ...item, rank: item.rank ?? index }),
+      (item, index) => new FlashcardEntity({ ...item, rank: index }),
     );
 
     const set = new FlashcardSetEntity({ ...dto, flashcards });
@@ -36,21 +42,57 @@ export class FlashcardSetService {
       .get<FlashcardSetEntity>();
   }
 
-  async findByIdAndDetail(id: Uuid) {
-    return Optional.of(await this.repository.findByIdAndDetail(id))
+  async findByIdAndDetail(id: Uuid, ownerId: Uuid) {
+    const set = Optional.of(await this.repository.findByIdAndDetail(id))
       .throwIfNullable(new NotFoundException('Flash card set not found'))
       .get<FlashcardSetEntity>();
+
+    if (!set.canRead(ownerId)) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
+
+    return set;
   }
 
-  async paginate() {}
+  async paginate(query: FilterFlashcardSetDto) {
+    const [data, total] = await this.repository.paginate(query);
 
-  async update() {}
+    const meta = new OffsetPaginationDto(total, query);
+    return new OffsetPaginatedDto(data, meta);
+  }
 
-  async delete() {}
+  async update(id: Uuid, dto: UpdateFlashcardSetDto, ownerId: Uuid) {
+    const set = await this.findById(id);
 
-  async checkFlashCardSetExit(userId: Uuid, title: string) {
+    if (!set.canUpdate(ownerId)) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
+
+    if (set.title !== dto.title) {
+      await this.checkFlashCardSetExit(set.owner_id, dto.title, id);
+    }
+
+    Object.assign(set, dto);
+    return this.repository.save(set);
+  }
+
+  async delete(id: Uuid, userId: Uuid) {
+    const set = await this.findById(id);
+
+    if (!set.canDelete(userId)) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
+
+    await this.repository.delete(id);
+  }
+
+  async checkFlashCardSetExit(userId: string, title: string, excludeId?: Uuid) {
     Optional.of(
-      await this.repository.countBy({ owner_id: userId, title }),
+      await this.repository.countBy({
+        owner_id: userId,
+        title,
+        id: excludeId ? Not(excludeId) : undefined,
+      }),
     ).throwIfPresent(
       new ConflictException('Flash card set with title already exist'),
     );

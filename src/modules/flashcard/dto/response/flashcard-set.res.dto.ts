@@ -2,11 +2,12 @@ import { BaseResDto } from '@/common/dto/base.res.dto';
 import {
   ClassFieldOptional,
   EnumField,
+  NumberField,
   StringField,
   UUIDFieldOptional,
 } from '@/core/decorators/field.decorators';
 import { BaseUserDto } from '@/shared/dto/base-user.dto';
-import { Expose } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import { FLASHCARD_VISIBILITY } from '../../enums';
 
 export class FlashcardSetResDto extends BaseResDto {
@@ -19,6 +20,7 @@ export class FlashcardSetResDto extends BaseResDto {
   description: string;
 
   @EnumField(() => FLASHCARD_VISIBILITY)
+  @Expose()
   visibility: FLASHCARD_VISIBILITY;
 
   @UUIDFieldOptional()
@@ -28,4 +30,9 @@ export class FlashcardSetResDto extends BaseResDto {
   @ClassFieldOptional(() => BaseUserDto)
   @Expose()
   owner: BaseUserDto;
+
+  @NumberField()
+  @Expose()
+  @Transform(({ obj }) => obj.flashcards?.length || 0)
+  flashcards_count: number;
 }

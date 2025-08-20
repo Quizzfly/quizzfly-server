@@ -1,6 +1,8 @@
 import { Uuid } from '@/common/types/common.type';
+import { Order } from '@/core/constants/app.constant';
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, ILike, Repository } from 'typeorm';
+import { FilterFlashcardSetDto } from '../dto/request/filter-flashcard-set.dto';
 import { FlashcardSetEntity } from '../entities/flashcard-set.entity';
 
 @Injectable()
@@ -21,6 +23,35 @@ export class FlashcardSetRepository extends Repository<FlashcardSetEntity> {
           userInfo: { avatar: true, name: true },
         },
       },
+      order: {
+        flashcards: { rank: Order.ASC },
+      },
+    });
+  }
+
+  async paginate(filterOptions: FilterFlashcardSetDto) {
+    return this.findAndCount({
+      where: [
+        { visibility: filterOptions.visibility },
+        {
+          title: filterOptions.keywords
+            ? ILike(`%${filterOptions.keywords}%`)
+            : undefined,
+        },
+        { owner_id: filterOptions.owner_id },
+      ],
+      relations: ['owner', 'owner.userInfo', 'flashcards'],
+      select: {
+        flashcards: { id: true },
+        owner: {
+          id: true,
+          email: true,
+          userInfo: { avatar: true, name: true },
+        },
+      },
+      skip: filterOptions.offset,
+      take: filterOptions.limit,
+      order: { createdAt: filterOptions.order },
     });
   }
 }

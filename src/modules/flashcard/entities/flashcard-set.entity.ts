@@ -50,4 +50,19 @@ export class FlashcardSetEntity extends AbstractEntity {
     cascade: true,
   })
   flashcards: Relation<FlashcardEntity[]>;
+
+  canRead(userId: string) {
+    return (
+      this.visibility === FLASHCARD_VISIBILITY.PUBLIC ||
+      this.owner_id === userId
+    );
+  }
+
+  canUpdate(userId: string) {
+    return this.owner_id === userId;
+  }
+
+  canDelete(userId: string) {
+    return this.owner_id === userId;
+  }
 }
