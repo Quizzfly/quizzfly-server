@@ -12,9 +12,9 @@ export class FlashcardResDto extends BaseResDto {
   @Expose()
   set_id: string;
 
-  @NumberField({ int: true, min: 0 })
+  @NumberField()
   @Expose()
-  rank: number;
+  sort_order: number;
 
   @StringField()
   @Expose()

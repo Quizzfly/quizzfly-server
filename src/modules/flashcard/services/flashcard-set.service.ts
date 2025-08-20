@@ -27,7 +27,8 @@ export class FlashcardSetService {
     await this.checkFlashCardSetExit(userId, dto.title);
 
     const flashcards = dto.flashcards.map(
-      (item, index) => new FlashcardEntity({ ...item, rank: index }),
+      (item, index) =>
+        new FlashcardEntity({ ...item, sort_order: index * 1000 }),
     );
 
     const set = new FlashcardSetEntity({ ...dto, flashcards });

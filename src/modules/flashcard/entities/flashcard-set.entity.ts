@@ -65,4 +65,8 @@ export class FlashcardSetEntity extends AbstractEntity {
   canDelete(userId: string) {
     return this.owner_id === userId;
   }
+
+  canAddFLashCard(userId: string) {
+    return this.owner_id === userId;
+  }
 }

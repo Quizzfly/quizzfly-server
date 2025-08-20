@@ -1,12 +1,14 @@
+import { Uuid } from '@/common/types/common.type';
 import {
   StringField,
   StringFieldOptional,
   UUIDField,
+  UUIDFieldOptional,
 } from '@/core/decorators/field.decorators';
 
 export class CreateFlashcardDto {
   @UUIDField()
-  set_id: string;
+  set_id: Uuid;
 
   @StringField()
   question: string;
@@ -22,4 +24,7 @@ export class CreateFlashcardDto {
 
   @StringFieldOptional()
   audio_url: string;
+
+  @UUIDFieldOptional({ nullable: true })
+  previous_flashcard_id?: Uuid;
 }

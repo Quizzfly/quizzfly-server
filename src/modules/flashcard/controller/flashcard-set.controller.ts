@@ -25,7 +25,7 @@ import { FlashcardSetMapper } from '../mapper/flashcard-set.mapper';
 import { FlashcardSetService } from '../services/flashcard-set.service';
 
 @ApiTags('Flashcard Set APIs')
-@Controller({ path: 'flashcard-set', version: '1' })
+@Controller({ path: 'flashcard-sets', version: '1' })
 export class FlashcardSetController {
   constructor(private readonly service: FlashcardSetService) {}
 

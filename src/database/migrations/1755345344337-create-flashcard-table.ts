@@ -10,7 +10,7 @@ export class CreateFlashcardTable1755345344337 implements MigrationInterface {
         "answer" TEXT NOT NULL,
         "image_url" character varying(500),
         "audio_url" character varying(500),
-        "rank" integer NOT NULL DEFAULT 0,
+        "sort_order" integer NOT NULL,
         "options" character varying(500)[] DEFAULT null,
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -21,13 +21,21 @@ export class CreateFlashcardTable1755345344337 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE UNIQUE INDEX "IDX_flashcard_set_rank" ON "flashcard" ("set_id", "rank")
+      CREATE UNIQUE INDEX "IDX_flashcard_set_sort_order" ON "flashcard" ("set_id", "sort_order")
+    `);
+
+    await queryRunner.query(`
+      CREATE UNIQUE INDEX "IDX_flashcard_set_id_question" ON "flashcard" ("set_id", "question")
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      DROP INDEX "IDX_flashcard_set_rank"
+      DROP INDEX "IDX_flashcard_set_sort_order"
+    `);
+
+    await queryRunner.query(`
+      DROP INDEX "IDX_flashcard_set_id_question"
     `);
 
     await queryRunner.query(`

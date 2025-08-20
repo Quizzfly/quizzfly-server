@@ -1,3 +1,4 @@
+import { Uuid } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -11,7 +12,12 @@ import {
 import { FlashcardSetEntity } from './flashcard-set.entity';
 
 @Entity('flashcard', { schema: 'public' })
-@Index('IDX_flashcard_set_rank', ['set_id', 'rank'], { unique: true })
+@Index('IDX_flashcard_set_sort_order', ['set_id', 'sort_order'], {
+  unique: true,
+})
+@Index('IDX_flashcard_set_question', ['set_id', 'question'], {
+  unique: true,
+})
 export class FlashcardEntity extends AbstractEntity {
   constructor(data?: Partial<FlashcardEntity>) {
     super();
@@ -24,10 +30,10 @@ export class FlashcardEntity extends AbstractEntity {
   id!: string;
 
   @Column('uuid')
-  set_id!: string;
+  set_id!: Uuid;
 
-  @Column('integer', { default: 0 })
-  rank: number;
+  @Column('int', { nullable: false })
+  sort_order: number;
 
   @ManyToOne(() => FlashcardSetEntity, (set) => set.flashcards)
   @JoinColumn({

@@ -24,7 +24,7 @@ export class FlashcardSetRepository extends Repository<FlashcardSetEntity> {
         },
       },
       order: {
-        flashcards: { rank: Order.ASC },
+        flashcards: { sort_order: Order.ASC },
       },
     });
   }
