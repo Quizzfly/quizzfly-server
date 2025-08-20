@@ -1,3 +1,4 @@
+import { FlashCardModule } from '@/modules/flashcard/flashcard.module';
 import { AuthModule } from '@modules//auth/auth.module';
 import { AnswerModule } from '@modules/answer/answer.module';
 import { FileModule } from '@modules/file/file.module';
@@ -40,6 +41,7 @@ const modulesGenerate = generateModulesSet();
     GroupModule,
     NotificationModule,
     SubscriptionModule,
+    FlashCardModule,
   ],
 })
 export class AppModule {}

@@ -25,8 +25,7 @@ export const RoomErrorCode: Record<string, string> = {
   [ErrorCode.PARTICIPANT_INVALID]: 'room.error.participant_invalid',
   [ErrorCode.NOT_ALLOWED]: 'room.error.not_allowed',
   [ErrorCode.QUESTION_OVER]: 'room.error.question_over',
-  [ErrorCode.QUESTION_ALREADY_ANSWERED]:
-    'room.error.question_already_answered',
+  [ErrorCode.QUESTION_ALREADY_ANSWERED]: 'room.error.question_already_answered',
   [ErrorCode.ONLY_OWNER_CAN_PERFORM_ACTION]:
     'room.error.only_owner_can_perform_action',
   [ErrorCode.UNFINISHED_QUESTION]: 'room.error.unfinished_question',
@@ -34,4 +33,3 @@ export const RoomErrorCode: Record<string, string> = {
   [ErrorCode.PARTICIPANT_INVALID_OR_TIMEOUT]:
     'room.error.participant_invalid_or_timeout',
 };
-

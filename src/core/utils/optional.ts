@@ -55,9 +55,9 @@ export class Optional<T extends object = any> {
     return Boolean(this.instance);
   }
 
-  get() {
+  get<K extends object = any>() {
     if (!this.instance) throw new Error('Should call throwIfNullable first');
 
-    return this.instance;
+    return this.instance as unknown as K;
   }
 }
