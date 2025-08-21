@@ -21,7 +21,7 @@ import { FlashcardService } from '../services/flashcard.service';
 
 @Controller({ path: 'flashcards', version: '1' })
 @ApiTags('Flashcard APIs')
-export class FlashCardController {
+export class FlashcardController {
   constructor(private readonly flashCardService: FlashcardService) {}
 
   @Post()
@@ -46,8 +46,12 @@ export class FlashCardController {
     type: FlashcardResDto,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  async update(@Param('id') id: Uuid, @Body() dto: UpdateFlashcardDto) {
-    const data = await this.flashCardService.update(id, dto);
+  async update(
+    @Param('id') id: Uuid,
+    @Body() dto: UpdateFlashcardDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    const data = await this.flashCardService.update(id, dto, user.id);
     return FlashcardMapper.toDto(data);
   }
 
@@ -59,19 +63,23 @@ export class FlashCardController {
     statusCode: HttpStatus.OK,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  async reorder(@Param('id') id: Uuid, @Body() dto: ReorderFlashcardDto) {
-    const data = await this.flashCardService.reorder(id, dto);
+  async reorder(
+    @Param('id') id: Uuid,
+    @Body() dto: ReorderFlashcardDto,
+    @CurrentUser() user: ICurrentUser,
+  ) {
+    const data = await this.flashCardService.reorder(id, dto, user.id);
     return FlashcardMapper.toDto(data);
   }
 
   @Delete(':id')
   @ApiAuth({
     summary: 'Delete a flashcard',
-    description: 'Update a flashcard',
+    description: 'Delete a flashcard',
     statusCode: HttpStatus.NO_CONTENT,
   })
   @ApiParam({ name: 'id', type: 'string', format: 'uuid' })
-  async delete(@Param('id') id: Uuid) {
-    await this.flashCardService.delete(id);
+  async delete(@Param('id') id: Uuid, @CurrentUser() user: ICurrentUser) {
+    await this.flashCardService.delete(id, user.id);
   }
 }

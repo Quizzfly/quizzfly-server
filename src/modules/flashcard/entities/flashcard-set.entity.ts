@@ -66,7 +66,7 @@ export class FlashcardSetEntity extends AbstractEntity {
     return this.owner_id === userId;
   }
 
-  canAddFLashCard(userId: string) {
+  canAddFLashcard(userId: string) {
     return this.owner_id === userId;
   }
 }

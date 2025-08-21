@@ -19,7 +19,7 @@ import { ApiParam, ApiTags } from '@nestjs/swagger';
 import { CreateFlashcardSetDto } from '../dto/request/create-flashcard-set.dto';
 import { FilterFlashcardSetDto } from '../dto/request/filter-flashcard-set.dto';
 import { UpdateFlashcardSetDto } from '../dto/request/update-flashcard-set.dto';
-import { FLashCardSetDetailResDto } from '../dto/response/flashcard-set-detail.res.dto';
+import { FlashcardSetDetailResDto } from '../dto/response/flashcard-set-detail.res.dto';
 import { FlashcardSetResDto } from '../dto/response/flashcard-set.res.dto';
 import { FlashcardSetMapper } from '../mapper/flashcard-set.mapper';
 import { FlashcardSetService } from '../services/flashcard-set.service';
@@ -33,7 +33,7 @@ export class FlashcardSetController {
   @ApiAuth({
     summary: 'Create flashcard set',
     description: 'Create flashcard set',
-    type: FLashCardSetDetailResDto,
+    type: FlashcardSetDetailResDto,
   })
   async create(
     @CurrentUser() user: ICurrentUser,
@@ -47,7 +47,7 @@ export class FlashcardSetController {
   @ApiAuth({
     summary: 'Get flashcard set by id',
     description: 'Get flashcard set by id',
-    type: FLashCardSetDetailResDto,
+    type: FlashcardSetDetailResDto,
   })
   @ApiParam({ name: 'id', description: 'Flashcard set id' })
   async findById(
@@ -74,7 +74,7 @@ export class FlashcardSetController {
   @ApiAuth({
     summary: 'Update flashcard set by id',
     description: 'Update flashcard set by id',
-    type: FLashCardSetDetailResDto,
+    type: FlashcardSetDetailResDto,
   })
   @ApiParam({ name: 'id', description: 'Flashcard set id' })
   async update(

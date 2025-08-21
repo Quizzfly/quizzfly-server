@@ -31,15 +31,14 @@ export class FlashcardSetRepository extends Repository<FlashcardSetEntity> {
 
   async paginate(filterOptions: FilterFlashcardSetDto) {
     return this.findAndCount({
-      where: [
-        { visibility: filterOptions.visibility },
-        {
-          title: filterOptions.keywords
-            ? ILike(`%${filterOptions.keywords}%`)
-            : undefined,
-        },
-        { owner_id: filterOptions.owner_id },
-      ],
+      where: {
+        visibility: filterOptions.visibility,
+        title: filterOptions.keywords
+          ? ILike(`%${filterOptions.keywords}%`)
+          : undefined,
+        owner_id: filterOptions.owner_id,
+      },
+
       relations: ['owner', 'owner.userInfo', 'flashcards'],
       select: {
         flashcards: { id: true },

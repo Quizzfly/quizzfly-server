@@ -57,4 +57,16 @@ export class FlashcardEntity extends AbstractEntity {
 
   @Column('varchar', { nullable: true, array: true })
   options: string[];
+
+  canUpdate(userId: string) {
+    return this.set?.owner_id === userId;
+  }
+
+  canDelete(userId: string) {
+    return this.set?.owner_id === userId;
+  }
+
+  canReorder(userId: string) {
+    return this.set?.owner_id === userId;
+  }
 }

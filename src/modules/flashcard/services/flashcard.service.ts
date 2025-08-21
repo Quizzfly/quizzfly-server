@@ -27,7 +27,7 @@ export class FlashcardService {
   async create(userId: Uuid, dto: CreateFlashcardDto) {
     const set = await this.flashcardSetService.findById(dto.set_id);
 
-    if (!set.canAddFLashCard(userId)) {
+    if (!set.canAddFLashcard(userId)) {
       throw new ForbiddenException(ErrorCode.FORBIDDEN);
     }
 
@@ -76,13 +76,22 @@ export class FlashcardService {
   }
 
   async findById(id: Uuid) {
-    return Optional.of(await this.flashcardRepository.findOneBy({ id }))
-      .throwIfNullable(new BadRequestException('Flash card not found'))
+    return Optional.of(
+      await this.flashcardRepository.findOne({
+        where: { id: id },
+        relations: ['set'],
+      }),
+    )
+      .throwIfNullable(new NotFoundException('Flash card not found'))
       .get<FlashcardEntity>();
   }
 
-  async update(id: Uuid, dto: UpdateFlashcardDto) {
+  async update(id: Uuid, dto: UpdateFlashcardDto, userId: Uuid) {
     const flashcard = await this.findById(id);
+
+    if (!flashcard.canUpdate(userId)) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
 
     if (flashcard.question !== dto.question) {
       await this.checkExist(flashcard.set_id, dto.question, id);
@@ -92,8 +101,12 @@ export class FlashcardService {
     return this.flashcardRepository.save(flashcard);
   }
 
-  async delete(id: Uuid) {
-    await this.findById(id);
+  async delete(id: Uuid, userId: Uuid) {
+    const flashcard = await this.findById(id);
+
+    if (!flashcard.canDelete(userId)) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
     await this.flashcardRepository.delete({ id });
   }
 
@@ -109,10 +122,14 @@ export class FlashcardService {
     );
   }
 
-  async reorder(id: Uuid, dto: ReorderFlashcardDto) {
+  async reorder(id: Uuid, dto: ReorderFlashcardDto, userId: Uuid) {
     const { previous_id, next_id } = dto;
 
     const flashcard = await this.findById(id);
+    if (!flashcard.canReorder(userId)) {
+      throw new ForbiddenException(ErrorCode.FORBIDDEN);
+    }
+
     if (flashcard.id === previous_id || flashcard.id === next_id) {
       return flashcard;
     }

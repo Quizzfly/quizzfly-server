@@ -24,7 +24,7 @@ export class FlashcardSetService {
 
   @Transactional()
   async create(userId: Uuid, dto: CreateFlashcardSetDto) {
-    await this.checkFlashCardSetExit(userId, dto.title);
+    await this.checkFlashcardSetExit(userId, dto.title);
 
     const flashcards = dto.flashcards.map(
       (item, index) =>
@@ -70,7 +70,7 @@ export class FlashcardSetService {
     }
 
     if (set.title !== dto.title) {
-      await this.checkFlashCardSetExit(set.owner_id, dto.title, id);
+      await this.checkFlashcardSetExit(set.owner_id, dto.title, id);
     }
 
     Object.assign(set, dto);
@@ -87,7 +87,7 @@ export class FlashcardSetService {
     await this.repository.delete(id);
   }
 
-  async checkFlashCardSetExit(userId: string, title: string, excludeId?: Uuid) {
+  async checkFlashcardSetExit(userId: string, title: string, excludeId?: Uuid) {
     Optional.of(
       await this.repository.countBy({
         owner_id: userId,
